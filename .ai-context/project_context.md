@@ -41,10 +41,11 @@ Payroll, IT and Facilities themselves, with no shared record and no visibility.
 - **`employee-services`** — Node/TypeScript domain service; owns portal request aggregates,
   their state machines and their APIs. The internal transfer journey is a bounded module
   inside it, not a new service.
-- **PostgreSQL** — system of record for everything the portal owns.
-- **Redis** — reference-data cache, idempotency records, rate limiting. Never a source of truth.
-- **Kafka** — the integration boundary. Downstream functions consume portal events; the
-  portal never calls them synchronously from a request path.
+- **SQLite** — system of record for everything the portal owns.
+- **SQLite** — system of record for everything the portal owns, including the transactional
+  outbox, reference-data cache, idempotency records and rate-limit counters.
+- **Outbox relay** — polls SQLite and delivers events to downstream HTTPS webhook endpoints.
+  No message broker.
 - **HRIS** — system of record for employment and organisational data. The portal reads it;
   it does not write to it directly.
 
@@ -53,10 +54,10 @@ Payroll, IT and Facilities themselves, with no shared record and no visibility.
 | Layer | Technology | Notes |
 |---|---|---|
 | Front end | React 18, TypeScript, Redux Toolkit | Portal design system; WCAG 2.1 AA mandatory |
-| API / domain | Node.js 20, TypeScript, NestJS | Modular monolith per domain service |
-| Data | PostgreSQL 15, Redis 7 | Migrations forward-only, rolling-deploy safe |
-| Messaging | Kafka | Transactional outbox pattern; schemas are contracts |
-| Test | Jest, Supertest, React Testing Library, Playwright, Testcontainers | Real PostgreSQL in tests |
+| API / domain | Node.js 20, TypeScript, Express | Modular monolith per domain service |
+| Data | SQLite 3 | Migrations forward-only; cache, idempotency and rate limits in SQLite |
+| Integration | HTTPS webhooks via outbox relay | Transactional outbox pattern; event schemas are contracts |
+| Test | Jest, Supertest, React Testing Library, Playwright | Real SQLite file in tests |
 | Platform | AWS, API Gateway, Secrets Manager, corporate OIDC | Gateway owns coarse auth; services own fine-grained |
 
 ## Stakeholders and Decision Owners

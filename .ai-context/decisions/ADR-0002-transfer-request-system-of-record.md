@@ -55,7 +55,7 @@ statutory reporting as though they were real.
 
 **The One-Point Employee Portal is the system of record for the transfer request aggregate** —
 `transfer_request`, its stages, its audit trail and its outbox. The request's lifecycle,
-state and history are authoritative in PostgreSQL and nowhere else.
+state and history are authoritative in SQLite and nowhere else.
 
 **The HRIS remains the system of record for all employment and organisational data.** The
 portal reads it and never writes to it. When a transfer completes, the HRIS is updated by its

@@ -89,7 +89,7 @@ goes stale. QA owns the expansions below.
 | `NT09` | AC6 | `targetPositionId` referencing a position in another legal entity | 422 — out of scope for internal transfer, not a 500 |
 | `ST01` | AC13 | Enumerate 1000 random UUIDs as one employee | Uniform 404s; no timing difference distinguishing existing from non-existing |
 | `ST02` | AC16 | Capture every log line, span attribute and metric label across the full lifecycle | Reason text appears in none of them, at any level, including debug |
-| `ST03` | AC16 | Inspect the emitted Kafka payloads | Allow-listed fields only; no reason, no names, no contact details |
+| `ST03` | AC16 | Inspect the emitted webhook payloads | Allow-listed fields only; no reason, no names, no contact details |
 | `ST04` | AC16 | Inspect the `reason_ciphertext` column directly | Ciphertext; plaintext not recoverable from the database alone |
 | `ST05` | AC16 | Trigger a 500 with reason text present | Error response and stack trace contain no reason text |
 | `ST06` | — | Dependency scan of anything added by this feature | No new dependency without a vetting note; no crypto-adjacent package added |
@@ -102,8 +102,8 @@ goes stale. QA owns the expansions below.
 | `PT02` | Performance | API04 and API05 under 200 concurrent employees | p95 < 400 ms | Not Run |
 | `PT03` | Performance | API07 with a warm cache | p95 < 400 ms; HRIS call count stays flat as load rises | Not Run |
 | `PT04` | Resilience | HRIS latency injected at 5 s | Circuit breaker opens; the transfer journey degrades and no other portal journey is affected | Not Run |
-| `PT05` | Resilience | Kafka unavailable for 30 minutes | Submissions keep succeeding; outbox backlog drains on recovery; the age alert fires | Not Run |
-| `PT06` | Resilience | Redis unavailable | Reference data falls through to the HRIS; submit refused (idempotency fails closed); reads unaffected | Not Run |
+| `PT05` | Resilience | Downstream webhook unreachable for 30 minutes | Submissions keep succeeding; outbox backlog drains on recovery; the age alert fires | Not Run |
+| `PT06` | Resilience | SQLite unavailable | All transfer endpoints return 503; no partial writes | Not Run |
 | `AT01` | Accessibility | Full wizard by keyboard only | Every control reachable and operable; focus order matches visual order | Not Run |
 | `AT02` | Accessibility | NVDA and VoiceOver through submit with a validation error | Error announced and programmatically associated with its field | Not Run |
 | `AT03` | Accessibility | Status timeline at 200% zoom and in greyscale | Stage status readable as text; no meaning carried by colour alone | Not Run |
@@ -123,7 +123,7 @@ goes stale. QA owns the expansions below.
 
 | Test type | Environment | Data | Notes |
 |---|---|---|---|
-| Unit | local, dev | Synthetic fixtures | Real PostgreSQL via Testcontainers — the database constraints are what UT23 and UT52 prove |
+| Unit | local, dev | Synthetic fixtures | Real SQLite file — the database constraints are what UT23 and UT52 prove |
 | Integration | dev, sit | Synthetic employees seeded with deliberate edge profiles: probation, 11.5 months in position, active exit, no line manager, manager who has left | Contract doubles for the HRIS in dev; real HRIS test instance in sit |
 | Performance | sit | 10,000 synthetic employees, 2,000 positions | Run before release, not after |
 | Accessibility | sit | Any | Automated plus a manual pass; automation alone does not satisfy AC19 |

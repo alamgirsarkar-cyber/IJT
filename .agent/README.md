@@ -5,7 +5,7 @@ root).
 
 | Path | Purpose |
 |---|---|
-| `rules/int-standards.node.md` | Always-on Node/NestJS rules |
+| `rules/int-standards.node.md` | Always-on Node/Express rules |
 | `rules/int-standards.react.md` | Always-on React rules |
 | `rules/.agentignore` | Keep secrets, binaries and lockfiles out of context |
 | `rules/auto-log.md` | Append to `prompt_history.md` after every task |

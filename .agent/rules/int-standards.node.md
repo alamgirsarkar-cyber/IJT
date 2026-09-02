@@ -1,6 +1,6 @@
 # INT Standards — Node.js / TypeScript
 
-**Stack:** Node.js 20, TypeScript 5, NestJS · **Applies to:** `employee-services/**`
+**Stack:** Node.js 20, TypeScript 5, Express · **Applies to:** `employee-services/**`
 **Last updated:** 2026-09-01
 
 Always-on rules for this stack. The agent reads this on every session regardless of task.
@@ -46,7 +46,7 @@ spec. Neither belongs here.
 
 ## Error Handling
 
-- Every HTTP error is RFC 7807 `application/problem+json` via the shared exception filter.
+- Every HTTP error is RFC 7807 `application/problem+json` via the shared error middleware.
   Never a bare string or a framework default shape.
 - Business rule violations carry `violations[].ruleId`. The rule ID is the contract; the
   message is display text and may change without a version bump.
@@ -58,10 +58,10 @@ spec. Neither belongs here.
 
 ## Testing
 
-- Jest for unit and integration, Supertest for HTTP contract tests, Testcontainers for a real
-  PostgreSQL and Redis. **Never an in-memory database substitute** — the constraints, partial
-  indexes and revoked privileges we rely on only exist in the real engine, and a test that
-  cannot see them proves nothing.
+- Jest for unit and integration, Supertest for HTTP contract tests, a real SQLite database
+  file for persistence tests. **Never an in-memory database substitute** — the constraints,
+  partial indexes and revoked privileges we rely on only exist in the real engine, and a test
+  that cannot see them proves nothing.
 - Test names include the test-case ID from the spec, so a failing run points back at the
   acceptance criterion.
 - Assert on observable behaviour: response bodies, persisted state, emitted payloads. Not on

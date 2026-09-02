@@ -40,26 +40,26 @@ hears about. That failure is silent, rare, and only discovered when an employee 
 nothing happened — the worst possible combination for a journey whose entire value
 proposition is visibility.
 
-The constitution already mandates Kafka for cross-domain integration and forbids synchronous
-calls from a request path into these systems. What it did not state, and what this decision
-adds, is *how* the event gets published.
+The constitution requires async cross-domain integration and forbids synchronous calls from
+a request path into these systems. What it did not state, and what this decision adds, is
+*how* the event gets published and delivered without a message broker.
 
 ## Options Considered
 
 | Option | Pros | Cons | Rejected because |
 |---|---|---|---|
 | Synchronous calls to each downstream system inside the submit request | Simplest to reason about; immediate confirmation | Portal availability becomes the product of four dependencies; latency budget blown; partial failure unrepresentable; violates the constitution | Availability and latency, before the constitution is even considered |
-| Publish to Kafka directly from application code after commit | Simple; no extra table | Dual-write problem — a crash between commit and publish silently loses the event, with no way to detect it later | Silent, undetectable data loss on the journey's critical path |
-| Publish to Kafka first, then commit | Removes the lost-event case | Introduces the opposite one: an event published for a request that then fails to commit, so downstream acts on a transfer that does not exist | Worse than the problem it solves |
-| **Transactional outbox — write the state change and an outbox row in one transaction, and publish from a relay** | State change and intent to publish are atomic; the relay can crash and resume; unpublished rows are queryable and alertable | One more table; one more moving part; at-least-once delivery pushes idempotency onto consumers | **Chosen** |
+| Publish directly to a downstream webhook from application code after commit | Simple; no extra table | Dual-write problem — a crash between commit and publish silently loses the event, with no way to detect it later | Silent, undetectable data loss on the journey's critical path |
+| Publish to a downstream webhook first, then commit | Removes the lost-event case | Introduces the opposite one: downstream acts on a transfer that does not exist | Worse than the problem it solves |
+| **Transactional outbox — write the state change and an outbox row in one transaction; a relay POSTs to webhooks** | State change and intent to publish are atomic; the relay can crash and resume; unpublished rows are queryable and alertable | One more table; one more moving part; at-least-once delivery pushes idempotency onto consumers | **Chosen** |
 | Change data capture from the WAL instead of an outbox table | No application-side outbox logic | New infrastructure component to run and operate; couples event schemas to table schemas, which is precisely what we do not want given the field-level encryption and the payload allow-list | Operational cost and schema coupling not justified at this scale |
 
 ## Decision
 
 Downstream orchestration is **event-driven**. A state change that downstream systems care
 about writes an `transfer_request_outbox` row **in the same database transaction** as the
-state change itself. A separate relay process polls unpublished rows, publishes them to
-Kafka, and marks them published.
+state change itself. A separate relay process polls unpublished rows, POSTs them to the
+configured downstream HTTPS webhook endpoints, and marks them published.
 
 Consequences of that choice which are themselves part of the decision:
 
@@ -94,8 +94,7 @@ Consequences of that choice which are themselves part of the decision:
 - Every consumer carries idempotency logic it would not need under exactly-once delivery.
   Accepted — it is a well-understood cost and the alternative does not exist in practice.
 - One additional table and one additional process to operate.
-- Ordering is per-partition only. Accepted because the transfer events for a single request
-  share a partition key of `requestId`, and cross-request ordering has no meaning here.
+- Delivery order is best-effort per relay poll; consumers deduplicate on `requestId` plus event type.
 
 **Does not solve:**
 - **A downstream system that consumes an event and then fails to act on it.** The portal will

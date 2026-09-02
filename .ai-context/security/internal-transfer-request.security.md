@@ -14,7 +14,7 @@ conditions to carry into Gate 2 when build starts (C1–C3 below).
 
 | Data | Classification | Where it lives | Handling |
 |---|---|---|---|
-| Employee ID | Pseudonymous internal identifier — **not PII on its own** | Database, logs, correlation IDs, hashed in Redis keys | Permitted in logs; support depends on it |
+| Employee ID | Pseudonymous internal identifier — **not PII on its own** | Database, logs, correlation IDs | Permitted in logs; support depends on it |
 | Employee name, contact details | **PII** | Not stored by this feature; resolved at read time from the HRIS | Never logged, never in an event payload |
 | Line manager name | **PII** | Not stored; resolved at read time for display | Disclosed to the employee only where the assignee is their own line manager (BRD-001 OQ-11) |
 | Employment status, service dates | **PII (HR)** | Read at submit; `service_in_position_months` snapshotted | Snapshot is the minimum needed to explain a BR2 decision later |
@@ -55,7 +55,7 @@ the rule rather than rediscovering it.
 | Security Posture rule | Compliance | Evidence |
 |---|---|---|
 | No PII in logs at any level | Compliant by design | AC16; UT47 captures logs across the whole submit path rather than unit-testing a redaction function |
-| Employee ID permitted in logs | Used deliberately, and hashed where it enters shared Redis | Plan, Data Model |
+| Employee ID permitted in logs | Used deliberately in structured logs | Plan, Data Model |
 | Free-text employee narrative protected | Compliant | AC16, T3–T5, T16 |
 | OIDC on all employee-facing endpoints; authorisation enforced in the service | Compliant | AC13; gateway plus in-service ownership checks |
 | Explicit rate-limit decision per endpoint | Compliant | Seven endpoints, seven decisions in the spec's API Contract |

@@ -13,32 +13,32 @@ Review record: `.ai-context/reviews/internal-transfer-request.gate1-plan.md`
 ## Architecture Approach
 
 - **No new service.** The feature is a bounded module `internal-transfer` inside the
-  existing `employee-services` NestJS application, per the constitution's "no new service
-  without an ADR." It owns its own schema namespace and exposes its own controllers; nothing
+  existing `employee-services` Express application, per the constitution's "no new service
+  without an ADR." It owns its own schema namespace and exposes its own routers; nothing
   outside the module reads its tables.
 - **The request aggregate is portal-owned.** `transfer_request` and its children are the
   system of record for the *request*; the HRIS remains the system of record for employment
   and organisational data, which the portal only ever reads and snapshots. See
   [ADR-0002](../decisions/ADR-0002-transfer-request-system-of-record.md).
 - **Downstream integration is event-driven through a transactional outbox.** Submission
-  writes the state change and the outbox row in one transaction; a separate relay publishes
-  to Kafka. No Payroll, ITSM or Facilities call ever appears in a request path. See
+  writes the state change and the outbox row in one transaction; a separate relay POSTs to
+  downstream webhooks. No Payroll, ITSM or Facilities call ever appears in a request path. See
   [ADR-0001](../decisions/ADR-0001-outbox-event-driven-transfer-orchestration.md). This is
   what makes AC9's all-or-nothing guarantee achievable without a distributed transaction,
   and what stops a slow downstream system from turning into a slow submit.
 - **HRIS reads are synchronous but cached.** Reference data (departments, locations,
-  positions) is cached in Redis with a 15-minute TTL and served stale when the HRIS is
-  unreachable, with an explicit `stale` flag (AC15). Employment data used for eligibility
-  (BR1, BR2, BR4) is **not** cached and is read fresh at submission — a stale probation or
-  resignation status would produce a wrong eligibility decision, and correctness beats
-  availability at that specific point. That is why AC15 refuses the submit with a 503 rather
-  than falling back to cached employment data.
+  positions) is cached in SQLite (`reference_data_cache`) with a 15-minute TTL and served
+  stale when the HRIS is unreachable, with an explicit `stale` flag (AC15). Employment data
+  used for eligibility (BR1, BR2, BR4) is **not** cached and is read fresh at submission — a
+  stale probation or resignation status would produce a wrong eligibility decision, and
+  correctness beats availability at that specific point. That is why AC15 refuses the submit
+  with a 503 rather than falling back to cached employment data.
 - **Rules are evaluated by a small explicit rule set in code**, one function per rule ID,
   each returning a violation carrying its own `ruleId`. Not a rules engine: nine rules do not
   justify one, and a rules engine would put business logic somewhere Gate 2 cannot review it
   against the spec. Each rule function is named for its ID so the traceability from BR to
   test to code is greppable.
-- **Reference number generation** uses a PostgreSQL sequence per year plus formatting, not
+- **Reference number generation** uses a SQLite sequence table per year plus formatting, not
   application-side counting, so concurrent submissions cannot collide.
 - **Front end** is a new route in `employee-portal-web` using the portal design system: a
   four-step wizard (target → date → reason → review) plus a status timeline, with Redux
@@ -90,17 +90,13 @@ role, so AC18's immutability is a database guarantee rather than a code conventi
 explicit mapper that lists the fields it emits, rather than serialising the aggregate — an
 allow-list, so a future column cannot leak into an event by default (AC16).
 
-**Redis keys** — all namespaced `itr:`:
+**SQLite auxiliary tables** — all in the same database file:
 
-| Key | Purpose | TTL |
+| Table | Purpose | TTL / retention |
 |---|---|---|
-| `itr:refdata:departments:v1`, `:locations:v1`, `:positions:{deptId}:v1` | Reference-data cache | 900 s, served stale past TTL |
-| `itr:idem:{sha256(employeeId+salt)}:{key}` | Idempotency record and stored response | 24 h |
-| `itr:rl:{endpoint}:{sha256(employeeId+salt)}` | Rate-limit counter (AC17) | Window length |
-
-Employee IDs are hashed in Redis keys even though the constitution classifies them as
-non-PII, because Redis is a shared estate with broader operational access than PostgreSQL,
-and a hash costs nothing here.
+| `reference_data_cache` | HRIS reference data (departments, locations, positions) | 900 s, served stale past expiry |
+| `idempotency_record` | Idempotency key and stored response (AC10) | 24 h |
+| `rate_limit_counter` | Per-endpoint rate-limit window (AC17) | Window length |
 
 **Migration:** forward-only, additive. Rollback is by leaving the tables in place, unused —
 dropping them would lose submitted requests.
@@ -111,7 +107,7 @@ dropping them would lose submitted requests.
 |---|---|---|---|---|---|
 | HRIS read API — employee employment data | Outbound | Sync, **uncached** | Submit returns 503, request stays `DRAFT` (AC15) | 2 s timeout, 1 retry, circuit breaker at 50% over 20 calls | HR Systems |
 | HRIS read API — org and position reference data | Outbound | Sync, cached 15 min | Serve cached, flag `stale`; 503 only if the cache is empty | 2 s timeout, 1 retry | HR Systems |
-| Kafka `employee.transfer.v1` | Outbound | Async via outbox | Outbox retains and retries with backoff; submission is unaffected | Relay: exponential backoff, unbounded retries, alert at 15 min unpublished | Portal |
+| Downstream webhooks `employee.transfer.v1` | Outbound | Async via outbox relay | Outbox retains and retries with backoff; submission is unaffected | Relay: exponential backoff, unbounded retries, alert at 15 min unpublished | Portal |
 | Corporate IdP | Inbound | Sync | Gateway rejects before the service is reached | Platform standard | Security Engineering |
 
 **Events emitted** (schemas registered, additive-only per the constitution):
@@ -135,20 +131,19 @@ dropping them would lose submitted requests.
 | Two concurrent draft updates | Optimistic concurrency on `version`; second gets 409 with the current version | AC2 |
 | Double-clicked submit | Idempotency record returns the stored response; no second event, no second audit row | AC10 |
 | Submit succeeds, outbox insert fails | Whole transaction rolls back; request stays `DRAFT` | AC9 |
-| Outbox row committed, Kafka unavailable | Relay retries with backoff; the request is `SUBMITTED` and correct, the event is merely late; alert fires at 15 minutes | AC9 |
+| Outbox row committed, downstream webhook unreachable | Relay retries with backoff; the request is `SUBMITTED` and correct, the event is merely late; alert fires at 15 minutes | AC9 |
 | Relay publishes twice after a crash between publish and mark-published | At-least-once by design; consumers must be idempotent, and the event carries `requestId` as the natural dedupe key. Stated in the event contract | ADR-0001 |
 | Withdrawal races a stage transition into `FULFILMENT` | Row-level lock on the aggregate for the status check and the write; the loser gets 409 `withdrawal-window-closed` | AC14 |
-| Redis unavailable | Reference data falls through to the HRIS (slower, still correct). **Rate limiting fails closed** for submit and open for reads. Idempotency **fails closed** — a submit without a working idempotency store is refused with 503 rather than risking a duplicate request | AC10, AC15, AC17 |
+| SQLite unavailable | All transfer endpoints return 503; no partial writes | AC1, AC15 |
 | Clock skew across instances for date-window checks | All date arithmetic in UTC against the database clock, not the application clock | AC4 |
 | Employee's line manager changes between submit and view | `assigned_party_ref` is snapshotted at submit; the view resolves the name at read time and shows the role alone if the reference no longer resolves | AC11 |
 
 ## Constitution Check
 
-- [x] **No new datastore or service introduced without an ADR** — none introduced. New tables
-      in PostgreSQL and new keys in Redis, both approved stores used within their approved
-      roles; nothing authoritative is held in Redis.
+- [x] **No new datastore or service introduced without an ADR** — none introduced. All state
+      in SQLite, used within its approved role.
 - [x] **Testing discipline matches `constitution.md`** — Jest + Supertest, test-first per task,
-      real PostgreSQL via Testcontainers for constraint and transaction behaviour, React
+      real SQLite database file for constraint and transaction behaviour, React
       Testing Library plus Playwright for the wizard. Coverage floor 85% applies to this
       module because it handles employee records.
 - [x] **Security posture matches `constitution.md`** — reason and withdrawal-reason text are
@@ -207,14 +202,14 @@ Each step is independently generatable, reviewable and mergeable.
 
 1. **Schema, migrations and the audit guarantee** — tables, indexes, the partial unique
    index, revoked audit privileges.
-2. **Reference-data provider** — HRIS client, Redis cache, staleness handling, the API07
+2. **Reference-data provider** — HRIS client, SQLite cache, staleness handling, the API07
    endpoint.
 3. **Draft lifecycle** — create and update, optimistic concurrency, ownership checks
    (API01, API02).
 4. **Rule set** — one function per business rule, returning violations carrying rule IDs.
 5. **Submit transaction** — validation, stage-plan construction, audit, outbox, idempotency
    (API03).
-6. **Outbox relay** — publisher, backoff, at-least-once semantics, unpublished-age alert.
+6. **Outbox relay** — webhook publisher, backoff, at-least-once semantics, unpublished-age alert.
 7. **Read model** — status detail and list, `pendingWith` derivation and the naming rule
    (API04, API05).
 8. **Withdrawal** — state guard, stage cancellation, event (API06).

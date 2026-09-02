@@ -44,7 +44,7 @@
   to write to — a module at 85% with no failure-path tests fails review regardless.
 - **Frameworks:** Node/TypeScript services → Jest + Supertest for HTTP contract tests.
   React front end → React Testing Library + Playwright for journey tests.
-  Database → tests run against a real PostgreSQL in a container, never an in-memory
+  Database → tests run against a real SQLite database file, never an in-memory
   substitute, because the constraints we rely on are database constraints.
 - **Required before merge:** unit tests for rules and state transitions; contract tests for
   every endpoint including its full exception table; integration tests for every outbound
@@ -86,14 +86,14 @@
 
 ## Architectural Constraints
 
-- **Approved datastores:** PostgreSQL (system of record for portal-owned data); Redis
-  (cache, session, idempotency and rate-limiting only — never a system of record; anything
-  in Redis must be reconstructible from PostgreSQL or an upstream system). No new datastore
+- **Approved datastores:** SQLite only (system of record for portal-owned data, transactional
+  outbox, reference-data cache, idempotency records and rate-limit counters). No new datastore
   without an ADR approved by the Architect.
-- **Approved messaging:** Kafka. Cross-domain integration is **event-driven**; a portal
-  request path must not make a synchronous call into Payroll, ITSM or Facilities. Reading
-  reference data synchronously from the HRIS read API is permitted, with a cache and a
-  defined behaviour when it is unavailable.
+- **Cross-domain integration is async** via a transactional outbox in SQLite and a relay that
+  delivers to downstream HTTPS webhook endpoints. A portal request path must not make a
+  synchronous call into Payroll, ITSM or Facilities. Reading reference data synchronously
+  from the HRIS read API is permitted, with a SQLite-backed cache and a defined behaviour
+  when it is unavailable.
 - **Events are published through a transactional outbox**, never directly from application
   code inside a request. A state change and its event are committed together or not at all.
 - **No new service without an ADR.** New capability goes into the existing domain service
@@ -110,7 +110,7 @@
 - **Latency:** p95 < 400 ms for employee-facing read endpoints and < 700 ms for
   state-changing endpoints, measured at the gateway, not in application logs.
 - **Availability:** 99.9% for the portal's employee-facing request paths.
-- **Durability:** RPO 15 minutes / RTO 1 hour for PostgreSQL.
+- **Durability:** RPO 15 minutes / RTO 1 hour for SQLite (file backup and restore).
 - **Accessibility:** WCAG 2.1 AA is mandatory for every employee-facing screen. An
   inaccessible screen is an incomplete screen, not a follow-up ticket.
 - **Degradation:** an unavailable downstream or reference-data dependency must degrade the
@@ -125,7 +125,7 @@
   version, an ADR documenting the break, and a 90-day deprecation window communicated to
   consuming teams.
 - **Published event schemas are contracts.** Additive changes only within a major version;
-  a breaking event change requires a new topic version and a documented consumer migration.
+  a breaking event change requires a new schema version and a documented consumer migration.
 - Database migrations are forward-only and must be backward-compatible with the previously
   deployed application version, because deployment is rolling.
 
@@ -140,4 +140,4 @@ as any spec, and dated.
 |---|---|---|---|---|
 | 2026-08-24 | All | Initial ratification at project kickoff | Portal programme start | Alamgir Sarkar |
 | 2026-08-28 | Security Posture | Proposed: free-text employee narrative rule; explicit "employee ID is not PII" carve-out | BRD-001 OQ-12 | Alamgir Sarkar — **pending Gate 1 review (Abhijit Adhikary)** |
-| 2026-08-28 | Architectural Constraints | Proposed: transactional outbox requirement | [ADR-0001](decisions/ADR-0001-outbox-event-driven-transfer-orchestration.md) | Alamgir Sarkar — **pending Gate 1 review (Abhijit Adhikary)** |
+| 2026-09-02 | Architectural Constraints | Removed Redis and Kafka; SQLite-only datastore; async integration via outbox + HTTPS webhooks | Stack simplification | Alamgir Sarkar — **pending Gate 1 review (Abhijit Adhikary)** |

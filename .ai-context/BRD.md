@@ -97,7 +97,7 @@ anywhere. See OQ-08.
 | OQ-07 | On rejection — is the request terminal, or returned to the employee for edit and resubmission? | **Business** | HR Ops | **Resolved 2026-08-27:** terminal for v1. The employee raises a new request. Return-for-edit deferred to a later spec. |
 | OQ-08 | Are Payroll / IT / Facilities always triggered, or conditionally? What determines it? | **Business** rule, technically implemented | HR Ops + Payroll + IT + Facilities | **Resolved 2026-08-27:** conditional — Payroll when cost centre or grade changes; IT when department changes; Facilities when location changes. Owned by `internal-transfer-downstream-orchestration`. v1 records stage applicability at submission. |
 | OQ-09 | Is the portal or the HRIS the system of record for the transfer request itself? | **Technical** | Architecture | **Resolved 2026-08-28:** portal owns the *request*; HRIS remains system of record for *employment and org data*. See [ADR-0002](decisions/ADR-0002-transfer-request-system-of-record.md). |
-| OQ-10 | Are downstream systems called synchronously, or event-driven with confirmation back? | **Technical** | Architecture | **Resolved 2026-08-28:** event-driven via the existing Kafka estate, with a transactional outbox. See [ADR-0001](decisions/ADR-0001-outbox-event-driven-transfer-orchestration.md). |
+| OQ-10 | Are downstream systems called synchronously, or event-driven with confirmation back? | **Technical** | Architecture | **Resolved 2026-08-28:** event-driven via a SQLite transactional outbox and HTTPS webhook relay. See [ADR-0001](decisions/ADR-0001-outbox-event-driven-transfer-orchestration.md). |
 | OQ-11 | In "pending with", does the employee see a named person or only a role? | **Business** (privacy) | HR Ops + Data Privacy | **Proposed in spec v1.1 (AC11) — pending Gate 1 / business owner confirmation:** named person only where that person is the employee's own line manager. All other stages show role only. |
 | OQ-12 | Who can read the free-text **reason**? It may name a manager or describe a grievance. | **Business** (privacy) | Data Privacy + HR | **Proposed in spec v1.1 (AC16) — pending Gate 1 / business owner confirmation:** visible to HR Business Partner and the employee only. **Not** visible to either manager. Encrypted at rest, never logged, never in analytics extracts without aggregation. |
 | OQ-13 | Can an employee hold more than one active transfer request? | **Business** | HR Ops | **Resolved 2026-08-26:** no. One non-terminal request per employee. |
@@ -150,10 +150,10 @@ anywhere. See OQ-08.
 |---|---|---|
 | AS-01 | The One-Point Employee Portal already exists with SSO/OIDC authentication and an established API gateway; this journey is a new module within it, not a new product | Scope grows to include platform work not estimated here |
 | AS-02 | A read API exists over the HRIS for employee master, org units and positions | T02 becomes an integration build, not a consumption task |
-| AS-03 | The Kafka estate and the notification service used elsewhere in the portal are available for reuse | [ADR-0001](decisions/ADR-0001-outbox-event-driven-transfer-orchestration.md) is invalidated and orchestration must be redesigned |
+| AS-03 | Downstream systems expose HTTPS webhook endpoints (or an adapter exists) and the notification service is available for reuse | [ADR-0001](decisions/ADR-0001-outbox-event-driven-transfer-orchestration.md) is invalidated and orchestration must be redesigned |
 | AS-04 | Payroll, ITSM and Facilities can consume events; each owns its own fulfilment and reports completion back | Downstream stages cannot be tracked and KD-05 is not deliverable |
 | AS-05 | Employee ID is an internal pseudonymous identifier, not PII in itself — it is safe in logs and cache keys, unlike name, contact details or reason text | The logging and cache-key design in the plan needs revision |
-| AS-06 | Stack is the portal's existing estate: Node.js/TypeScript services, React front end, PostgreSQL, Redis, Kafka | The constitution's approved-technology section changes and the plan is re-cut |
+| AS-06 | Stack is the portal's existing estate: Node.js/TypeScript services (Express), React front end, SQLite | The constitution's approved-technology section changes and the plan is re-cut |
 
 ### Dependencies
 

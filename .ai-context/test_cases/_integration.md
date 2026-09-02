@@ -61,10 +61,10 @@ remembered origin gets deleted by the next person who sees it fail.
 |---|---|---|---|
 | `INT-FAIL-01` | HRIS fully unavailable | Whole portal | Transfer submission refused with 503; every other portal journey healthy |
 | `INT-FAIL-02` | HRIS slow at 5 s | Transfer journey | Circuit breaker opens; fast 503 rather than a queue of held connections |
-| `INT-FAIL-03` | Kafka unavailable for 30 minutes | Transfer submission | Submissions succeed; outbox grows; age alert fires; backlog drains on recovery with no duplicates visible to the employee |
-| `INT-FAIL-04` | Outbox relay killed between publishing and marking published | Downstream consumers | Event republished on restart; consumers deduplicate on `requestId`; no duplicate downstream action |
-| `INT-FAIL-05` | Redis unavailable | Transfer journey | Reference data falls through to the HRIS; submit refused because idempotency fails closed; reads unaffected |
-| `INT-FAIL-06` | PostgreSQL failover mid-submission | Transfer submission | In-flight transaction rolls back; the request remains `DRAFT`; no orphan rows; recovery within the RTO |
+| `INT-FAIL-03` | Downstream webhook unreachable for 30 minutes | Transfer submission | Submissions succeed; outbox grows; age alert fires; backlog drains on recovery with no duplicates visible to the employee |
+| `INT-FAIL-04` | Outbox relay killed between POST and marking published | Downstream consumers | Event republished on restart; consumers deduplicate on `requestId`; no duplicate downstream action |
+| `INT-FAIL-05` | SQLite unavailable | Transfer journey | All endpoints return 503; no partial writes |
+| `INT-FAIL-06` | SQLite database unavailable mid-submission | Transfer submission | In-flight transaction rolls back; the request remains `DRAFT`; no orphan rows; recovery within the RTO |
 | `INT-FAIL-07` | Rolling deploy with the new migration applied and mixed application versions running | Whole portal | Both versions operate correctly against the new schema — the additive-migration rule proven, not assumed |
 
 ## Non-Functional (System)
@@ -73,7 +73,7 @@ remembered origin gets deleted by the next person who sees it fail.
 |---|---|---|---|
 | `INT-NFR-01` | Load | Portal peak with the transfer journey at 5% of traffic | Portal p95 unchanged within noise |
 | `INT-NFR-02` | Soak | 24 hours of steady transfer traffic | No connection, memory or outbox-row leak |
-| `INT-NFR-03` | Failover | PostgreSQL failover drill | RPO ≤ 15 min, RTO ≤ 1 hr |
+| `INT-NFR-03` | Failover | SQLite backup and restore drill | RPO ≤ 15 min, RTO ≤ 1 hr |
 | `INT-NFR-04` | Availability | Trailing 30-day measurement post-release | ≥ 99.9% on transfer endpoints |
 
 ## Environment and Data

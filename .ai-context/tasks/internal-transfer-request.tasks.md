@@ -70,8 +70,8 @@ any implementation prompt runs. Prompts are in
         than three — splitting it would let each part pass while the guarantee fails
 
 - [ ] `internal-transfer-request.T06` — Outbox relay and event publication
-      — Acceptance: `AC9` (the event actually reaches Kafka), `ADR-0001` (at-least-once,
-        allow-list payload, unpublished-age alert)
+      — Acceptance: `AC9` (the event is delivered to the downstream webhook), `ADR-0001`
+        (at-least-once, allow-list payload, unpublished-age alert)
       — Tests first: `UT46` (no reason text in the emitted payload), plus relay tests for
         backoff, crash-resume and duplicate publication
       — Touches: `internal-transfer/outbox/relay.ts`, `docs/contracts/`

@@ -57,7 +57,7 @@ Write these tests, one per ID, with the ID in the test name:
 - UT52: an UPDATE against transfer_request_audit as the application role is rejected by the
   database, not by application code
 
-Tests run against a real PostgreSQL via Testcontainers. The point of UT23 and UT52 is that
+Tests run against a real SQLite database file. The point of UT23 and UT52 is that
 these are database guarantees; an in-memory substitute would prove nothing.
 
 Write no implementation and no migration. The tests must fail because the schema does not
@@ -116,8 +116,8 @@ hand-rolled stub shaped like the code you expect. No implementation.
 Implement internal-transfer-request.T02 to make UT42, UT43, UT44 and the AC6 filter pass.
 
 Two read paths with deliberately different caching:
-- Reference data (departments, locations, positions): Redis, 900 s TTL, served stale past TTL
-  with the stale flag set, keys itr:refdata:*:v1
+- Reference data (departments, locations, positions): SQLite `reference_data_cache`, 900 s TTL,
+  served stale past TTL with the stale flag set
 - Employment data used for eligibility: NOT cached, read fresh
 
 That asymmetry is the design, not an oversight — see plan finding P5 and ADR-0002. Do not
@@ -246,9 +246,9 @@ insert, outbox insert. All of it commits or none of it does.
   cannot introduce a value that was never validated (security assessment T8).
 - Re-evaluate the T04 rules at submit against live data — a position open at draft time may be
   closed now (AC6, UT14).
-- Idempotency-Key required; store the response for 24 h keyed by
-  itr:idem:{sha256(employeeId+salt)}:{key}. The idempotency store fails CLOSED: if Redis is
-  unavailable, refuse with 503 rather than risk a duplicate submitted transfer (plan finding P4).
+- Idempotency-Key required; store the response for 24 h in `idempotency_record`. The
+  idempotency store fails CLOSED: if SQLite is unavailable, refuse with 503 rather than
+  risk a duplicate submitted transfer.
 - Stage applicability: PAYROLL_UPDATE if target cost centre or grade differs; IT_ACCESS if
   department differs; FACILITIES if location differs. Persist non-applicable stages with
   applicable: false — the employee sees the step was considered.
@@ -285,9 +285,8 @@ Implement internal-transfer-request.T06.
 
 - Build payloads with an explicit allow-list mapper that names every emitted field. Do NOT
   serialise the aggregate and delete keys — that is one added column away from leaking reason
-  text, and it fails Gate 2 security condition C2 even if today's output is correct
-  (plan finding P1).
-- Partition key is requestId, so events for one request stay ordered.
+  text, and it fails Gate 2 security condition C2 even if today's output is correct.
+- POST each event to the configured downstream webhook URL; retry with exponential backoff.
 - Register the schema under docs/contracts/ and state at-least-once delivery and the
   requestId dedupe key in the contract, so consuming teams are not left to discover it.
 ```
