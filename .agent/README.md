@@ -1,7 +1,7 @@
 # `.agent/` — control plane
 
-This folder is **not** the session entry. Start at **[`../.agent.md`](../.agent.md)** (repo
-root). A file named `.agent` cannot live next to this directory.
+This folder is **not** the session entry. Start at **[`../AGENTS.md`](../AGENTS.md)** (repo
+root).
 
 | Path | Purpose |
 |---|---|

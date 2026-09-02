@@ -80,7 +80,7 @@ Release → Production support → back into BRD/Spec.
 
 | Path | Purpose |
 |---|---|
-| `.agent.md` | **Prompt-execution entry.** Open this first in every agent session |
+| `AGENTS.md` | **Prompt-execution entry.** Open this first in every agent session |
 | `.agent/rules/` | Always-on agent rules — `int-standards.node.md`, `int-standards.react.md`, `.agentignore`, `auto-log.md` |
 | `.agent/workflows/` | Reusable prompts: spec creation, spec review, plan generation, test generation, code review |
 | `.ai-context/constitution.md` | Project non-negotiables — checked line by line at Gate 1 |
@@ -105,7 +105,7 @@ layout; everything else follows the INT SDD blueprint as published.
 
 ### Starting an agent session
 
-Open [`.agent.md`](.agent.md). That file is the prompt-execution entry: next task ID, RED then
+Open [`AGENTS.md`](AGENTS.md). That file is the prompt-execution entry: next task ID, RED then
 GREEN, what to tag, which workflow to use. Do not start from the spec or from `prompts.md`
 as a whole.
 

@@ -96,7 +96,7 @@ Production PII never leaves production, including into a test fixture or an agen
 
 | Artefact | Location |
 |---|---|
-| **Agent session entry** | `.agent.md` |
+| **Agent session entry** | `AGENTS.md` |
 | Non-negotiables | `.ai-context/constitution.md` |
 | Living system design | `.ai-context/architecture.md` |
 | Requirements source | `.ai-context/BRD.md` |
