@@ -2,7 +2,7 @@
 
 ## Derived From
 
-`.ai-context/plans/internal-transfer-request.plan.md` (Plan Reviewed, 2026-08-31)
+`.ai-context/plans/internal-transfer-request.plan.md` (Plan Drafted — plan review pending)
 
 Generated from the plan's Sequencing section and reviewed by the engineer on 2026-09-01.
 
@@ -31,7 +31,7 @@ any implementation prompt runs. Prompts are in
         `transfer_request_outbox`, `transfer_reference_seq`, the partial unique index, and
         `REVOKE UPDATE, DELETE` on the audit table
       — Note: the index and the revoke are the point of this task, not incidental to it —
-        Gate 1 plan findings P2 and P3 both land here
+        plan § concurrency / BR3 (partial unique index)
 
 - [ ] `internal-transfer-request.T02` — HRIS client, reference-data cache and reference-data endpoint
       — Acceptance: `internal-transfer-request.API07`, `AC15` (staleness and unavailability),
@@ -57,8 +57,8 @@ any implementation prompt runs. Prompts are in
       — Touches: `internal-transfer/rules/`
       — Depends on: `T02`
       — Note: one function per rule ID, each returning a violation carrying its own `ruleId`;
-        every failed rule reports in the same response, never one at a time (Gate 1 finding
-        G1-F01). Both date boundaries are inclusive and both are tested
+        every failed rule reports in the same response, never one at a time (AC7).
+        Both date boundaries are inclusive and both are tested
 
 - [ ] `internal-transfer-request.T05` — Submit transaction
       — Acceptance: `API03`, `AC9` (single transaction: status, snapshot freeze, stage plan,
@@ -77,7 +77,7 @@ any implementation prompt runs. Prompts are in
       — Touches: `internal-transfer/outbox/relay.ts`, `docs/contracts/`
       — Depends on: `T05`
       — Note: payload built by an explicit allow-list mapper, never by serialising the
-        aggregate (plan finding P1)
+        aggregate (plan § event payload allow-list)
 
 - [ ] `internal-transfer-request.T07` — Status detail and list read model
       — Acceptance: `API04`, `API05`, `AC11` (stage rendering, `pendingWith`, the naming
@@ -86,7 +86,7 @@ any implementation prompt runs. Prompts are in
       — Touches: `internal-transfer/api/`, `internal-transfer/readmodel/`
       — Depends on: `T05`
       — Note: non-applicable stages are returned, not filtered out; `assignedPartyName` is
-        populated only for the caller's own line manager (Gate 1 finding G1-F06)
+        populated only for the caller's own line manager (AC11, BRD-001 OQ-11)
 
 - [ ] `internal-transfer-request.T08` — Withdrawal
       — Acceptance: `API06`, `AC14` (state guard, stage cancellation, repeat withdrawal,

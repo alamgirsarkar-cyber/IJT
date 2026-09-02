@@ -2,12 +2,12 @@
 
 ## Derived From
 
-`.ai-context/specs/internal-transfer-request.spec.md` (v1.1, Approved 2026-08-28)
+`.ai-context/specs/internal-transfer-request.spec.md` (v1.1, In Peer Review — not yet Approved)
 
 ## Status
 
-**Plan Reviewed** — approved at Gate 1 (plan) on 2026-08-31
-**Author:** Alamgir Sarkar · **Gate 1 reviewer:** Abhijit Adhikary
+**Plan Drafted** — awaiting spec **Approved** at Gate 1, then plan review by Abhijit Adhikary
+**Author:** Alamgir Sarkar · **Gate 1 reviewer:** Abhijit Adhikary (_plan review pending_)
 Review record: `.ai-context/reviews/internal-transfer-request.gate1-plan.md`
 
 ## Architecture Approach

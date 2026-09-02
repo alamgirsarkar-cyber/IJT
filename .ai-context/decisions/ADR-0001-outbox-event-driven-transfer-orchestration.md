@@ -4,7 +4,7 @@
 
 **Accepted**
 
-**Date:** 2026-08-28 · **Author:** Alamgir Sarkar · **Gate 1 reviewer:** Abhijit Adhikary
+**Date:** 2026-08-28 · **Author:** Alamgir Sarkar · **Gate 1 sign-off:** _Pending — Abhijit Adhikary_
 **Consulted functions:** Security, Finance Systems, IT Service Management, Facilities
 
 ## Related

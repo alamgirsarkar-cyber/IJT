@@ -49,10 +49,10 @@ remembered origin gets deleted by the next person who sees it fail.
 
 | Test ID | Scenario | Origin | Expected |
 |---|---|---|---|
-| `INT-REG-01` | Reason text absent from every log, event, notification and list response | Gate 1 finding G1-F04; the constitution amendment of 2026-08-28 | No occurrence anywhere across a full journey |
-| `INT-REG-02` | Concurrent create attempts yield exactly one active request | Gate 1 plan finding P2 — a read-then-write check would have passed sequential tests | One row; one 409 |
-| `INT-REG-03` | Audit rows cannot be updated or deleted by the application role | Gate 1 plan finding P3 | Database rejects the attempt |
-| `INT-REG-04` | Another employee's request returns 404, not 403 | Gate 1 finding G1-F10 — guards against a well-meaning "usability fix" | Uniform 404 with no timing signal |
+| `INT-REG-01` | Reason text absent from every log, event, notification and list response | AC16; proposed constitution amendment of 2026-08-28 | No occurrence anywhere across a full journey |
+| `INT-REG-02` | Concurrent create attempts yield exactly one active request | Plan § concurrency / BR3 — a read-then-write check would have passed sequential tests | One row; one 409 |
+| `INT-REG-03` | Audit rows cannot be updated or deleted by the application role | Plan § audit immutability | Database rejects the attempt |
+| `INT-REG-04` | Another employee's request returns 404, not 403 | AC13 — guards against a well-meaning "usability fix" | Uniform 404 with no timing signal |
 | `INT-REG-05` | Portal journeys other than internal transfer are unaffected while the HRIS is down | Constitution's no-cascade rule | Other journeys pass their own smoke suites |
 
 ## System-Level Failure Scenarios

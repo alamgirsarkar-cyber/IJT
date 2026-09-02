@@ -57,7 +57,7 @@ requirement is written down.
 | Plan | `.ai-context/plans/internal-transfer-request.plan.md` |
 | Tasks | `.ai-context/tasks/internal-transfer-request.tasks.md` |
 | Prompts | `.ai-context/prompts/internal-transfer-request.prompts.md` |
-| **Next prompt** | **`internal-transfer-request.T01` RED** |
+| **Next prompt** | **Blocked — complete Gate 1 spec review first** (`internal-transfer-request.gate1.md`) |
 
 ## Standing constraints (append to every prompt)
 

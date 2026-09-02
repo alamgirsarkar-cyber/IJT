@@ -139,5 +139,5 @@ as any spec, and dated.
 | Date | Section amended | Change | Driver | Approved by |
 |---|---|---|---|---|
 | 2026-08-24 | All | Initial ratification at project kickoff | Portal programme start | Alamgir Sarkar |
-| 2026-08-28 | Security Posture | Added the free-text employee narrative rule; added the explicit "employee ID is not PII" carve-out | BRD-001 OQ-12; Gate 1 finding G1-F04 | Alamgir Sarkar; Gate 1: Abhijit Adhikary |
-| 2026-08-28 | Architectural Constraints | Added the transactional outbox requirement | [ADR-0001](decisions/ADR-0001-outbox-event-driven-transfer-orchestration.md) | Alamgir Sarkar; Gate 1: Abhijit Adhikary |
+| 2026-08-28 | Security Posture | Proposed: free-text employee narrative rule; explicit "employee ID is not PII" carve-out | BRD-001 OQ-12 | Alamgir Sarkar — **pending Gate 1 review (Abhijit Adhikary)** |
+| 2026-08-28 | Architectural Constraints | Proposed: transactional outbox requirement | [ADR-0001](decisions/ADR-0001-outbox-event-driven-transfer-orchestration.md) | Alamgir Sarkar — **pending Gate 1 review (Abhijit Adhikary)** |

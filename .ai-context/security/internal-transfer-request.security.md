@@ -2,8 +2,9 @@
 
 **Assessed by:** Alamgir Sarkar
 **Date:** 2026-08-31 · **Reviewed against:** `.ai-context/constitution.md` — Security Posture
-**Spec version:** v1.1 · **Plan status:** Plan Reviewed
-**Verdict:** **Approved to build**, with three conditions carried into Gate 2 (C1–C3 below)
+**Spec version:** v1.1 (In Peer Review) · **Plan status:** Plan Drafted
+**Verdict:** **Draft** — pending Gate 1 spec/plan approval and Security sign-off. Three
+conditions to carry into Gate 2 when build starts (C1–C3 below).
 
 > Assessed against the constitution, not only the spec. A feature can satisfy every
 > acceptance criterion and still breach a non-negotiable, because the spec describes what the
@@ -25,7 +26,7 @@
 may use it to describe a health circumstance, a family situation, or a problem with a named
 manager. Before this assessment the constitution's PII list did not name free-text narrative,
 so a literal reading permitted logging it — and an agent reads literally. The constitution was
-amended on 2026-08-28 (driver: Gate 1 finding G1-F04) so that every future feature inherits
+amended on 2026-08-28 (proposed; **pending Gate 1 ratification**) so that every future feature inherits
 the rule rather than rediscovering it.
 
 ## Threat Assessment

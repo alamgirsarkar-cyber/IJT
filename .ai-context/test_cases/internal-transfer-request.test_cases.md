@@ -7,7 +7,7 @@
 
 ## Derived From
 
-`.ai-context/specs/internal-transfer-request.spec.md` (v1.1, Approved)
+`.ai-context/specs/internal-transfer-request.spec.md` (v1.1, In Peer Review)
 **Owner:** Alamgir Sarkar · **Last updated:** 2026-09-01
 
 ## Coverage Summary

@@ -16,9 +16,9 @@ the diff happens to contain.
 
 | Field | Value |
 |---|---|
-| Spec | `internal-transfer-request.spec.md` v1.1 (Approved) |
-| Plan | `internal-transfer-request.plan.md` (Plan Reviewed) |
-| Security assessment | `.ai-context/security/internal-transfer-request.security.md` — Approved with conditions C1–C3 |
+| Spec | `internal-transfer-request.spec.md` v1.1 (In Peer Review — not yet Approved) |
+| Plan | `internal-transfer-request.plan.md` (Plan Drafted — plan review pending) |
+| Security assessment | `.ai-context/security/internal-transfer-request.security.md` — Draft; conditions C1–C3 when build starts |
 | Reviewer | Tapas Dutta |
 | Branch | `feature/internal-transfer-request` |
 | Tasks in scope | T01–T10 |
@@ -124,8 +124,8 @@ Recorded per task as review happens, categorised Blocker / Should-fix / Nit.
 
 ## What This Gate Will Be Watching For
 
-Recorded in advance by the reviewer, from what Gate 1 exposed about this feature and from
-where agent-generated code characteristically fails:
+Recorded in advance by the reviewer, from the spec and plan and from where
+agent-generated code characteristically fails:
 
 1. **Failure paths present but hollow** — a `catch` that logs and rethrows in place of the
    specified behaviour. AC15 and AC9 are the ones to read carefully, because the correct

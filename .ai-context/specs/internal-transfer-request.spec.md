@@ -6,8 +6,9 @@
 
 ## Status
 
-**Approved v1.1** — approved at Gate 1 on 2026-08-28.
+**In Peer Review (Gate 1)** — Draft v1.1 submitted for review by Abhijit Adhikary.
 Revision history at the end of this file. Full state machine in `.ai-context/status.md`.
+Implementation must not start until this spec is **Approved**.
 
 ## Linked BRD
 
@@ -18,7 +19,7 @@ Revision history at the end of this file. Full state machine in `.ai-context/sta
 | Role | Name | Date |
 |---|---|---|
 | Author / owner | Alamgir Sarkar | 2026-08-27 |
-| Gate 1 reviewer (never the author) | Abhijit Adhikary | 2026-08-28 |
+| Gate 1 reviewer (never the author) | Abhijit Adhikary | _Pending review_ |
 | Gate 2 reviewer | Tapas Dutta | — |
 
 Gate 1 record: `.ai-context/reviews/internal-transfer-request.gate1.md`
@@ -50,7 +51,7 @@ simulate, any approval decision.
 - API contract consumed: HRIS read API — `docs/contracts/hris-read-api.md`
 - Design: portal design system; internal transfer wizard screens, Figma `OPP/ITR/v1`
 
-**Note on the state machine (raised at Gate 1, finding G1-F07):** this spec *defines* the
+**Note on the state machine (for Gate 1 reviewers):** this spec *defines* the
 full request state machine because it owns the aggregate, but it only *drives* the
 transitions `DRAFT → SUBMITTED`, `DRAFT → DISCARDED` and `SUBMITTED → WITHDRAWN`. States
 from `MANAGER_REVIEW` onward are defined here and transitioned by
@@ -682,4 +683,4 @@ being served past its freshness window — the UI must say so rather than presen
 | Version | Date | Change | Driver |
 |---|---|---|---|
 | v1.0 | 2026-08-27 | Initial draft | BRD-001 |
-| v1.1 | 2026-08-28 | AC7 split so each eligibility rule is cited individually and the BR9 advisory is mandatory; AC11 rewritten to resolve who may be named in `pendingWith`; AC13 changed from 403 to 404 with the enumeration rationale stated; AC14 given explicit behaviour for an already-withdrawn request and for a draft; AC16 added covering reason-text handling end to end; API03 exception table extended with `active-request-exists`, `idempotency-key-conflict` and the 503 case; state-machine note added to Context explaining the definition-vs-build dependency | Gate 1 findings G1-F01 … G1-F10, `.ai-context/reviews/internal-transfer-request.gate1.md` |
+| v1.1 | 2026-08-28 | AC7 split so each eligibility rule is cited individually and the BR9 advisory is mandatory; AC11 rewritten to resolve who may be named in `pendingWith`; AC13 changed from 403 to 404 with the enumeration rationale stated; AC14 given explicit behaviour for an already-withdrawn request and for a draft; AC16 added covering reason-text handling end to end; API03 exception table extended with `active-request-exists`, `idempotency-key-conflict` and the 503 case; state-machine note added to Context explaining the definition-vs-build dependency | Author revision before Gate 1 submission — findings to be recorded in `.ai-context/reviews/internal-transfer-request.gate1.md` when Abhijit Adhikary completes review |

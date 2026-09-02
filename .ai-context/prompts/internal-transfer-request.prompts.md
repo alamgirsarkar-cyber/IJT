@@ -159,7 +159,7 @@ Implement internal-transfer-request.T03 to make UT01–UT05, UT21–UT23, UT36 a
 - Identity comes from the token subject only. No endpoint reads an employee identifier from a
   body, query or path for authorisation.
 - Not-found and not-owned both return 404 request-not-found. This is deliberate: a 403 would
-  confirm the identifier exists (AC13, Gate 1 finding G1-F10). Do not "improve" it to 403.
+  confirm the identifier exists (AC13). Do not "improve" it to 403.
 - If-Match is required on update; a mismatch is 409 carrying currentVersion.
 - Map the unique-index violation from T01 to 409 active-request-exists carrying the existing
   request's ID and reference. Do not surface a database error.
@@ -200,7 +200,7 @@ Implement internal-transfer-request.T04 to make UT06–UT20 pass.
 - One function per business rule, named for its rule ID, each returning a violation carrying
   that ID. Not a rules engine — see the plan's ADR Candidates table for why.
 - The evaluator runs every rule and collects all violations. It must not short-circuit on the
-  first failure; an employee who fails two rules learns both at once (Gate 1 finding G1-F01).
+  first failure; an employee who fails two rules learns both at once (AC7).
 - All date arithmetic in UTC against the database clock, not the application clock (UT08b).
 - Implement no rule that is not in the spec's Business Rules Applied table. In particular do
   not add a public-holiday rule for effective dates — UT08c asserts that no such rule exists.

@@ -1,6 +1,6 @@
 # Project Status Board — One-Point Employee Portal
 
-_Last updated: 2026-09-01_
+_Last updated: 2026-09-02_
 
 > Updated by whoever last touched a spec, same day. Answers "what is in flight" without a
 > stand-up. Where a delivery tool exists, this file mirrors **spec-level** state and does not
@@ -22,7 +22,7 @@ Task states are the checkbox state in the feature's `tasks.md`:
 
 | Spec ID | Title | Status | Owner | Last Updated | Notes |
 |---|---|---|---|---|---|
-| `internal-transfer-request` | Employee Internal Transfer Request | **Tasks Generated** | Alamgir Sarkar | 2026-09-01 | Spec v1.1 approved at Gate 1 on 2026-08-28 after 5 Blockers; plan approved 2026-08-31 after 3 Blockers; T01–T10 generated and reviewed. Ready to start T01. One open QA query — see Blocked below |
+| `internal-transfer-request` | Employee Internal Transfer Request | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-02 | Spec v1.1 submitted for Gate 1 review by Abhijit Adhikary. Plan drafted; tasks and prompts prepared but **implementation blocked** until spec Approved and plan reviewed. One open QA query — see Blocked below |
 | `internal-transfer-approval-chain` | Manager release, manager accept, HR validation | Not started | — | — | Depends on `internal-transfer-request` reaching Released. Stage plan and state machine already defined by it |
 | `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out | Not started | — | — | Consumes `employee.transfer.requested.v1`. Blocked on downstream consumer readiness, not on us |
 | `internal-transfer-notifications` | Employee and approver notifications | Not started | — | — | Deliberately excluded from v1 so submission ships without it |
@@ -57,45 +57,42 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
 
 ## Daily Execution Log
 
+### 2026-09-02
+
+- **`internal-transfer-request`**: Gate 1 review records reset to empty templates — prior
+  content was assessment scaffolding, not a completed review by Abhijit Adhikary. Spec status
+  set to **In Peer Review (Gate 1)**; plan to **Plan Drafted**. Implementation remains
+  blocked until the concerned reviewer signs off.
+
 ### 2026-09-01
 
 - **`internal-transfer-request`**: Tasks T01–T10 generated from the plan's Sequencing section
   and reviewed. Traceability matrix checked in both directions — every AC has a task, every
   task has an AC, no orphans. QA test-case expansion completed and raised one genuine spec
   ambiguity (BR2 measurement date after a leave of absence) rather than guessing at it;
-  question is with HR Policy. Security assessment approved with three conditions carried to
-  Gate 2. Task prompts drafted. `architecture.md` updated with the new tables, integrations
-  and both ADRs. **Nothing has been implemented.**
+  question is with HR Policy. Security assessment drafted (conditions C1–C3 for Gate 2).
+  Task prompts drafted. `architecture.md` updated with the new tables, integrations
+  and both ADRs. **Nothing has been implemented. Gate 1 review pending Abhijit Adhikary.**
 
 ### 2026-08-31
 
-- **`internal-transfer-request`**: Plan submitted at 10:15, **Changes Requested** at midday —
-  3 Blockers. Two were guarantees stated in code rather than in the database: BR3 enforced by
-  a read-then-write check instead of a partial unique index, and audit immutability enforced by
-  a repository convention instead of revoked privileges. Both would have passed their generated
-  tests. Third was an event payload built by serialising the aggregate and deleting the reason
-  field, which is one added column away from a leak. Plan revised and approved at 16:50.
-  ADR-0001 and ADR-0002 filed.
+- **`internal-transfer-request`**: Plan drafted. ADR-0001 and ADR-0002 filed. Plan review
+  at Gate 1 **pending** Abhijit Adhikary after spec approval.
 
 ### 2026-08-28
 
-- **`internal-transfer-request`**: Gate 1 review — **Changes Requested** at 09:40 with 5
-  Blockers, 4 Should-fix, 1 Nit. All five Blockers were acceptance criteria that read as
-  reasonable prose but constrained nothing: "not eligible," "a valid future date," "pending
-  with." Two turned out not to be spec defects at all but unanswered business questions the
-  author had absorbed into the spec — reason-text visibility and pending-with naming. Both went
-  back to their owners and were answered the same day. Spec revised to v1.1, resubmitted 14:05,
-  **Approved** 17:20.
-- **`constitution.md`**: amended — free-text employee narrative added to the protected
-  categories, and the "employee ID is not PII" carve-out made explicit. Driven by Gate 1
-  finding G1-F04. Every future spec now inherits this instead of rediscovering it.
+- **`internal-transfer-request`**: Spec revised to v1.1 and submitted for Gate 1 peer review.
+  Review **pending** Abhijit Adhikary.
+- **`constitution.md`**: proposed amendments drafted (free-text employee narrative rule;
+  transactional outbox requirement) — **pending** Gate 1 constitution review before treated
+  as ratified.
 
 ### 2026-08-27
 
 - **BRD-001**: business rules BR1–BR9 confirmed with HR Policy. OQ-06, OQ-07, OQ-08 and OQ-14
   resolved. Spec v1.0 drafted and submitted to Gate 1 at 16:10.
-- Noted for the retro: drafting started with OQ-11 and OQ-12 still open. Both surfaced at Gate 1
-  as Blockers. Cheap to fix there; the discipline point is that discovery should have closed them.
+- Noted for the retro: drafting started with OQ-11 and OQ-12 still open. Proposed resolutions
+  are in spec v1.1; business owners should confirm at Gate 1.
 
 ### 2026-08-26
 
