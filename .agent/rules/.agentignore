@@ -1,0 +1,99 @@
+# .agentignore
+#
+# Keeps build artefacts, secrets and heavy binaries out of the agent's context window.
+# This is a token-cost and hallucination-surface control, not housekeeping — every file
+# the agent can see but does not need makes the files it does need harder to weight.
+#
+# Maintain aggressively. Add a pattern the first time you notice noise in a session.
+
+# --- Secrets and credentials (never in context, never in a prompt log) ---
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+*.jks
+secrets/
+credentials/
+**/appsettings.*.local.json
+
+# --- Dependencies ---
+node_modules/
+vendor/
+.venv/
+venv/
+__pycache__/
+*.egg-info/
+packages/
+.gradle/
+.m2/
+
+# --- Build output and artefacts ---
+dist/
+build/
+out/
+bin/
+obj/
+target/
+.next/
+.nuxt/
+coverage/
+*.min.js
+*.map
+
+# --- Lockfiles (large, low signal — read only when dependency work is the task) ---
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+poetry.lock
+Gemfile.lock
+
+# --- Binaries and media ---
+*.zip
+*.tar
+*.gz
+*.7z
+*.exe
+*.dll
+*.so
+*.dylib
+*.pdf
+*.docx
+*.xlsx
+*.pptx
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.mp4
+*.woff
+*.woff2
+*.ttf
+
+# --- Data ---
+*.csv
+*.parquet
+*.sqlite
+*.db
+*.dump
+fixtures/large/
+**/testdata/large/
+
+# --- Tooling and IDE noise ---
+.git/
+.idea/
+.vs/
+.vscode/
+*.log
+logs/
+tmp/
+.cache/
+.terraform/
+
+# --- Generated clients and snapshots ---
+**/generated/
+**/__snapshots__/

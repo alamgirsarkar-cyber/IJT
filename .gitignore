@@ -1,0 +1,25 @@
+# Secrets and local env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+credentials/
+
+# Dependencies and build
+node_modules/
+dist/
+build/
+coverage/
+.venv/
+__pycache__/
+
+# IDE and OS
+.idea/
+.vs/
+.vscode/
+*.log
+Thumbs.db
+Desktop.ini
+.DS_Store
