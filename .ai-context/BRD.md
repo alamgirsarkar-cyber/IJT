@@ -12,7 +12,7 @@
 
 | BRD ID | Title | Priority | Sponsor | Status | Spec slug |
 |---|---|---|---|---|---|
-| BRD-001 | Employee Internal Transfer Digital Journey | High | HR | Spec Drafting | `internal-transfer-request` (v1), see spec map |
+| BRD-001 | Employee Internal Transfer Digital Journey | High | HR | Spec Drafting | Four specs — see spec map |
 
 ---
 
@@ -188,9 +188,9 @@ anywhere. See OQ-08.
 | Spec slug | Owns | Depends on | Status |
 |---|---|---|---|
 | `internal-transfer-request` | Employee-facing request: draft, validate, submit, withdraw, and the employee's view of status and pending actions. Owns the request aggregate and its stage plan. | — | **In Peer Review (Gate 1)** — Draft v1.1 |
-| `internal-transfer-approval-chain` | Line manager release, receiving manager acceptance, HR eligibility validation; decisions and terminal rejection. Transitions stages this spec creates. | `internal-transfer-request` | Not started |
-| `internal-transfer-downstream-orchestration` | Conditional fan-out to HRIS org update, Payroll, IT and Facilities; completion tracking and compensation on failure. | `internal-transfer-approval-chain` | Not started |
-| `internal-transfer-notifications` | Notifications to employee and approvers on every state transition. | `internal-transfer-request` | Not started |
+| `internal-transfer-approval-chain` | Line manager release, receiving manager acceptance, HR eligibility validation; decisions and terminal rejection. Transitions stages this spec creates. | `internal-transfer-request` | **Draft v1.0** — Gate 1 blocked until request spec is Approved |
+| `internal-transfer-downstream-orchestration` | Conditional fan-out to HRIS org update, Payroll, IT and Facilities; completion tracking and compensation on failure. | `internal-transfer-approval-chain` | **Draft v1.0** — open question on resume-after-failure; Gate 1 blocked until that is closed or deferred and approval-chain is Approved |
+| `internal-transfer-notifications` | Notifications to employee and approvers on every state transition. | `internal-transfer-request` | **Draft v1.0** — delivery after request spec is Approved (excluded from first submit release) |
 
 **Scoping note (recorded because a reviewer will ask):** status visibility is kept inside
 `internal-transfer-request` rather than split into its own spec, because it reads the same

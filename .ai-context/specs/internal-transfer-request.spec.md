@@ -44,10 +44,10 @@ simulate, any approval decision.
   *Cross-Cutting Concerns*
 - Constitution: `.ai-context/constitution.md` — Security Posture, Architectural
   Constraints, Non-Functional Baselines all apply and are not restated here
-- Related specs (all **Not started** — nothing in this spec depends on them being built):
-  - `internal-transfer-approval-chain` — consumes the stage plan this spec creates
-  - `internal-transfer-downstream-orchestration` — consumes the event this spec emits
-  - `internal-transfer-notifications` — consumes state transitions this spec records
+- Related specs (nothing in this spec depends on them being built):
+  - `internal-transfer-approval-chain` — **Draft v1.0** — consumes the stage plan this spec creates
+  - `internal-transfer-downstream-orchestration` — **Draft v1.0** — starts after HR approval, not from submit
+  - `internal-transfer-notifications` — **Draft v1.0** — consumes state transitions this spec records
 - API contract consumed: HRIS read API — `docs/contracts/hris-read-api.md`
 - Design: portal design system; internal transfer wizard screens, Figma `OPP/ITR/v1`
 

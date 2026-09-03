@@ -1,6 +1,6 @@
 # Project Status Board — One-Point Employee Portal
 
-_Last updated: 2026-09-02_
+_Last updated: 2026-09-03_
 
 > Updated by whoever last touched a spec, same day. Answers "what is in flight" without a
 > stand-up. Where a delivery tool exists, this file mirrors **spec-level** state and does not
@@ -23,9 +23,9 @@ Task states are the checkbox state in the feature's `tasks.md`:
 | Spec ID | Title | Status | Owner | Last Updated | Notes |
 |---|---|---|---|---|---|
 | `internal-transfer-request` | Employee Internal Transfer Request | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-02 | Spec v1.1 submitted for Gate 1 review by Abhijit Adhikary. Plan drafted; tasks and prompts prepared but **implementation blocked** until spec Approved and plan reviewed. One open QA query — see Blocked below |
-| `internal-transfer-approval-chain` | Manager release, manager accept, HR validation | Not started | — | — | Depends on `internal-transfer-request` reaching Released. Stage plan and state machine already defined by it |
-| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out | Not started | — | — | Consumes `employee.transfer.requested.v1`. Blocked on downstream consumer readiness, not on us |
-| `internal-transfer-notifications` | Employee and approver notifications | Not started | — | — | Deliberately excluded from v1 so submission ships without it |
+| `internal-transfer-approval-chain` | Manager release, manager accept, HR validation | **Draft** | Alamgir Sarkar | 2026-09-03 | Draft v1.0. Gate 1 blocked until `internal-transfer-request` is Approved |
+| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out | **Draft** | Alamgir Sarkar | 2026-09-03 | Draft v1.0. Starts on `employee.transfer.approved.v1`, not on submit. Open question: resume after compensate. Gate 1 blocked until that is closed or deferred and approval-chain is Approved |
+| `internal-transfer-notifications` | Employee and approver notifications | **Draft** | Alamgir Sarkar | 2026-09-03 | Draft v1.0. Excluded from the first submit release; Gate 1 after request spec is Approved |
 
 ## Released Specs
 
@@ -38,6 +38,7 @@ Task states are the checkbox state in the feature's `tasks.md`:
 | Spec ID | Blocked on | Owner of the decision | Raised | Expected |
 |---|---|---|---|---|
 | `internal-transfer-request` | BR2 says "12 months continuous service in current position." The HRIS exposes both `positionStartDate` and `continuousServiceDate`, which differ after a leave of absence. The spec does not say which governs. QA found it expanding AC7 (case UT16c) | HR Policy | 2026-09-01 | 2026-09-02 |
+| `internal-transfer-downstream-orchestration` | After a fulfilment stage fails and compensate events are emitted, who records that reversal happened and whether fulfilment can resume? Spec leaves the request in `FULFILMENT` with a `FAILED` stage and does not define a resume API | HR Ops + downstream owners | 2026-09-03 | Before that spec's Gate 1 |
 
 Not a blocker for T01 or T02, so work starts while it is resolved. It **is** a blocker for
 T04, and T04 will not start until AC7 says which date governs. QA has not encoded a guess.
@@ -56,6 +57,15 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
 | Localisation beyond English | BRD-001 OQ-18 | Product | Post-v1 |
 
 ## Daily Execution Log
+
+### 2026-09-03
+
+- **BRD-001 remaining specs drafted** (workflow `/generate-spec`): `internal-transfer-approval-chain`,
+  `internal-transfer-downstream-orchestration`, `internal-transfer-notifications` as
+  **Draft v1.0**. No plans or code. Gate 1 for the new specs waits on
+  `internal-transfer-request` (and, for downstream, on approval-chain plus the resume-after-failure
+  question). Downstream fulfilment still starts only after HR approval, not from
+  `employee.transfer.requested.v1`.
 
 ### 2026-09-02
 
