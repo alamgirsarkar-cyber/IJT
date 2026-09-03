@@ -27,7 +27,7 @@ Tag exactly these. Do not let the agent scan the workspace.
 - `.ai-context/constitution.md`
 - `.ai-context/architecture.md` (only the sections the BRD depends on)
 - `.ai-context/project_context.md`
-- `.ai-context/specs/_TEMPLATE.spec.md`
+- `.ai-context/templates/_TEMPLATE.spec.md`
 - Related specs the BRD's spec map names — **Approved or Released only**; if this spec
   would depend on one that is Draft or Not started, stop and split or defer
 - Existing API conventions in `architecture.md` (error shape, versioning, auth)
@@ -40,7 +40,7 @@ Do **not** tag `src/`, `prompts.md`, or an existing plan. Those are downstream.
 Draft the specification for <feature-slug> from BRD-<NNN>.
 
 Write .ai-context/specs/<feature-slug>.spec.md using
-.ai-context/specs/_TEMPLATE.spec.md as the structure — every section present unless the
+.ai-context/templates/_TEMPLATE.spec.md as the structure — every section present unless the
 template itself says to delete it (API Contract only if this feature exposes or consumes
 an API). Status is Draft v1.0. Author is the engineer running this session. Leave Gate 1
 reviewer blank.

@@ -103,6 +103,7 @@ Production PII never leaves production, including into a test fixture or an agen
 | Requirements source | `.ai-context/BRD.md` |
 | Delivery state board | `.ai-context/status.md` |
 | Feature artefact chain | `.ai-context/specs/`, `plans/`, `tasks/` |
+| Artefact templates | `.ai-context/templates/` |
 | Test cases | `.ai-context/test_cases/` |
 | Decisions | `.ai-context/decisions/` |
 | Gate records | `.ai-context/reviews/` |

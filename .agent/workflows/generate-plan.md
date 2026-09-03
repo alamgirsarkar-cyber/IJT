@@ -13,7 +13,7 @@ Tag exactly these. Do not let the agent scan the workspace.
 - `.ai-context/specs/<feature-slug>.spec.md`
 - `.ai-context/constitution.md`
 - `.ai-context/architecture.md` (only the sections the spec's Context names)
-- `.ai-context/plans/_TEMPLATE.plan.md`
+- `.ai-context/templates/_TEMPLATE.plan.md`
 - Any related plan the spec's Context links, plus ADRs it depends on
 - The specific modules the feature will touch — not their parent trees
 
@@ -23,7 +23,7 @@ Tag exactly these. Do not let the agent scan the workspace.
 Draft the technical plan for <feature-slug>.
 
 Source of truth: .ai-context/specs/<feature-slug>.spec.md (Approved, v<X.Y>).
-Use .ai-context/plans/_TEMPLATE.plan.md as the structure — every section present, no
+Use .ai-context/templates/_TEMPLATE.plan.md as the structure — every section present, no
 section left empty.
 
 Requirements:
