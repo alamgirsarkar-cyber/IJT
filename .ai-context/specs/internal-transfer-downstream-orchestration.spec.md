@@ -6,12 +6,13 @@
 
 ## Status
 
-**Draft v1.0** — not submitted to Gate 1. Full state machine in `.ai-context/status.md`.
-Do not generate a plan or code from this file until it is **Approved**.
+**In Peer Review (Gate 1)** — Draft v1.0 submitted 2026-09-07 for review by Abhijit Adhikary.
+Full state machine in `.ai-context/status.md`. Do not generate a plan or code until
+**Approved**.
 
-Gate 1 cannot pass the dependency check until
-`internal-transfer-approval-chain` is **Approved** (and that spec in turn waits on
-`internal-transfer-request`). This spec starts work only after status is `FULFILMENT`.
+**Reviewer note:** depends on approval-chain (and thereby request). Open question on
+resume-after-failure must be **resolved or explicitly deferred** before this spec can be
+Approved — see Open Questions and `status.md` Blocked.
 
 ## Linked BRD
 
@@ -22,8 +23,10 @@ Gate 1 cannot pass the dependency check until
 | Role | Name | Date |
 |---|---|---|
 | Author / owner | Alamgir Sarkar | 2026-09-03 |
-| Gate 1 reviewer (never the author) | | |
-| Gate 2 reviewer | | |
+| Gate 1 reviewer (never the author) | Abhijit Adhikary | 2026-09-07 (_pending outcome_) |
+| Gate 2 reviewer | Tapas Dutta | — |
+
+Gate 1 record: `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`
 
 ## Intent
 
@@ -49,7 +52,7 @@ the HRIS, does not approve transfers, and does not send employee notifications.
   mandatory
 - Related: `.ai-context/specs/internal-transfer-request.spec.md` — stage codes and
   applicability flags created at submit (OQ-08 recorded there)
-- Related: `.ai-context/specs/internal-transfer-approval-chain.spec.md` — **Draft v1.0**.
+- Related: `.ai-context/specs/internal-transfer-approval-chain.spec.md` — **In Peer Review**.
   Emits `employee.transfer.approved.v1` and sets `FULFILMENT`. This spec consumes that
   transition, not `employee.transfer.requested.v1` (managers and HR must finish first —
   BRD-001 OQ-02).

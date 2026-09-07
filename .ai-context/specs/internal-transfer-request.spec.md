@@ -19,7 +19,7 @@ Implementation must not start until this spec is **Approved**.
 | Role | Name | Date |
 |---|---|---|
 | Author / owner | Alamgir Sarkar | 2026-08-27 |
-| Gate 1 reviewer (never the author) | Abhijit Adhikary | _Pending review_ |
+| Gate 1 reviewer (never the author) | Abhijit Adhikary | 2026-09-07 (_pending outcome_) |
 | Gate 2 reviewer | Tapas Dutta | — |
 
 Gate 1 record: `.ai-context/reviews/internal-transfer-request.gate1.md`
@@ -44,10 +44,10 @@ simulate, any approval decision.
   *Cross-Cutting Concerns*
 - Constitution: `.ai-context/constitution.md` — Security Posture, Architectural
   Constraints, Non-Functional Baselines all apply and are not restated here
-- Related specs (nothing in this spec depends on them being built):
-  - `internal-transfer-approval-chain` — **Draft v1.0** — consumes the stage plan this spec creates
-  - `internal-transfer-downstream-orchestration` — **Draft v1.0** — starts after HR approval, not from submit
-  - `internal-transfer-notifications` — **Draft v1.0** — consumes state transitions this spec records
+- Related specs (co-submitted to Gate 1 2026-09-07 — none Approved yet):
+  - `internal-transfer-approval-chain` — **In Peer Review** — consumes the stage plan this spec creates
+  - `internal-transfer-downstream-orchestration` — **In Peer Review** — starts after HR approval, not from submit
+  - `internal-transfer-notifications` — **In Peer Review** — consumes state transitions this spec records
 - API contract consumed: HRIS read API — `docs/contracts/hris-read-api.md`
 - Design: portal design system; internal transfer wizard screens, Figma `OPP/ITR/v1`
 

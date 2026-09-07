@@ -1,6 +1,6 @@
 # Project Status Board — One-Point Employee Portal
 
-_Last updated: 2026-09-03_
+_Last updated: 2026-09-07_
 
 > Updated by whoever last touched a spec, same day. Answers "what is in flight" without a
 > stand-up. Where a delivery tool exists, this file mirrors **spec-level** state and does not
@@ -22,10 +22,10 @@ Task states are the checkbox state in the feature's `tasks.md`:
 
 | Spec ID | Title | Status | Owner | Last Updated | Notes |
 |---|---|---|---|---|---|
-| `internal-transfer-request` | Employee Internal Transfer Request | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-02 | Spec v1.1 submitted for Gate 1 review by Abhijit Adhikary. Plan drafted; tasks and prompts prepared but **implementation blocked** until spec Approved and plan reviewed. One open QA query — see Blocked below |
-| `internal-transfer-approval-chain` | Manager release, manager accept, HR validation | **Draft** | Alamgir Sarkar | 2026-09-03 | Draft v1.0. Gate 1 blocked until `internal-transfer-request` is Approved |
-| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out | **Draft** | Alamgir Sarkar | 2026-09-03 | Draft v1.0. Starts on `employee.transfer.approved.v1`, not on submit. Open question: resume after compensate. Gate 1 blocked until that is closed or deferred and approval-chain is Approved |
-| `internal-transfer-notifications` | Employee and approver notifications | **Draft** | Alamgir Sarkar | 2026-09-03 | Draft v1.0. Excluded from the first submit release; Gate 1 after request spec is Approved |
+| `internal-transfer-request` | Employee Internal Transfer Request | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07 | Draft v1.1. Reviewer: Abhijit Adhikary. Programme co-submitted with sibling specs 2026-09-07. BR2 date field still open — see Blocked |
+| `internal-transfer-approval-chain` | Manager release, manager accept, HR validation | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07 | Draft v1.0 submitted. Review after request. Record: `reviews/internal-transfer-approval-chain.gate1.md` |
+| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07 | Draft v1.0 submitted. Resume-after-failure still open — Approval requires resolve or defer. Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
+| `internal-transfer-notifications` | Employee and approver notifications | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07 | Draft v1.0 submitted. Record: `reviews/internal-transfer-notifications.gate1.md` |
 
 ## Released Specs
 
@@ -57,6 +57,16 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
 | Localisation beyond English | BRD-001 OQ-18 | Product | Post-v1 |
 
 ## Daily Execution Log
+
+### 2026-09-07
+
+- **BRD-001 — all four specs submitted to Gate 1** for Abhijit Adhikary:
+  `internal-transfer-request` (v1.1), `internal-transfer-approval-chain` (v1.0),
+  `internal-transfer-downstream-orchestration` (v1.0), `internal-transfer-notifications`
+  (v1.0). Empty review records created under `.ai-context/reviews/`. Suggested review
+  order: request → approval-chain → notifications / downstream. Downstream still carries
+  an open resume-after-failure question — must be resolved or deferred before Approval.
+  No plans or implementation until each spec is Approved.
 
 ### 2026-09-03
 

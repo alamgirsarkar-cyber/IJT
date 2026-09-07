@@ -6,14 +6,13 @@
 
 ## Status
 
-**Draft v1.0** — not submitted to Gate 1. Full state machine in `.ai-context/status.md`.
-Do not generate a plan or code from this file until it is **Approved**.
+**In Peer Review (Gate 1)** — Draft v1.0 submitted 2026-09-07 for review by Abhijit Adhikary.
+Full state machine in `.ai-context/status.md`. Do not generate a plan or code until
+**Approved**.
 
-The BRD map allows this spec to proceed once `internal-transfer-request` is **Approved**
-(it consumes transitions; it does not need approval-chain or downstream to exist, but
-templates for their events are unused until those specs emit). Product has excluded
-notifications from the first submit release (`status.md`); that is a delivery sequencing
-choice, not a reason to skip this spec.
+**Reviewer note:** primary dependency is `internal-transfer-request`. Event rows for
+approval-chain and downstream stay unused until those specs emit. Product may still
+sequence implementation after the first submit release.
 
 ## Linked BRD
 
@@ -24,8 +23,10 @@ choice, not a reason to skip this spec.
 | Role | Name | Date |
 |---|---|---|
 | Author / owner | Alamgir Sarkar | 2026-09-03 |
-| Gate 1 reviewer (never the author) | | |
-| Gate 2 reviewer | | |
+| Gate 1 reviewer (never the author) | Abhijit Adhikary | 2026-09-07 (_pending outcome_) |
+| Gate 2 reviewer | Tapas Dutta | — |
+
+Gate 1 record: `.ai-context/reviews/internal-transfer-notifications.gate1.md`
 
 ## Intent
 
@@ -45,11 +46,11 @@ does not fulfil downstream systems.
   appear in notification payloads; events via outbox
 - Related: `.ai-context/specs/internal-transfer-request.spec.md` — **In Peer Review**.
   Emits `employee.transfer.requested` and `employee.transfer.withdrawn`
-- Related: `.ai-context/specs/internal-transfer-approval-chain.spec.md` — **Draft v1.0**.
+- Related: `.ai-context/specs/internal-transfer-approval-chain.spec.md` — **In Peer Review**.
   Emits `employee.transfer.stage-pending.v1`, `employee.transfer.rejected.v1`,
   `employee.transfer.approved.v1`
 - Related: `.ai-context/specs/internal-transfer-downstream-orchestration.spec.md` —
-  **Draft v1.0**. Emits `employee.transfer.completed.v1` and stage-failure (no employee
+  **In Peer Review**. Emits `employee.transfer.completed.v1` and stage-failure (no employee
   mail required on compensate beyond the employee COMPLETED/not-completed view)
 - API contract consumed: existing notification-service webhook (platform). This spec
   does not define that service's internals

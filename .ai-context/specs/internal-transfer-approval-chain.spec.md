@@ -6,12 +6,12 @@
 
 ## Status
 
-**Draft v1.0** — not submitted to Gate 1. Full state machine in `.ai-context/status.md`.
-Do not generate a plan or code from this file until it is **Approved**.
+**In Peer Review (Gate 1)** — Draft v1.0 submitted 2026-09-07 for review by Abhijit Adhikary.
+Full state machine in `.ai-context/status.md`. Do not generate a plan or code until
+**Approved**.
 
-Gate 1 cannot pass the dependency check until
-`.ai-context/specs/internal-transfer-request.spec.md` is **Approved**. This spec consumes
-the request aggregate and stage plan that spec *defines*; it does not redefine them.
+**Reviewer note:** this spec consumes the request aggregate and stage plan. Prefer
+approving only after `internal-transfer-request` is Approved, or co-review that file first.
 
 ## Linked BRD
 
@@ -22,8 +22,10 @@ the request aggregate and stage plan that spec *defines*; it does not redefine t
 | Role | Name | Date |
 |---|---|---|
 | Author / owner | Alamgir Sarkar | 2026-09-03 |
-| Gate 1 reviewer (never the author) | | |
-| Gate 2 reviewer | | |
+| Gate 1 reviewer (never the author) | Abhijit Adhikary | 2026-09-07 (_pending outcome_) |
+| Gate 2 reviewer | Tapas Dutta | — |
+
+Gate 1 record: `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`
 
 ## Intent
 
@@ -42,13 +44,12 @@ send notifications.
   `.ai-context/constitution.md` — Security Posture, Architectural Constraints,
   Non-Functional Baselines
 - Related: `.ai-context/specs/internal-transfer-request.spec.md` — **In Peer Review
-  (Draft v1.1), not Approved**. State machine, stage codes, `assigned_party_ref`,
+  (Draft v1.1)**. State machine, stage codes, `assigned_party_ref`,
   withdrawal window (AC14) and reason-text rule (AC16 / BRD-001 OQ-12) are defined there
-  and reused here. Runtime build of this feature waits on that spec being Approved and
-  its aggregate existing.
-- Related: `internal-transfer-downstream-orchestration` — **Draft** (this session). Starts
-  when this spec sets status `FULFILMENT`. Not a build dependency for *this* spec.
-- Related: `internal-transfer-notifications` — **Draft** (this session). Consumes
+  and reused here. Runtime build waits on that spec being Approved.
+- Related: `internal-transfer-downstream-orchestration` — **In Peer Review**. Starts
+  when this spec sets status `FULFILMENT`.
+- Related: `internal-transfer-notifications` — **In Peer Review**. Consumes
   transitions this spec records.
 - API contract consumed: none beyond the request aggregate. HRIS is not called on a
   decision path (assignees were snapshotted at submit).
