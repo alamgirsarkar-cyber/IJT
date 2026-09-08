@@ -15,7 +15,7 @@
 | Spec under review | `.ai-context/specs/internal-transfer-request.spec.md` |
 | Version submitted | v1.1 |
 | Author | Alamgir Sarkar |
-| **Reviewer (not the author)** | Abhijit Adhikary |
+| **Reviewer (not the author)** | Abhijit Adhikari |
 | Security / Architecture (constitution check) | _Pending — name reviewer and date when obtained_ |
 | Submitted | 2026-09-07 (reconfirmed with full BRD-001 programme submission) |
 | Outcome | _**Approved** or **Changes Requested** — fill when review is complete_ |

@@ -6,7 +6,7 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.0 submitted 2026-09-07 for review by Abhijit Adhikary.
+**In Peer Review (Gate 1)** — Draft v1.0 submitted 2026-09-07 for review by Abhijit Adhikari.
 Full state machine in `.ai-context/status.md`. Do not generate a plan or code until
 **Approved**.
 
@@ -20,11 +20,11 @@ Approved — see Open Questions and `status.md` Blocked.
 
 ## Owner / Reviewer
 
-| Role | Name | Date |
-|---|---|---|
-| Author / owner | Alamgir Sarkar | 2026-09-03 |
-| Gate 1 reviewer (never the author) | Abhijit Adhikary | 2026-09-07 (_pending outcome_) |
-| Gate 2 reviewer | Tapas Dutta | — |
+| Role                               | Name             | Date                           |
+| ---------------------------------- | ---------------- | ------------------------------ |
+| Author / owner                     | Alamgir Sarkar   | 2026-09-03                     |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-07 (_pending outcome_) |
+| Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
 Gate 1 record: `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`
 
@@ -44,8 +44,8 @@ the HRIS, does not approve transfers, and does not send employee notifications.
 
 ## Context
 
-- Builds on: `.ai-context/architecture.md` — *Integration Points*, *Known Constraints and
-  Debt*; [ADR-0001](../decisions/ADR-0001-outbox-event-driven-transfer-orchestration.md);
+- Builds on: `.ai-context/architecture.md` — _Integration Points_, _Known Constraints and
+  Debt_; [ADR-0001](../decisions/ADR-0001-outbox-event-driven-transfer-orchestration.md);
   [ADR-0002](../decisions/ADR-0002-transfer-request-system-of-record.md)
 - Constitution: `.ai-context/constitution.md` — no synchronous Payroll/ITSM/Facilities call
   on a portal request path; portal never writes HRIS as system of record; outbox is
@@ -70,15 +70,15 @@ visible, not silent.
 
 ## Business Rules
 
-| Rule ID | Rule | Source | Business or technical decision |
-|---|---|---|---|
-| `internal-transfer-downstream-orchestration.BR1` | `ORG_DATA_UPDATE` always applies. `PAYROLL_UPDATE` applies only if target cost centre or grade differs from the snapshot. `IT_ACCESS` applies only if target department differs. `FACILITIES` applies only if target location differs. Flags are **not** recomputed here. | BRD-001 OQ-08 | Business (already applied at submit) |
-| `internal-transfer-downstream-orchestration.BR2` | Fulfilment stage order: `ORG_DATA_UPDATE` must complete before `PAYROLL_UPDATE`, `IT_ACCESS` or `FACILITIES` are signalled. Those three, when applicable, are signalled in sequence-number order after org update, skipping `applicable: false` rows. | BRD-001 journey stages 4–7 | Business (as-is order; not parallelised in v1) |
-| `internal-transfer-downstream-orchestration.BR3` | The portal does not write employment or org data to the HRIS. It emits an event; the HRIS (or its adapter) is system of record for that update. | BRD-001 OQ-09; ADR-0002 | Technical |
-| `internal-transfer-downstream-orchestration.BR4` | No Payroll, ITSM or Facilities HTTP call is made inside an employee or approver request. Delivery is outbox relay → HTTPS webhook. | BRD-001 OQ-10; ADR-0001; constitution | Technical |
-| `internal-transfer-downstream-orchestration.BR5` | Downstream systems report success or failure back. Consumers must treat delivery as at-least-once and dedupe on `requestId` + `stageCode` + `eventType`. | ADR-0001 | Technical |
-| `internal-transfer-downstream-orchestration.BR6` | On a reported stage failure, the portal records that stage as `FAILED` and emits a compensate signal for every fulfilment stage already `COMPLETED` on that request, in reverse sequence. It does not mark the request `COMPLETED`. | BRD-001 spec map (compensation on failure) | Business intent; mechanism technical |
-| `internal-transfer-downstream-orchestration.BR7` | `EMPLOYEE_CONFIRMATION` is completed by the portal when every applicable stage among `ORG_DATA_UPDATE`, `PAYROLL_UPDATE`, `IT_ACCESS` and `FACILITIES` is `COMPLETED`. It is not an employee click. Telling the employee is notifications spec. | BRD-001 journey stage 8 | Business |
+| Rule ID                                          | Rule                                                                                                                                                                                                                                                                      | Source                                     | Business or technical decision                 |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ---------------------------------------------- |
+| `internal-transfer-downstream-orchestration.BR1` | `ORG_DATA_UPDATE` always applies. `PAYROLL_UPDATE` applies only if target cost centre or grade differs from the snapshot. `IT_ACCESS` applies only if target department differs. `FACILITIES` applies only if target location differs. Flags are **not** recomputed here. | BRD-001 OQ-08                              | Business (already applied at submit)           |
+| `internal-transfer-downstream-orchestration.BR2` | Fulfilment stage order: `ORG_DATA_UPDATE` must complete before `PAYROLL_UPDATE`, `IT_ACCESS` or `FACILITIES` are signalled. Those three, when applicable, are signalled in sequence-number order after org update, skipping `applicable: false` rows.                     | BRD-001 journey stages 4–7                 | Business (as-is order; not parallelised in v1) |
+| `internal-transfer-downstream-orchestration.BR3` | The portal does not write employment or org data to the HRIS. It emits an event; the HRIS (or its adapter) is system of record for that update.                                                                                                                           | BRD-001 OQ-09; ADR-0002                    | Technical                                      |
+| `internal-transfer-downstream-orchestration.BR4` | No Payroll, ITSM or Facilities HTTP call is made inside an employee or approver request. Delivery is outbox relay → HTTPS webhook.                                                                                                                                        | BRD-001 OQ-10; ADR-0001; constitution      | Technical                                      |
+| `internal-transfer-downstream-orchestration.BR5` | Downstream systems report success or failure back. Consumers must treat delivery as at-least-once and dedupe on `requestId` + `stageCode` + `eventType`.                                                                                                                  | ADR-0001                                   | Technical                                      |
+| `internal-transfer-downstream-orchestration.BR6` | On a reported stage failure, the portal records that stage as `FAILED` and emits a compensate signal for every fulfilment stage already `COMPLETED` on that request, in reverse sequence. It does not mark the request `COMPLETED`.                                       | BRD-001 spec map (compensation on failure) | Business intent; mechanism technical           |
+| `internal-transfer-downstream-orchestration.BR7` | `EMPLOYEE_CONFIRMATION` is completed by the portal when every applicable stage among `ORG_DATA_UPDATE`, `PAYROLL_UPDATE`, `IT_ACCESS` and `FACILITIES` is `COMPLETED`. It is not an employee click. Telling the employee is notifications spec.                           | BRD-001 journey stage 8                    | Business                                       |
 
 ## API Contract
 
@@ -127,14 +127,14 @@ When the report completes the last applicable fulfilment stage, `requestStatus` 
 
 **Exceptions:**
 
-| Code | Condition | Response body |
-|---|---|---|
-| 401 | Missing or invalid signature | Problem, `type: unauthenticated` |
-| 404 | `requestId` does not exist | Problem, `type: request-not-found` |
-| 409 | Request status is not `FULFILMENT` | Problem, `type: invalid-state-transition`, `currentStatus` |
-| 409 | `stageCode` is not `IN_PROGRESS` (already `COMPLETED`/`FAILED`/`CANCELLED`/`NOT_STARTED`, or not yet signalled) | Problem, `type: invalid-state-transition`, `currentStageStatus` |
-| 422 | Unknown `stageCode`, `outcome` not `SUCCESS`/`FAILED`, `applicable: false` stage, malformed `eventId`/`occurredAt` | Problem, `type: validation-failed` |
-| 429 | Rate limit exceeded | Problem, `type: rate-limited` |
+| Code | Condition                                                                                                          | Response body                                                   |
+| ---- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| 401  | Missing or invalid signature                                                                                       | Problem, `type: unauthenticated`                                |
+| 404  | `requestId` does not exist                                                                                         | Problem, `type: request-not-found`                              |
+| 409  | Request status is not `FULFILMENT`                                                                                 | Problem, `type: invalid-state-transition`, `currentStatus`      |
+| 409  | `stageCode` is not `IN_PROGRESS` (already `COMPLETED`/`FAILED`/`CANCELLED`/`NOT_STARTED`, or not yet signalled)    | Problem, `type: invalid-state-transition`, `currentStageStatus` |
+| 422  | Unknown `stageCode`, `outcome` not `SUCCESS`/`FAILED`, `applicable: false` stage, malformed `eventId`/`occurredAt` | Problem, `type: validation-failed`                              |
+| 429  | Rate limit exceeded                                                                                                | Problem, `type: rate-limited`                                   |
 
 ---
 
@@ -142,11 +142,11 @@ When the report completes the last applicable fulfilment stage, `requestStatus` 
 
 Payloads are allow-list mappers. **Never** reason text, legal names or contact details.
 
-| Event type | When | Payload allow-list |
-|---|---|---|
+| Event type                              | When                                                                                  | Payload allow-list                                                                                                                                                          |
+| --------------------------------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `employee.transfer.fulfilment-stage.v1` | An applicable fulfilment stage becomes `IN_PROGRESS` and is signalled to its consumer | `requestId`, `referenceNo`, `employeeId`, `stageCode`, `confirmedEffectiveDate`, current and target department/location/position/grade/cost-centre **IDs**, `correlationId` |
-| `employee.transfer.compensate.v1` | BR6 after a `FAILED` completion report | `requestId`, `referenceNo`, `employeeId`, `stageCode` (the stage to reverse), `failedStageCode`, `correlationId` |
-| `employee.transfer.completed.v1` | Request reaches `COMPLETED` | `requestId`, `referenceNo`, `employeeId`, `confirmedEffectiveDate`, `correlationId` |
+| `employee.transfer.compensate.v1`       | BR6 after a `FAILED` completion report                                                | `requestId`, `referenceNo`, `employeeId`, `stageCode` (the stage to reverse), `failedStageCode`, `correlationId`                                                            |
+| `employee.transfer.completed.v1`        | Request reaches `COMPLETED`                                                           | `requestId`, `referenceNo`, `employeeId`, `confirmedEffectiveDate`, `correlationId`                                                                                         |
 
 This spec **consumes** `employee.transfer.approved.v1` from the approval-chain spec
 (internal handler, not a public API): that is the only start signal for fulfilment.
@@ -206,22 +206,22 @@ This spec **consumes** `employee.transfer.approved.v1` from the approval-chain s
 
 ## Unit Test Cases (spec-derived)
 
-| Test ID | Maps to AC | Scenario | Expected |
-|---|---|---|---|
-| `internal-transfer-downstream-orchestration.UT01` | AC1 | Handle `approved.v1` | `ORG_DATA_UPDATE` `IN_PROGRESS`; one fulfilment-stage outbox row; later stages `NOT_STARTED` |
-| `internal-transfer-downstream-orchestration.UT02` | AC1 | Outbox write fails on AC1 | Stage not left `IN_PROGRESS` without an outbox row |
-| `internal-transfer-downstream-orchestration.UT03` | AC2 | Org SUCCESS; payroll applicable | Payroll `IN_PROGRESS` and signalled; IT/Facilities still `NOT_STARTED` if later in sequence |
-| `internal-transfer-downstream-orchestration.UT04` | AC2 | Org SUCCESS; payroll not applicable, IT applicable | IT signalled next; payroll never signalled |
-| `internal-transfer-downstream-orchestration.UT05` | AC3 | Only org applicable, org SUCCESS | Status `COMPLETED`; `EMPLOYEE_CONFIRMATION` `COMPLETED`; `completed.v1` present |
-| `internal-transfer-downstream-orchestration.UT06` | AC4 | Org SUCCESS then payroll FAILED | Payroll `FAILED`; compensate for org; status `FULFILMENT`; no `completed.v1` |
-| `internal-transfer-downstream-orchestration.UT07` | AC4 | Two completed stages then third FAILED | Two compensate events, reverse sequence |
-| `internal-transfer-downstream-orchestration.UT08` | AC5 | Duplicate `eventId` | Second 200; one audit row for the completion |
-| `internal-transfer-downstream-orchestration.UT09` | AC6 | Trace of submit/approve HTTP handlers | Zero outbound HTTP to Payroll/ITSM/Facilities/HRIS-write |
-| `internal-transfer-downstream-orchestration.UT10` | AC7 | Fulfilment-stage payload | Allow-list fields only; no reason key |
-| `internal-transfer-downstream-orchestration.UT11` | AC8 | Bad HMAC | 401; stages unchanged |
-| `internal-transfer-downstream-orchestration.UT12` | AC9 | Completion while `HR_VALIDATION` | 409 |
-| `internal-transfer-downstream-orchestration.UT13` | AC10 | Org SUCCESS | Audit row from/to stage statuses; update of that row rejected by the database |
-| `internal-transfer-downstream-orchestration.UT14` | AC2 | Report SUCCESS on `applicable: false` stage | 422; no signal |
+| Test ID                                           | Maps to AC | Scenario                                           | Expected                                                                                     |
+| ------------------------------------------------- | ---------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `internal-transfer-downstream-orchestration.UT01` | AC1        | Handle `approved.v1`                               | `ORG_DATA_UPDATE` `IN_PROGRESS`; one fulfilment-stage outbox row; later stages `NOT_STARTED` |
+| `internal-transfer-downstream-orchestration.UT02` | AC1        | Outbox write fails on AC1                          | Stage not left `IN_PROGRESS` without an outbox row                                           |
+| `internal-transfer-downstream-orchestration.UT03` | AC2        | Org SUCCESS; payroll applicable                    | Payroll `IN_PROGRESS` and signalled; IT/Facilities still `NOT_STARTED` if later in sequence  |
+| `internal-transfer-downstream-orchestration.UT04` | AC2        | Org SUCCESS; payroll not applicable, IT applicable | IT signalled next; payroll never signalled                                                   |
+| `internal-transfer-downstream-orchestration.UT05` | AC3        | Only org applicable, org SUCCESS                   | Status `COMPLETED`; `EMPLOYEE_CONFIRMATION` `COMPLETED`; `completed.v1` present              |
+| `internal-transfer-downstream-orchestration.UT06` | AC4        | Org SUCCESS then payroll FAILED                    | Payroll `FAILED`; compensate for org; status `FULFILMENT`; no `completed.v1`                 |
+| `internal-transfer-downstream-orchestration.UT07` | AC4        | Two completed stages then third FAILED             | Two compensate events, reverse sequence                                                      |
+| `internal-transfer-downstream-orchestration.UT08` | AC5        | Duplicate `eventId`                                | Second 200; one audit row for the completion                                                 |
+| `internal-transfer-downstream-orchestration.UT09` | AC6        | Trace of submit/approve HTTP handlers              | Zero outbound HTTP to Payroll/ITSM/Facilities/HRIS-write                                     |
+| `internal-transfer-downstream-orchestration.UT10` | AC7        | Fulfilment-stage payload                           | Allow-list fields only; no reason key                                                        |
+| `internal-transfer-downstream-orchestration.UT11` | AC8        | Bad HMAC                                           | 401; stages unchanged                                                                        |
+| `internal-transfer-downstream-orchestration.UT12` | AC9        | Completion while `HR_VALIDATION`                   | 409                                                                                          |
+| `internal-transfer-downstream-orchestration.UT13` | AC10       | Org SUCCESS                                        | Audit row from/to stage statuses; update of that row rejected by the database                |
+| `internal-transfer-downstream-orchestration.UT14` | AC2        | Report SUCCESS on `applicable: false` stage        | 422; no signal                                                                               |
 
 ## Surfaces
 
@@ -243,9 +243,9 @@ This spec's only HTTP surface is API01 (machine-to-machine).
 
 ## Open Questions
 
-| # | Question | Owner | Needed by | Resolution |
-|---|---|---|---|---|
-| 1 | After compensate events are emitted, who records that reversal actually happened in Payroll/IT/Facilities, and can fulfilment resume? | HR Ops + downstream system owners | Before Approved, if v1 must auto-resume | **Open.** This spec emits compensate signals and leaves the request in `FULFILMENT` with a `FAILED` stage. It does not define a resume API. |
+| #   | Question                                                                                                                              | Owner                             | Needed by                               | Resolution                                                                                                                                  |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | After compensate events are emitted, who records that reversal actually happened in Payroll/IT/Facilities, and can fulfilment resume? | HR Ops + downstream system owners | Before Approved, if v1 must auto-resume | **Open.** This spec emits compensate signals and leaves the request in `FULFILMENT` with a `FAILED` stage. It does not define a resume API. |
 
 A plan would have to guess at resume-after-failure. **Do not submit this spec to Gate 1
 until OQ-1 is resolved or explicitly deferred** (for example: "HR completes remaining work
@@ -277,6 +277,6 @@ offline; portal stays `FULFILMENT` until a later spec").
 
 ## Revision History
 
-| Version | Date | Change | Driver |
-|---|---|---|---|
-| v1.0 | 2026-09-03 | Initial draft | BRD-001 |
+| Version | Date       | Change        | Driver  |
+| ------- | ---------- | ------------- | ------- |
+| v1.0    | 2026-09-03 | Initial draft | BRD-001 |

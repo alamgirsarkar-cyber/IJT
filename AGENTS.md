@@ -37,34 +37,34 @@ Never: “build the transfer feature.”
 
 ## If you are not implementing
 
-| Job | Workflow |
-|---|---|
-| Draft a spec (BRD entry must be closed enough) | `.agent/workflows/generate-spec.md` |
-| Gate 1 spec review | `.agent/workflows/spec-review.md` |
-| Draft a plan (spec must be Approved) | `.agent/workflows/generate-plan.md` |
-| Generate failing tests | `.agent/workflows/generate-tests.md` |
-| Gate 2 code review | `.agent/workflows/code-review.md` |
+| Job                                            | Workflow                             |
+| ---------------------------------------------- | ------------------------------------ |
+| Draft a spec (BRD entry must be closed enough) | `.agent/workflows/generate-spec.md`  |
+| Gate 1 spec review                             | `.agent/workflows/spec-review.md`    |
+| Draft a plan (spec must be Approved)           | `.agent/workflows/generate-plan.md`  |
+| Generate failing tests                         | `.agent/workflows/generate-tests.md` |
+| Gate 2 code review                             | `.agent/workflows/code-review.md`    |
 
 Discovery still starts in `.ai-context/BRD.md`. A spec is never the first place a
 requirement is written down.
 
 ## Current work
 
-| Field | Value |
-|---|---|
-| Feature | `internal-transfer-request` |
-| Spec | `.ai-context/specs/internal-transfer-request.spec.md` |
-| Plan | `.ai-context/plans/internal-transfer-request.plan.md` |
-| Tasks | `.ai-context/tasks/internal-transfer-request.tasks.md` |
-| Prompts | `.ai-context/prompts/internal-transfer-request.prompts.md` |
-| **Next prompt** | **Blocked — Gate 1 in progress** (Abhijit Adhikary). Review order: request → approval-chain → notifications / downstream |
+| Field           | Value                                                                                                                    |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Feature         | `internal-transfer-request`                                                                                              |
+| Spec            | `.ai-context/specs/internal-transfer-request.spec.md`                                                                    |
+| Plan            | `.ai-context/plans/internal-transfer-request.plan.md`                                                                    |
+| Tasks           | `.ai-context/tasks/internal-transfer-request.tasks.md`                                                                   |
+| Prompts         | `.ai-context/prompts/internal-transfer-request.prompts.md`                                                               |
+| **Next prompt** | **Blocked — Gate 1 in progress** (Abhijit Adhikari). Review order: request → approval-chain → notifications / downstream |
 
 ## Standing constraints (append to every prompt)
 
 - No AI attribution in comments or commit messages. Task-ID references are required.
 - No new dependency without saying why a platform built-in will not do.
 - No secrets, PII, or transfer reason text in logs, fixtures, prompts, or `prompt_history.md`.
-- Do not implement anything under *Deferred* in that feature’s `tasks.md`.
+- Do not implement anything under _Deferred_ in that feature’s `tasks.md`.
 - If the spec is ambiguous, stop and say so. Do not choose an interpretation.
 
 ## Do not

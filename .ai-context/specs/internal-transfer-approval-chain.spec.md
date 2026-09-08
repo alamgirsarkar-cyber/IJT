@@ -6,7 +6,7 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.0 submitted 2026-09-07 for review by Abhijit Adhikary.
+**In Peer Review (Gate 1)** — Draft v1.0 submitted 2026-09-07 for review by Abhijit Adhikari.
 Full state machine in `.ai-context/status.md`. Do not generate a plan or code until
 **Approved**.
 
@@ -19,11 +19,11 @@ approving only after `internal-transfer-request` is Approved, or co-review that 
 
 ## Owner / Reviewer
 
-| Role | Name | Date |
-|---|---|---|
-| Author / owner | Alamgir Sarkar | 2026-09-03 |
-| Gate 1 reviewer (never the author) | Abhijit Adhikary | 2026-09-07 (_pending outcome_) |
-| Gate 2 reviewer | Tapas Dutta | — |
+| Role                               | Name             | Date                           |
+| ---------------------------------- | ---------------- | ------------------------------ |
+| Author / owner                     | Alamgir Sarkar   | 2026-09-03                     |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-07 (_pending outcome_) |
+| Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
 Gate 1 record: `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`
 
@@ -40,7 +40,7 @@ send notifications.
 
 ## Context
 
-- Builds on: `.ai-context/architecture.md` — *Components*, *Cross-Cutting Concerns*;
+- Builds on: `.ai-context/architecture.md` — _Components_, _Cross-Cutting Concerns_;
   `.ai-context/constitution.md` — Security Posture, Architectural Constraints,
   Non-Functional Baselines
 - Related: `.ai-context/specs/internal-transfer-request.spec.md` — **In Peer Review
@@ -63,16 +63,16 @@ are the units of work.
 
 ## Business Rules
 
-| Rule ID | Rule | Source | Business or technical decision |
-|---|---|---|---|
-| `internal-transfer-approval-chain.BR1` | Current line manager decides first (release); receiving manager second (accept); HR Business Partner third (validation). A later stage cannot be decided while an earlier applicable approval stage is incomplete. | BRD-001 OQ-01, OQ-02 | Business |
-| `internal-transfer-approval-chain.BR2` | Rejection at `MANAGER_RELEASE`, `MANAGER_ACCEPT` or `HR_VALIDATION` is terminal. The employee raises a new request; this spec does not return the request for edit. | BRD-001 OQ-07 | Business |
-| `internal-transfer-approval-chain.BR3` | HR sets the confirmed effective date when approving `HR_VALIDATION`. Until then the date remains requested. | BRD-001 OQ-05 | Business |
-| `internal-transfer-approval-chain.BR4` | Open disciplinary or performance cases are validated **by HR as a person**, not by the portal. Completing `HR_VALIDATION` with `APPROVE` records that HR has finished those checks. The portal must not call a disciplinary API and must not present manager approval as eligibility clearance. | BRD-001 BR9, OQ-04 | Business |
-| `internal-transfer-approval-chain.BR5` | Transfer reason text is visible to the HR Business Partner and the owning employee only. It is not returned to either manager. | BRD-001 OQ-12 (proposed in the request spec) | Business |
-| `internal-transfer-approval-chain.BR6` | Line-manager and receiving-manager decisions are authorised only when the token subject equals that stage's `assigned_party_ref`. HR validation is authorised for any principal whose token has role `HR_BUSINESS_PARTNER`. | BRD-001 OQ-11 (role vs named person); assignee snapshot from the request spec | Technical (enforcement of a business assignment) |
-| `internal-transfer-approval-chain.BR7` | Approver delegation is not supported. An assigned manager who is absent is handled outside the portal. | BRD-001 OQ-16 | Business — deferred; this spec must not implement a substitute |
-| `internal-transfer-approval-chain.BR8` | No SLA timer, reminder or escalation is evaluated. | BRD-001 OQ-15 | Business — deferred |
+| Rule ID                                | Rule                                                                                                                                                                                                                                                                                            | Source                                                                        | Business or technical decision                                 |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `internal-transfer-approval-chain.BR1` | Current line manager decides first (release); receiving manager second (accept); HR Business Partner third (validation). A later stage cannot be decided while an earlier applicable approval stage is incomplete.                                                                              | BRD-001 OQ-01, OQ-02                                                          | Business                                                       |
+| `internal-transfer-approval-chain.BR2` | Rejection at `MANAGER_RELEASE`, `MANAGER_ACCEPT` or `HR_VALIDATION` is terminal. The employee raises a new request; this spec does not return the request for edit.                                                                                                                             | BRD-001 OQ-07                                                                 | Business                                                       |
+| `internal-transfer-approval-chain.BR3` | HR sets the confirmed effective date when approving `HR_VALIDATION`. Until then the date remains requested.                                                                                                                                                                                     | BRD-001 OQ-05                                                                 | Business                                                       |
+| `internal-transfer-approval-chain.BR4` | Open disciplinary or performance cases are validated **by HR as a person**, not by the portal. Completing `HR_VALIDATION` with `APPROVE` records that HR has finished those checks. The portal must not call a disciplinary API and must not present manager approval as eligibility clearance. | BRD-001 BR9, OQ-04                                                            | Business                                                       |
+| `internal-transfer-approval-chain.BR5` | Transfer reason text is visible to the HR Business Partner and the owning employee only. It is not returned to either manager.                                                                                                                                                                  | BRD-001 OQ-12 (proposed in the request spec)                                  | Business                                                       |
+| `internal-transfer-approval-chain.BR6` | Line-manager and receiving-manager decisions are authorised only when the token subject equals that stage's `assigned_party_ref`. HR validation is authorised for any principal whose token has role `HR_BUSINESS_PARTNER`.                                                                     | BRD-001 OQ-11 (role vs named person); assignee snapshot from the request spec | Technical (enforcement of a business assignment)               |
+| `internal-transfer-approval-chain.BR7` | Approver delegation is not supported. An assigned manager who is absent is handled outside the portal.                                                                                                                                                                                          | BRD-001 OQ-16                                                                 | Business — deferred; this spec must not implement a substitute |
+| `internal-transfer-approval-chain.BR8` | No SLA timer, reminder or escalation is evaluated.                                                                                                                                                                                                                                              | BRD-001 OQ-15                                                                 | Business — deferred                                            |
 
 ## API Contract
 
@@ -113,7 +113,10 @@ Stage codes this spec will accept on a decision: `MANAGER_RELEASE`, `MANAGER_ACC
       "waitingSince": "2026-09-01T09:31:45Z"
     }
   ],
-  "page": 1, "size": 10, "totalItems": 1, "totalPages": 1
+  "page": 1,
+  "size": 10,
+  "totalItems": 1,
+  "totalPages": 1
 }
 ```
 
@@ -121,11 +124,11 @@ Stage codes this spec will accept on a decision: `MANAGER_RELEASE`, `MANAGER_ACC
 
 **Exceptions:**
 
-| Code | Condition | Response body |
-|---|---|---|
-| 400 | `size` outside the permitted set | Problem, `type: validation-failed` |
-| 401 | No or invalid token | Problem, `type: unauthenticated` |
-| 429 | Rate limit exceeded | Problem, `type: rate-limited` |
+| Code | Condition                        | Response body                      |
+| ---- | -------------------------------- | ---------------------------------- |
+| 400  | `size` outside the permitted set | Problem, `type: validation-failed` |
+| 401  | No or invalid token              | Problem, `type: unauthenticated`   |
+| 429  | Rate limit exceeded              | Problem, `type: rate-limited`      |
 
 ---
 
@@ -147,10 +150,14 @@ receives 404, not 403 (same enumeration rule as request-spec AC13).
   "referenceNo": "ITR-2026-000123",
   "status": "MANAGER_REVIEW",
   "currentAssignment": {
-    "departmentName": "string", "locationName": "string", "positionTitle": "string"
+    "departmentName": "string",
+    "locationName": "string",
+    "positionTitle": "string"
   },
   "target": {
-    "departmentName": "string", "locationName": "string", "positionTitle": "string"
+    "departmentName": "string",
+    "locationName": "string",
+    "positionTitle": "string"
   },
   "requestedEffectiveDate": "YYYY-MM-DD",
   "confirmedEffectiveDate": null,
@@ -159,8 +166,11 @@ receives 404, not 403 (same enumeration rule as request-spec AC13).
   "pendingStage": { "stageCode": "MANAGER_RELEASE", "assignedRole": "LINE_MANAGER" },
   "stages": [
     {
-      "stageCode": "MANAGER_RELEASE", "sequence": 1, "status": "IN_PROGRESS",
-      "applicable": true, "assignedRole": "LINE_MANAGER"
+      "stageCode": "MANAGER_RELEASE",
+      "sequence": 1,
+      "status": "IN_PROGRESS",
+      "applicable": true,
+      "assignedRole": "LINE_MANAGER"
     }
   ],
   "availableDecisions": ["APPROVE", "REJECT"]
@@ -173,11 +183,11 @@ returned on this endpoint.
 
 **Exceptions:**
 
-| Code | Condition | Response body |
-|---|---|---|
-| 401 | No or invalid token | Problem, `type: unauthenticated` |
-| 404 | Request does not exist, **or** exists and the caller is not allowed to see it | Problem, `type: request-not-found` |
-| 429 | Rate limit exceeded | Problem, `type: rate-limited` |
+| Code | Condition                                                                     | Response body                      |
+| ---- | ----------------------------------------------------------------------------- | ---------------------------------- |
+| 401  | No or invalid token                                                           | Problem, `type: unauthenticated`   |
+| 404  | Request does not exist, **or** exists and the caller is not allowed to see it | Problem, `type: request-not-found` |
+| 429  | Rate limit exceeded                                                           | Problem, `type: rate-limited`      |
 
 ---
 
@@ -208,18 +218,18 @@ writes nothing.
 
 **Exceptions:**
 
-| Code | Condition | Response body |
-|---|---|---|
-| 400 | `Idempotency-Key` absent | Problem, `type: idempotency-key-required` |
-| 401 | No or invalid token | Problem, `type: unauthenticated` |
-| 404 | Request does not exist, **or** caller is not the assignee / HR for this stage | Problem, `type: request-not-found` |
-| 409 | Request is `WITHDRAWN`, `REJECTED`, `FULFILMENT`, `COMPLETED`, `CANCELLED` or `DRAFT` / `DISCARDED` | Problem, `type: invalid-state-transition`, with `currentStatus` |
-| 409 | `stageCode` is not the current waiting approval stage (out of order, already decided, or `NOT_STARTED`) | Problem, `type: invalid-state-transition`, with `currentStageCode` |
-| 409 | Stage `assigned_party_ref` is null on a manager stage (assignee never snapshotted) | Problem, `type: assignee-unresolved` |
-| 409 | Employee withdrawal committed in the same moment (lost the aggregate lock) | Problem, `type: invalid-state-transition`, with `currentStatus` |
-| 409 | `Idempotency-Key` reused against a different request, stage or body | Problem, `type: idempotency-key-conflict` |
-| 422 | `decision` missing or not `APPROVE`/`REJECT`; `stageCode` not one of the three approval codes; HR approve without `confirmedEffectiveDate`; confirmed date supplied on a manager decision or on reject; malformed date | Problem, `type: validation-failed`, `violations[].field` populated |
-| 429 | Rate limit exceeded | Problem, `type: rate-limited` |
+| Code | Condition                                                                                                                                                                                                              | Response body                                                      |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| 400  | `Idempotency-Key` absent                                                                                                                                                                                               | Problem, `type: idempotency-key-required`                          |
+| 401  | No or invalid token                                                                                                                                                                                                    | Problem, `type: unauthenticated`                                   |
+| 404  | Request does not exist, **or** caller is not the assignee / HR for this stage                                                                                                                                          | Problem, `type: request-not-found`                                 |
+| 409  | Request is `WITHDRAWN`, `REJECTED`, `FULFILMENT`, `COMPLETED`, `CANCELLED` or `DRAFT` / `DISCARDED`                                                                                                                    | Problem, `type: invalid-state-transition`, with `currentStatus`    |
+| 409  | `stageCode` is not the current waiting approval stage (out of order, already decided, or `NOT_STARTED`)                                                                                                                | Problem, `type: invalid-state-transition`, with `currentStageCode` |
+| 409  | Stage `assigned_party_ref` is null on a manager stage (assignee never snapshotted)                                                                                                                                     | Problem, `type: assignee-unresolved`                               |
+| 409  | Employee withdrawal committed in the same moment (lost the aggregate lock)                                                                                                                                             | Problem, `type: invalid-state-transition`, with `currentStatus`    |
+| 409  | `Idempotency-Key` reused against a different request, stage or body                                                                                                                                                    | Problem, `type: idempotency-key-conflict`                          |
+| 422  | `decision` missing or not `APPROVE`/`REJECT`; `stageCode` not one of the three approval codes; HR approve without `confirmedEffectiveDate`; confirmed date supplied on a manager decision or on reject; malformed date | Problem, `type: validation-failed`, `violations[].field` populated |
+| 429  | Rate limit exceeded                                                                                                                                                                                                    | Problem, `type: rate-limited`                                      |
 
 ## Acceptance Criteria
 
@@ -302,47 +312,47 @@ writes nothing.
 
 ## Unit Test Cases (spec-derived)
 
-| Test ID | Maps to AC | Scenario | Expected |
-|---|---|---|---|
-| `internal-transfer-approval-chain.UT01` | AC1 | Line manager approves `MANAGER_RELEASE` | 200; that stage `COMPLETED`; `MANAGER_ACCEPT` `IN_PROGRESS`; status still `MANAGER_REVIEW`; one audit; one `stage-pending` outbox row |
-| `internal-transfer-approval-chain.UT02` | AC1 | Outbox insert fails during AC1 | Transaction rolls back; `MANAGER_RELEASE` still `IN_PROGRESS` |
-| `internal-transfer-approval-chain.UT03` | AC2 | Receiving manager approves `MANAGER_ACCEPT` | 200; status `HR_VALIDATION`; `HR_VALIDATION` `IN_PROGRESS` |
-| `internal-transfer-approval-chain.UT04` | AC3 | HR approves with confirmed date | 200; status `FULFILMENT`; `confirmedEffectiveDate` stored; `effectiveDateStatus` `CONFIRMED`; `approved.v1` outbox row with no reason field |
-| `internal-transfer-approval-chain.UT05` | AC3 | HR approves without `confirmedEffectiveDate` | 422; status still `HR_VALIDATION` |
-| `internal-transfer-approval-chain.UT06` | AC3 | Successful HR approve payload | Event has requestId, referenceNo, employeeId, confirmedEffectiveDate, applicable stage codes — no names, no reason |
-| `internal-transfer-approval-chain.UT07` | AC4 | Line manager rejects | 200; status `REJECTED`; incomplete stages `CANCELLED`; `rejected.v1` outbox row |
-| `internal-transfer-approval-chain.UT08` | AC4 | Receiving manager rejects | Same terminal outcome as UT07 |
-| `internal-transfer-approval-chain.UT09` | AC4 | HR rejects | Same terminal outcome as UT07; `confirmedEffectiveDate` null |
-| `internal-transfer-approval-chain.UT10` | AC5 | Receiving manager decides before release | 409; no status change |
-| `internal-transfer-approval-chain.UT11` | AC5 | HR decides before both managers | 409; no status change |
-| `internal-transfer-approval-chain.UT12` | AC6 | Employee owner POSTs a manager decision | 404; no log field from the request |
-| `internal-transfer-approval-chain.UT13` | AC6 | Wrong manager POSTs `MANAGER_RELEASE` | 404 |
-| `internal-transfer-approval-chain.UT14` | AC6 | Body contains `employeeId` of the assignee | Authorisation still from token subject |
-| `internal-transfer-approval-chain.UT15` | AC7 | Manager GET approval | No `reason` key |
-| `internal-transfer-approval-chain.UT16` | AC7 | HR GET approval | `reason` key present |
-| `internal-transfer-approval-chain.UT17` | AC7 | Inbox item for HR | No `reason` key |
-| `internal-transfer-approval-chain.UT18` | AC8 | Replay same Idempotency-Key | Identical 200; still one audit and one outbox row |
-| `internal-transfer-approval-chain.UT19` | AC8 | Same key, different stage | 409 `idempotency-key-conflict` |
-| `internal-transfer-approval-chain.UT20` | AC8 | Decision with no Idempotency-Key | 400; nothing persisted |
-| `internal-transfer-approval-chain.UT21` | AC9 | Decision on `WITHDRAWN` request | 409 `invalid-state-transition` |
-| `internal-transfer-approval-chain.UT22` | AC9 | Concurrent withdraw and approve | One terminal status in the database; the other call 409 |
-| `internal-transfer-approval-chain.UT23` | AC10 | `assigned_party_ref` null on `MANAGER_RELEASE` | 409 `assignee-unresolved` |
-| `internal-transfer-approval-chain.UT24` | AC11 | Log capture of HR approve including reason on the request | No log line contains the reason text |
-| `internal-transfer-approval-chain.UT25` | AC11 | Attempt to update an audit row | Rejected at the database layer |
-| `internal-transfer-approval-chain.UT26` | AC12 | Decision screen by keyboard only | Every control reachable; focus order matches visual order |
-| `internal-transfer-approval-chain.UT27` | AC12 | 422 announced to screen reader | Error associated with its field |
+| Test ID                                 | Maps to AC | Scenario                                                  | Expected                                                                                                                                    |
+| --------------------------------------- | ---------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `internal-transfer-approval-chain.UT01` | AC1        | Line manager approves `MANAGER_RELEASE`                   | 200; that stage `COMPLETED`; `MANAGER_ACCEPT` `IN_PROGRESS`; status still `MANAGER_REVIEW`; one audit; one `stage-pending` outbox row       |
+| `internal-transfer-approval-chain.UT02` | AC1        | Outbox insert fails during AC1                            | Transaction rolls back; `MANAGER_RELEASE` still `IN_PROGRESS`                                                                               |
+| `internal-transfer-approval-chain.UT03` | AC2        | Receiving manager approves `MANAGER_ACCEPT`               | 200; status `HR_VALIDATION`; `HR_VALIDATION` `IN_PROGRESS`                                                                                  |
+| `internal-transfer-approval-chain.UT04` | AC3        | HR approves with confirmed date                           | 200; status `FULFILMENT`; `confirmedEffectiveDate` stored; `effectiveDateStatus` `CONFIRMED`; `approved.v1` outbox row with no reason field |
+| `internal-transfer-approval-chain.UT05` | AC3        | HR approves without `confirmedEffectiveDate`              | 422; status still `HR_VALIDATION`                                                                                                           |
+| `internal-transfer-approval-chain.UT06` | AC3        | Successful HR approve payload                             | Event has requestId, referenceNo, employeeId, confirmedEffectiveDate, applicable stage codes — no names, no reason                          |
+| `internal-transfer-approval-chain.UT07` | AC4        | Line manager rejects                                      | 200; status `REJECTED`; incomplete stages `CANCELLED`; `rejected.v1` outbox row                                                             |
+| `internal-transfer-approval-chain.UT08` | AC4        | Receiving manager rejects                                 | Same terminal outcome as UT07                                                                                                               |
+| `internal-transfer-approval-chain.UT09` | AC4        | HR rejects                                                | Same terminal outcome as UT07; `confirmedEffectiveDate` null                                                                                |
+| `internal-transfer-approval-chain.UT10` | AC5        | Receiving manager decides before release                  | 409; no status change                                                                                                                       |
+| `internal-transfer-approval-chain.UT11` | AC5        | HR decides before both managers                           | 409; no status change                                                                                                                       |
+| `internal-transfer-approval-chain.UT12` | AC6        | Employee owner POSTs a manager decision                   | 404; no log field from the request                                                                                                          |
+| `internal-transfer-approval-chain.UT13` | AC6        | Wrong manager POSTs `MANAGER_RELEASE`                     | 404                                                                                                                                         |
+| `internal-transfer-approval-chain.UT14` | AC6        | Body contains `employeeId` of the assignee                | Authorisation still from token subject                                                                                                      |
+| `internal-transfer-approval-chain.UT15` | AC7        | Manager GET approval                                      | No `reason` key                                                                                                                             |
+| `internal-transfer-approval-chain.UT16` | AC7        | HR GET approval                                           | `reason` key present                                                                                                                        |
+| `internal-transfer-approval-chain.UT17` | AC7        | Inbox item for HR                                         | No `reason` key                                                                                                                             |
+| `internal-transfer-approval-chain.UT18` | AC8        | Replay same Idempotency-Key                               | Identical 200; still one audit and one outbox row                                                                                           |
+| `internal-transfer-approval-chain.UT19` | AC8        | Same key, different stage                                 | 409 `idempotency-key-conflict`                                                                                                              |
+| `internal-transfer-approval-chain.UT20` | AC8        | Decision with no Idempotency-Key                          | 400; nothing persisted                                                                                                                      |
+| `internal-transfer-approval-chain.UT21` | AC9        | Decision on `WITHDRAWN` request                           | 409 `invalid-state-transition`                                                                                                              |
+| `internal-transfer-approval-chain.UT22` | AC9        | Concurrent withdraw and approve                           | One terminal status in the database; the other call 409                                                                                     |
+| `internal-transfer-approval-chain.UT23` | AC10       | `assigned_party_ref` null on `MANAGER_RELEASE`            | 409 `assignee-unresolved`                                                                                                                   |
+| `internal-transfer-approval-chain.UT24` | AC11       | Log capture of HR approve including reason on the request | No log line contains the reason text                                                                                                        |
+| `internal-transfer-approval-chain.UT25` | AC11       | Attempt to update an audit row                            | Rejected at the database layer                                                                                                              |
+| `internal-transfer-approval-chain.UT26` | AC12       | Decision screen by keyboard only                          | Every control reachable; focus order matches visual order                                                                                   |
+| `internal-transfer-approval-chain.UT27` | AC12       | 422 announced to screen reader                            | Error associated with its field                                                                                                             |
 
 ## Surfaces
 
-| Layer | Name | Bound to |
-|---|---|---|
-| Backend | Approvals inbox | API01 |
-| Backend | Approval detail | API02 |
-| Backend | Stage decision | API03 |
-| Frontend | Manager approvals list | API01 |
-| Frontend | Manager decision | API02, API03 |
-| Frontend | HR validations list | API01 |
-| Frontend | HR validation | API02, API03 |
+| Layer    | Name                   | Bound to     |
+| -------- | ---------------------- | ------------ |
+| Backend  | Approvals inbox        | API01        |
+| Backend  | Approval detail        | API02        |
+| Backend  | Stage decision         | API03        |
+| Frontend | Manager approvals list | API01        |
+| Frontend | Manager decision       | API02, API03 |
+| Frontend | HR validations list    | API01        |
+| Frontend | HR validation          | API02, API03 |
 
 Layout and component structure are not specified here.
 
@@ -363,9 +373,9 @@ Layout and component structure are not specified here.
 
 ## Open Questions
 
-| # | Question | Owner | Needed by | Resolution |
-|---|---|---|---|---|
-| 1 | None that change approve/reject sequencing, terminal rejection, or who sets the confirmed date. | — | — | Closed in BRD-001 OQ-01, OQ-02, OQ-05, OQ-07 |
+| #   | Question                                                                                        | Owner | Needed by | Resolution                                   |
+| --- | ----------------------------------------------------------------------------------------------- | ----- | --------- | -------------------------------------------- |
+| 1   | None that change approve/reject sequencing, terminal rejection, or who sets the confirmed date. | —     | —         | Closed in BRD-001 OQ-01, OQ-02, OQ-05, OQ-07 |
 
 BR6's "any `HR_BUSINESS_PARTNER` may complete `HR_VALIDATION`" is recorded as Assumption
 A3, not as an unanswered business question: OQ-11 already says HR is shown as a role, not
@@ -401,6 +411,6 @@ Approved.
 
 ## Revision History
 
-| Version | Date | Change | Driver |
-|---|---|---|---|
-| v1.0 | 2026-09-03 | Initial draft | BRD-001 |
+| Version | Date       | Change        | Driver  |
+| ------- | ---------- | ------------- | ------- |
+| v1.0    | 2026-09-03 | Initial draft | BRD-001 |

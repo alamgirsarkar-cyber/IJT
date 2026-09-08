@@ -6,7 +6,7 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.0 submitted 2026-09-07 for review by Abhijit Adhikary.
+**In Peer Review (Gate 1)** — Draft v1.0 submitted 2026-09-07 for review by Abhijit Adhikari.
 Full state machine in `.ai-context/status.md`. Do not generate a plan or code until
 **Approved**.
 
@@ -20,11 +20,11 @@ sequence implementation after the first submit release.
 
 ## Owner / Reviewer
 
-| Role | Name | Date |
-|---|---|---|
-| Author / owner | Alamgir Sarkar | 2026-09-03 |
-| Gate 1 reviewer (never the author) | Abhijit Adhikary | 2026-09-07 (_pending outcome_) |
-| Gate 2 reviewer | Tapas Dutta | — |
+| Role                               | Name             | Date                           |
+| ---------------------------------- | ---------------- | ------------------------------ |
+| Author / owner                     | Alamgir Sarkar   | 2026-09-03                     |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-07 (_pending outcome_) |
+| Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
 Gate 1 record: `.ai-context/reviews/internal-transfer-notifications.gate1.md`
 
@@ -40,8 +40,8 @@ does not fulfil downstream systems.
 
 ## Context
 
-- Builds on: `.ai-context/architecture.md` — Notification service row in *Integration
-  Points* (HTTPS webhook, async; loss does not affect request state)
+- Builds on: `.ai-context/architecture.md` — Notification service row in _Integration
+  Points_ (HTTPS webhook, async; loss does not affect request state)
 - Constitution: `.ai-context/constitution.md` — PII and free-text narrative must not
   appear in notification payloads; events via outbox
 - Related: `.ai-context/specs/internal-transfer-request.spec.md` — **In Peer Review**.
@@ -58,25 +58,25 @@ does not fulfil downstream systems.
 
 ## Business Rules
 
-| Rule ID | Rule | Source | Business or technical decision |
-|---|---|---|---|
-| `internal-transfer-notifications.BR1` | Every request status transition listed in the Notification Matrix produces exactly one notification request per recipient row, via the notification service. | BRD-001 spec map ("on every state transition") | Business |
-| `internal-transfer-notifications.BR2` | Notification payloads must not contain `reason`, `withdrawalReason`, legal name of anyone but the recipient's own (if the platform already knows it), contact details harvested from the transfer record, or other constitution PII. Reference number and stage/role codes are permitted. | Constitution Security Posture; BRD-001 OQ-12 | Business + Technical |
-| `internal-transfer-notifications.BR3` | Notification failure or delay must not change `transfer_request` status, stages or audit. | Architecture *Integration Points*; constitution degradation | Technical |
-| `internal-transfer-notifications.BR4` | English only. No second locale. | BRD-001 OQ-18 | Business |
-| `internal-transfer-notifications.BR5` | Recipients are resolved from token-quality identifiers already on the aggregate: owning `employee_id`; manager `assigned_party_ref`; HR as role `HR_BUSINESS_PARTNER` (fan-out is the notification service's directory lookup for that role, not a name list in this spec). | BRD-001 OQ-11 | Technical enforcement |
+| Rule ID                               | Rule                                                                                                                                                                                                                                                                                      | Source                                                      | Business or technical decision |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------ |
+| `internal-transfer-notifications.BR1` | Every request status transition listed in the Notification Matrix produces exactly one notification request per recipient row, via the notification service.                                                                                                                              | BRD-001 spec map ("on every state transition")              | Business                       |
+| `internal-transfer-notifications.BR2` | Notification payloads must not contain `reason`, `withdrawalReason`, legal name of anyone but the recipient's own (if the platform already knows it), contact details harvested from the transfer record, or other constitution PII. Reference number and stage/role codes are permitted. | Constitution Security Posture; BRD-001 OQ-12                | Business + Technical           |
+| `internal-transfer-notifications.BR3` | Notification failure or delay must not change `transfer_request` status, stages or audit.                                                                                                                                                                                                 | Architecture _Integration Points_; constitution degradation | Technical                      |
+| `internal-transfer-notifications.BR4` | English only. No second locale.                                                                                                                                                                                                                                                           | BRD-001 OQ-18                                               | Business                       |
+| `internal-transfer-notifications.BR5` | Recipients are resolved from token-quality identifiers already on the aggregate: owning `employee_id`; manager `assigned_party_ref`; HR as role `HR_BUSINESS_PARTNER` (fan-out is the notification service's directory lookup for that role, not a name list in this spec).               | BRD-001 OQ-11                                               | Technical enforcement          |
 
 ## Notification Matrix
 
-| Trigger (domain event) | Recipient | Template id | Permitted payload fields |
-|---|---|---|---|
-| `employee.transfer.requested` / requested.v1 | Owning employee | `itr.employee.submitted` | `referenceNo`, `requestId` |
-| `employee.transfer.requested` / requested.v1 | Current line manager (`MANAGER_RELEASE.assigned_party_ref`) | `itr.approver.pending` | `referenceNo`, `requestId`, `stageCode=MANAGER_RELEASE`, `assignedRole` |
-| `employee.transfer.stage-pending.v1` | Assignee of that stage; for `HR_VALIDATION`, the HR_BUSINESS_PARTNER role | `itr.approver.pending` | `referenceNo`, `requestId`, `stageCode`, `assignedRole` |
-| `employee.transfer.withdrawn` / withdrawn.v1 | Owning employee | `itr.employee.withdrawn` | `referenceNo`, `requestId` |
-| `employee.transfer.rejected.v1` | Owning employee | `itr.employee.rejected` | `referenceNo`, `requestId` |
-| `employee.transfer.approved.v1` | Owning employee | `itr.employee.hr-approved` | `referenceNo`, `requestId` |
-| `employee.transfer.completed.v1` | Owning employee | `itr.employee.completed` | `referenceNo`, `requestId` |
+| Trigger (domain event)                       | Recipient                                                                 | Template id                | Permitted payload fields                                                |
+| -------------------------------------------- | ------------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------------------------- |
+| `employee.transfer.requested` / requested.v1 | Owning employee                                                           | `itr.employee.submitted`   | `referenceNo`, `requestId`                                              |
+| `employee.transfer.requested` / requested.v1 | Current line manager (`MANAGER_RELEASE.assigned_party_ref`)               | `itr.approver.pending`     | `referenceNo`, `requestId`, `stageCode=MANAGER_RELEASE`, `assignedRole` |
+| `employee.transfer.stage-pending.v1`         | Assignee of that stage; for `HR_VALIDATION`, the HR_BUSINESS_PARTNER role | `itr.approver.pending`     | `referenceNo`, `requestId`, `stageCode`, `assignedRole`                 |
+| `employee.transfer.withdrawn` / withdrawn.v1 | Owning employee                                                           | `itr.employee.withdrawn`   | `referenceNo`, `requestId`                                              |
+| `employee.transfer.rejected.v1`              | Owning employee                                                           | `itr.employee.rejected`    | `referenceNo`, `requestId`                                              |
+| `employee.transfer.approved.v1`              | Owning employee                                                           | `itr.employee.hr-approved` | `referenceNo`, `requestId`                                              |
+| `employee.transfer.completed.v1`             | Owning employee                                                           | `itr.employee.completed`   | `referenceNo`, `requestId`                                              |
 
 No row includes reason text. No row notifies Payroll, IT or Facilities (they consume
 fulfilment webhooks, not this spec).
@@ -141,18 +141,18 @@ unpublished and retries; the domain aggregate is not rolled back.
 
 ## Unit Test Cases (spec-derived)
 
-| Test ID | Maps to AC | Scenario | Expected |
-|---|---|---|---|
-| `internal-transfer-notifications.UT01` | AC1 | Requested event | Two notification outbox/enqueue rows: employee submitted, line manager pending |
-| `internal-transfer-notifications.UT02` | AC1 | Notification service 503 | Request still `SUBMITTED`; notification row unpublished |
-| `internal-transfer-notifications.UT03` | AC2 | Stage-pending `MANAGER_ACCEPT` | Exactly one pending notify to receiving manager ref |
-| `internal-transfer-notifications.UT04` | AC3 | Stage-pending `HR_VALIDATION` | Recipient is role `HR_BUSINESS_PARTNER`; payload has no names array |
-| `internal-transfer-notifications.UT05` | AC4 | Rejected.v1 | One employee `itr.employee.rejected`; zero manager pending |
-| `internal-transfer-notifications.UT06` | AC4 | Completed.v1 | One employee `itr.employee.completed` |
-| `internal-transfer-notifications.UT07` | AC5 | Submitted event from a request that has reason text | Notification payload JSON has no reason key; logs have no reason substring |
-| `internal-transfer-notifications.UT08` | AC6 | Handler invoked twice for one requested event | Notification service enqueue count remains 2 (employee + manager), not 4 |
-| `internal-transfer-notifications.UT09` | AC7 | Relay crash after domain commit | Aggregate unchanged; notification retryable |
-| `internal-transfer-notifications.UT10` | AC8 | `assigned_party_ref` null | Employee notified; no manager notify; no throw into submit |
+| Test ID                                | Maps to AC | Scenario                                            | Expected                                                                       |
+| -------------------------------------- | ---------- | --------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `internal-transfer-notifications.UT01` | AC1        | Requested event                                     | Two notification outbox/enqueue rows: employee submitted, line manager pending |
+| `internal-transfer-notifications.UT02` | AC1        | Notification service 503                            | Request still `SUBMITTED`; notification row unpublished                        |
+| `internal-transfer-notifications.UT03` | AC2        | Stage-pending `MANAGER_ACCEPT`                      | Exactly one pending notify to receiving manager ref                            |
+| `internal-transfer-notifications.UT04` | AC3        | Stage-pending `HR_VALIDATION`                       | Recipient is role `HR_BUSINESS_PARTNER`; payload has no names array            |
+| `internal-transfer-notifications.UT05` | AC4        | Rejected.v1                                         | One employee `itr.employee.rejected`; zero manager pending                     |
+| `internal-transfer-notifications.UT06` | AC4        | Completed.v1                                        | One employee `itr.employee.completed`                                          |
+| `internal-transfer-notifications.UT07` | AC5        | Submitted event from a request that has reason text | Notification payload JSON has no reason key; logs have no reason substring     |
+| `internal-transfer-notifications.UT08` | AC6        | Handler invoked twice for one requested event       | Notification service enqueue count remains 2 (employee + manager), not 4       |
+| `internal-transfer-notifications.UT09` | AC7        | Relay crash after domain commit                     | Aggregate unchanged; notification retryable                                    |
+| `internal-transfer-notifications.UT10` | AC8        | `assigned_party_ref` null                           | Employee notified; no manager notify; no throw into submit                     |
 
 ## Surfaces
 
@@ -172,9 +172,9 @@ specified here beyond template ids in the matrix.
 
 ## Open Questions
 
-| # | Question | Owner | Needed by | Resolution |
-|---|---|---|---|---|
-| 1 | None that change who is notified on the listed transitions or what is forbidden in the payload. | — | — | Matrix is the closed set for v1 |
+| #   | Question                                                                                        | Owner | Needed by | Resolution                      |
+| --- | ----------------------------------------------------------------------------------------------- | ----- | --------- | ------------------------------- |
+| 1   | None that change who is notified on the listed transitions or what is forbidden in the payload. | —     | —         | Matrix is the closed set for v1 |
 
 Copy for each template id is Product's, outside this spec. A plan must not invent
 legal-sounding HR prose in code; it references the template id.
@@ -204,6 +204,6 @@ legal-sounding HR prose in code; it references the template id.
 
 ## Revision History
 
-| Version | Date | Change | Driver |
-|---|---|---|---|
-| v1.0 | 2026-09-03 | Initial draft | BRD-001 |
+| Version | Date       | Change        | Driver  |
+| ------- | ---------- | ------------- | ------- |
+| v1.0    | 2026-09-03 | Initial draft | BRD-001 |

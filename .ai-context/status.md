@@ -20,25 +20,25 @@ Task states are the checkbox state in the feature's `tasks.md`:
 
 ## Active Specs
 
-| Spec ID | Title | Status | Owner | Last Updated | Notes |
-|---|---|---|---|---|---|
-| `internal-transfer-request` | Employee Internal Transfer Request | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07 | Draft v1.1. Reviewer: Abhijit Adhikary. Programme co-submitted with sibling specs 2026-09-07. BR2 date field still open — see Blocked |
-| `internal-transfer-approval-chain` | Manager release, manager accept, HR validation | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07 | Draft v1.0 submitted. Review after request. Record: `reviews/internal-transfer-approval-chain.gate1.md` |
-| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07 | Draft v1.0 submitted. Resume-after-failure still open — Approval requires resolve or defer. Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
-| `internal-transfer-notifications` | Employee and approver notifications | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07 | Draft v1.0 submitted. Record: `reviews/internal-transfer-notifications.gate1.md` |
+| Spec ID                                      | Title                                          | Status                      | Owner          | Last Updated | Notes                                                                                                                                                             |
+| -------------------------------------------- | ---------------------------------------------- | --------------------------- | -------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `internal-transfer-request`                  | Employee Internal Transfer Request             | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07   | Draft v1.1. Reviewer: Abhijit Adhikari. Programme co-submitted with sibling specs 2026-09-07. BR2 date field still open — see Blocked                             |
+| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07   | Draft v1.0 submitted. Review after request. Record: `reviews/internal-transfer-approval-chain.gate1.md`                                                           |
+| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07   | Draft v1.0 submitted. Resume-after-failure still open — Approval requires resolve or defer. Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
+| `internal-transfer-notifications`            | Employee and approver notifications            | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07   | Draft v1.0 submitted. Record: `reviews/internal-transfer-notifications.gate1.md`                                                                                  |
 
 ## Released Specs
 
-| Spec ID | Title | Released | Release |
-|---|---|---|---|
-| — | *None yet* | — | — |
+| Spec ID | Title      | Released | Release |
+| ------- | ---------- | -------- | ------- |
+| —       | _None yet_ | —        | —       |
 
 ## Blocked / Awaiting Decision
 
-| Spec ID | Blocked on | Owner of the decision | Raised | Expected |
-|---|---|---|---|---|
-| `internal-transfer-request` | BR2 says "12 months continuous service in current position." The HRIS exposes both `positionStartDate` and `continuousServiceDate`, which differ after a leave of absence. The spec does not say which governs. QA found it expanding AC7 (case UT16c) | HR Policy | 2026-09-01 | 2026-09-02 |
-| `internal-transfer-downstream-orchestration` | After a fulfilment stage fails and compensate events are emitted, who records that reversal happened and whether fulfilment can resume? Spec leaves the request in `FULFILMENT` with a `FAILED` stage and does not define a resume API | HR Ops + downstream owners | 2026-09-03 | Before that spec's Gate 1 |
+| Spec ID                                      | Blocked on                                                                                                                                                                                                                                             | Owner of the decision      | Raised     | Expected                  |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------- | ---------- | ------------------------- |
+| `internal-transfer-request`                  | BR2 says "12 months continuous service in current position." The HRIS exposes both `positionStartDate` and `continuousServiceDate`, which differ after a leave of absence. The spec does not say which governs. QA found it expanding AC7 (case UT16c) | HR Policy                  | 2026-09-01 | 2026-09-02                |
+| `internal-transfer-downstream-orchestration` | After a fulfilment stage fails and compensate events are emitted, who records that reversal happened and whether fulfilment can resume? Spec leaves the request in `FULFILMENT` with a `FAILED` stage and does not define a resume API                 | HR Ops + downstream owners | 2026-09-03 | Before that spec's Gate 1 |
 
 Not a blocker for T01 or T02, so work starts while it is resolved. It **is** a blocker for
 T04, and T04 will not start until AC7 says which date governs. QA has not encoded a guess.
@@ -47,20 +47,20 @@ T04, and T04 will not start until AC7 says which date governs. QA has not encode
 
 Items deliberately not built, recorded here so they are not quietly forgotten:
 
-| Item | Source | Owner | Revisit |
-|---|---|---|---|
-| Approval SLA and escalation | BRD-001 OQ-15 | HR Policy | After v1 usage data |
-| Approver delegation | BRD-001 OQ-16 | HR Policy | After v1 usage data |
-| Automated disciplinary gating | BRD-001 OQ-04 | HR Policy + Security | If HR exposes an eligibility API |
-| Reason-text purge at 24 months | BRD-001 OQ-17 | Data Privacy | **Before the first records reach 24 months** |
-| Return-for-edit after rejection | BRD-001 OQ-07 | Product | Post-v1 |
-| Localisation beyond English | BRD-001 OQ-18 | Product | Post-v1 |
+| Item                            | Source        | Owner                | Revisit                                      |
+| ------------------------------- | ------------- | -------------------- | -------------------------------------------- |
+| Approval SLA and escalation     | BRD-001 OQ-15 | HR Policy            | After v1 usage data                          |
+| Approver delegation             | BRD-001 OQ-16 | HR Policy            | After v1 usage data                          |
+| Automated disciplinary gating   | BRD-001 OQ-04 | HR Policy + Security | If HR exposes an eligibility API             |
+| Reason-text purge at 24 months  | BRD-001 OQ-17 | Data Privacy         | **Before the first records reach 24 months** |
+| Return-for-edit after rejection | BRD-001 OQ-07 | Product              | Post-v1                                      |
+| Localisation beyond English     | BRD-001 OQ-18 | Product              | Post-v1                                      |
 
 ## Daily Execution Log
 
 ### 2026-09-07
 
-- **BRD-001 — all four specs submitted to Gate 1** for Abhijit Adhikary:
+- **BRD-001 — all four specs submitted to Gate 1** for Abhijit Adhikari:
   `internal-transfer-request` (v1.1), `internal-transfer-approval-chain` (v1.0),
   `internal-transfer-downstream-orchestration` (v1.0), `internal-transfer-notifications`
   (v1.0). Empty review records created under `.ai-context/reviews/`. Suggested review
@@ -80,7 +80,7 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
 ### 2026-09-02
 
 - **`internal-transfer-request`**: Gate 1 review records reset to empty templates — prior
-  content was assessment scaffolding, not a completed review by Abhijit Adhikary. Spec status
+  content was assessment scaffolding, not a completed review by Abhijit Adhikari. Spec status
   set to **In Peer Review (Gate 1)**; plan to **Plan Drafted**. Implementation remains
   blocked until the concerned reviewer signs off.
 
@@ -92,17 +92,17 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
   ambiguity (BR2 measurement date after a leave of absence) rather than guessing at it;
   question is with HR Policy. Security assessment drafted (conditions C1–C3 for Gate 2).
   Task prompts drafted. `architecture.md` updated with the new tables, integrations
-  and both ADRs. **Nothing has been implemented. Gate 1 review pending Abhijit Adhikary.**
+  and both ADRs. **Nothing has been implemented. Gate 1 review pending Abhijit Adhikari.**
 
 ### 2026-08-31
 
 - **`internal-transfer-request`**: Plan drafted. ADR-0001 and ADR-0002 filed. Plan review
-  at Gate 1 **pending** Abhijit Adhikary after spec approval.
+  at Gate 1 **pending** Abhijit Adhikari after spec approval.
 
 ### 2026-08-28
 
 - **`internal-transfer-request`**: Spec revised to v1.1 and submitted for Gate 1 peer review.
-  Review **pending** Abhijit Adhikary.
+  Review **pending** Abhijit Adhikari.
 - **`constitution.md`**: proposed amendments drafted (free-text employee narrative rule;
   transactional outbox requirement) — **pending** Gate 1 constitution review before treated
   as ratified.
