@@ -2,7 +2,7 @@
 
 ## Derived From
 
-`.ai-context/specs/internal-transfer-request.spec.md` (v1.1, In Peer Review — not yet Approved)
+`.ai-context/specs/internal-transfer-request.spec.md` (v1.2, In Peer Review — not yet Approved)
 
 ## Status
 
@@ -43,7 +43,14 @@ Review record: `.ai-context/reviews/internal-transfer-request.gate1-plan.md`
 - **Front end** is a new route in `employee-portal-web` using the portal design system: a
   four-step wizard (target → date → reason → review) plus a status timeline, with Redux
   Toolkit for state and RTK Query for the API layer, per the constitution's single-state-library
-  rule.
+  rule. The wizard **reuses the portal OIDC session**; RTK Query attaches the bearer token.
+  There is no transfer login page. Unauthenticated users hit the portal's existing sign-in
+  (AC21).
+- **Authentication and authorisation** reuse the platform: gateway validates OIDC;
+  Express middleware `requireAuthenticatedEmployee` reads the token subject as
+  `employee_id` and never a body field. Ownership checks run in the service (AC13, AC20).
+  No new auth-adjacent npm package — platform OIDC middleware already on `employee-services`.
+  Rate-limit counters stay keyed by a salted hash of that subject (AC17).
 
 ## Data Model
 
@@ -195,6 +202,9 @@ dropping them would lose submitted requests.
   purge is a platform-wide capability; raised as a separate backlog item rather than built
   here, because a feature-local purge job is the wrong place for it.
 - **Localisation** — copy is externalised into resource files; no second locale is delivered.
+- **Identity administration** — login, registration, password reset, MFA enrolment, a
+  second session timeout, or an auth-adjacent package. Authentication is the existing
+  portal OIDC session (BRD-001 KD-07). _Gate 2 must verify no transfer login form appeared._
 
 ## Sequencing
 
@@ -204,8 +214,8 @@ Each step is independently generatable, reviewable and mergeable.
    index, revoked audit privileges.
 2. **Reference-data provider** — HRIS client, SQLite cache, staleness handling, the API07
    endpoint.
-3. **Draft lifecycle** — create and update, optimistic concurrency, ownership checks
-   (API01, API02).
+3. **Draft lifecycle** — create and update, optimistic concurrency, OIDC middleware and
+   ownership checks (API01, API02, AC13, AC20).
 4. **Rule set** — one function per business rule, returning violations carrying rule IDs.
 5. **Submit transaction** — validation, stage-plan construction, audit, outbox, idempotency
    (API03).
@@ -215,12 +225,13 @@ Each step is independently generatable, reviewable and mergeable.
 8. **Withdrawal** — state guard, stage cancellation, event (API06).
 9. **Cross-cutting hardening** — rate limiting, log redaction and its test, field-level
    encryption, correlation-ID propagation.
-10. **Front end** — wizard, status timeline, accessibility.
+10. **Front end** — wizard, status timeline, accessibility, existing portal session (AC21).
 
 ## Documentation Impact
 
-- [x] `architecture.md` — Components, Data Model, Integration Points, Decisions in Force and
-      Known Constraints all updated on plan approval (2026-09-01)
+- [x] `architecture.md` — Components, Data Model, Integration Points, Authentication and
+      Authorisation, Decisions in Force and Known Constraints updated (AuthN/AuthZ section
+      2026-09-08; remainder on plan drafting 2026-09-01)
 - [x] `decisions/` — ADR-0001 and ADR-0002 filed
 - [ ] `README.md` — no operational change until the first deploy adds a migration step
 - [ ] `docs/contracts/` — event schemas to be registered when T06 merges

@@ -16,7 +16,7 @@ the diff happens to contain.
 
 | Field | Value |
 |---|---|
-| Spec | `internal-transfer-request.spec.md` v1.1 (In Peer Review — not yet Approved) |
+| Spec | `internal-transfer-request.spec.md` v1.2 (In Peer Review — not yet Approved) |
 | Plan | `internal-transfer-request.plan.md` (Plan Drafted — plan review pending) |
 | Security assessment | `.ai-context/security/internal-transfer-request.security.md` — Draft; conditions C1–C3 when build starts |
 | Reviewer | Tapas Dutta |
@@ -49,6 +49,8 @@ in the Method column.
 | AC17 | UT49, UT50 green; reviewer inspects the key construction | — | Not yet evidenced |
 | AC18 | UT51, UT52 green; UT52's rejection must come from the database | — | Not yet evidenced |
 | AC19 | UT53–UT55, AT01–AT05; automated axe **plus** a manual keyboard and screen-reader pass — automation alone does not satisfy this AC | — | Not yet evidenced |
+| AC20 | UT56, UT57, NT03, NT10 green; 401 with no persistence | — | Not yet evidenced |
+| AC21 | UT58, UT59, NT11; no transfer-specific login form; bearer token on API calls | — | Not yet evidenced |
 
 ## Test-First Evidence
 
@@ -86,6 +88,7 @@ and only a reviewer can.
 | Approver delegation resolution | Party-reference resolution in T07 | Not yet checked |
 | Reason-text purge job | Any scheduled task added | Not yet checked |
 | Synchronous calls to Payroll, ITSM or Facilities | Any HTTP client in the request path | Not yet checked |
+| Transfer-specific login or auth-adjacent package | A new sign-in route or IdP client in T03/T10 | Not yet checked |
 
 ## Security Checklist
 

@@ -6,7 +6,7 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.0 submitted 2026-09-07 for review by Abhijit Adhikari.
+**In Peer Review (Gate 1)** — Draft v1.1 submitted 2026-09-08 for review by Abhijit Adhikari.
 Full state machine in `.ai-context/status.md`. Do not generate a plan or code until
 **Approved**.
 
@@ -26,7 +26,7 @@ Approved — see Open Questions and `status.md` Blocked.
 | Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-07 (_pending outcome_) |
 | Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
-Gate 1 record: `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`
+Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
 
 ## Intent
 
@@ -44,7 +44,8 @@ the HRIS, does not approve transfers, and does not send employee notifications.
 
 ## Context
 
-- Builds on: `.ai-context/architecture.md` — _Integration Points_, _Known Constraints and
+- Builds on: `.ai-context/architecture.md` — _Integration Points_, _Authentication and
+  Authorisation_, _Known Constraints and
   Debt_; [ADR-0001](../decisions/ADR-0001-outbox-event-driven-transfer-orchestration.md);
   [ADR-0002](../decisions/ADR-0002-transfer-request-system-of-record.md)
 - Constitution: `.ai-context/constitution.md` — no synchronous Payroll/ITSM/Facilities call
@@ -58,6 +59,7 @@ the HRIS, does not approve transfers, and does not send employee notifications.
   BRD-001 OQ-02).
 - Related: `internal-transfer-notifications` — consumes `employee.transfer.completed.v1`
   and stage-failure events; notification loss must not change request status
+- Shared facts: `.ai-context/ownership_index.md` (OWN-06, OWN-07)
 - API contract consumed: downstream webhook URLs configured per function; inbound
   completion webhook defined below. HRIS write is performed by the HRIS integration
   layer, not by this service
@@ -79,6 +81,18 @@ visible, not silent.
 | `internal-transfer-downstream-orchestration.BR5` | Downstream systems report success or failure back. Consumers must treat delivery as at-least-once and dedupe on `requestId` + `stageCode` + `eventType`.                                                                                                                  | ADR-0001                                   | Technical                                      |
 | `internal-transfer-downstream-orchestration.BR6` | On a reported stage failure, the portal records that stage as `FAILED` and emits a compensate signal for every fulfilment stage already `COMPLETED` on that request, in reverse sequence. It does not mark the request `COMPLETED`.                                       | BRD-001 spec map (compensation on failure) | Business intent; mechanism technical           |
 | `internal-transfer-downstream-orchestration.BR7` | `EMPLOYEE_CONFIRMATION` is completed by the portal when every applicable stage among `ORG_DATA_UPDATE`, `PAYROLL_UPDATE`, `IT_ACCESS` and `FACILITIES` is `COMPLETED`. It is not an employee click. Telling the employee is notifications spec.                           | BRD-001 journey stage 8                    | Business                                       |
+
+## Authentication and Authorisation
+
+Cites BRD-001 BR14, KD-07 and `.ai-context/architecture.md` — _Authentication and
+Authorisation_. This spec adds **no** employee or approver OIDC API.
+
+| Concern | Rule on this spec |
+| --- | --- |
+| Authentication | API01 authenticates with HMAC of the request body using the source's signing secret from Secrets Manager. Not an employee access token. |
+| Authorisation | A valid signature authorises only fulfilment stage completion/failure reports. `requestId` and `employee` fields in the body are data, never identity. |
+| Failure | Missing or invalid HMAC → 401 `unauthenticated`; stages unchanged; body not logged (AC8). An employee OIDC bearer token on this URL is not accepted (AC11). |
+| Employee UI | None. Fulfilment visibility is the request spec status view, which uses employee OIDC. |
 
 ## API Contract
 
@@ -204,6 +218,11 @@ This spec **consumes** `employee.transfer.approved.v1` from the approval-chain s
     append-only audit row is written (actor role `SYSTEM` or the configured webhook
     source id, not a person's name) and cannot be updated or deleted.
 
+11. `internal-transfer-downstream-orchestration.AC11` — Given API01 is called with an
+    employee or approver OIDC bearer token and no valid HMAC, then HTTP 401
+    `unauthenticated` is returned and no stage changes — an employee session must not
+    complete a fulfilment stage.
+
 ## Unit Test Cases (spec-derived)
 
 | Test ID                                           | Maps to AC | Scenario                                           | Expected                                                                                     |
@@ -222,6 +241,7 @@ This spec **consumes** `employee.transfer.approved.v1` from the approval-chain s
 | `internal-transfer-downstream-orchestration.UT12` | AC9        | Completion while `HR_VALIDATION`                   | 409                                                                                          |
 | `internal-transfer-downstream-orchestration.UT13` | AC10       | Org SUCCESS                                        | Audit row from/to stage statuses; update of that row rejected by the database                |
 | `internal-transfer-downstream-orchestration.UT14` | AC2        | Report SUCCESS on `applicable: false` stage        | 422; no signal                                                                               |
+| `internal-transfer-downstream-orchestration.UT15` | AC11       | API01 with employee Bearer token, no HMAC          | 401; stages unchanged                                                                        |
 
 ## Surfaces
 
@@ -280,3 +300,4 @@ offline; portal stays `FULFILMENT` until a later spec").
 | Version | Date       | Change        | Driver  |
 | ------- | ---------- | ------------- | ------- |
 | v1.0    | 2026-09-03 | Initial draft | BRD-001 |
+| v1.1    | 2026-09-08 | Authentication and authorisation section; AC11 — employee OIDC must not authorise webhooks (BRD-001 BR14) | BRD-001 KD-07, BR14 |

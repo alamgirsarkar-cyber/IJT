@@ -4,9 +4,10 @@
 > against the spec's acceptance criteria **by ID** — not against a sense that it looks
 > reasonable.
 >
-> The agent-assisted pass below does not replace the human review. A named human is
-> accountable for every merged line. "The AI wrote it" and "the AI reviewed it" are both
-> non-answers.
+> The agent-assisted pass below does not replace the human review. Sign-off write-back
+> is only `.agent/rules/governance.md` (append to `.ai-context/state/completed.md`).
+> Only Tapas Dutta may authorise moving the feature to merged. Reviewer sessions use
+> `.agent/workflows/gate-review-dashboard.md`.
 
 ## Inputs to tag into the session
 
@@ -76,5 +77,6 @@ Categorise every finding as Blocker / Should-fix / Nit. Do not restate what the 
 
 ## Outcome
 
-Approve, or return with findings categorised. On merge: squash-merge to `main`, update
-`tasks.md`, spec `Status`, and `status.md` the same day.
+Approve, or return with findings categorised. On an **Approve** verdict from Tapas Dutta,
+write `.ai-context/state/completed.md` per `governance.md`, then squash-merge to `main`,
+update `tasks.md`, spec `Status`, and `status.md` the same day.

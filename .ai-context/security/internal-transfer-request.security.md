@@ -2,7 +2,7 @@
 
 **Assessed by:** Alamgir Sarkar
 **Date:** 2026-08-31 · **Reviewed against:** `.ai-context/constitution.md` — Security Posture
-**Spec version:** v1.1 (In Peer Review) · **Plan status:** Plan Drafted
+**Spec version:** v1.2 (In Peer Review) · **Plan status:** Plan Drafted
 **Verdict:** **Draft** — pending Gate 1 spec/plan approval and Security sign-off. Three
 conditions to carry into Gate 2 when build starts (C1–C3 below).
 
@@ -49,6 +49,7 @@ the rule rather than rediscovering it.
 | T14 | Secrets or keys exposed | Credential exposure | Committed config, logs, CI output | AWS Secrets Manager at runtime; no `.env`; the encryption key is a managed key with rotation, never in application config | Gate 2 security checklist |
 | T15 | An unvetted dependency entering the manifest | Supply chain | An agent suggesting a convenient package | No dependency added without a vetting note; crypto-adjacent packages rejected by default in favour of platform primitives | ST06, Gate 2 |
 | T16 | Instructions embedded in employee free text executed by an agent or a downstream tool | Prompt injection through user content | An employee writing agent-directed text into `reason` | Reason text is data, never instruction; it is never fed to an agent, never rendered as markup, and is excluded from every automated summary | AC16, NT07 |
+| T17 | Unauthenticated or expired-token caller mutates a transfer | Broken authentication | Missing/expired/forged token | Gateway plus in-service 401; no state change; no employee id in body trusted | AC20, UT56, UT57, NT03, NT10 |
 
 ## Constitution Compliance
 
@@ -57,7 +58,7 @@ the rule rather than rediscovering it.
 | No PII in logs at any level | Compliant by design | AC16; UT47 captures logs across the whole submit path rather than unit-testing a redaction function |
 | Employee ID permitted in logs | Used deliberately in structured logs | Plan, Data Model |
 | Free-text employee narrative protected | Compliant | AC16, T3–T5, T16 |
-| OIDC on all employee-facing endpoints; authorisation enforced in the service | Compliant | AC13; gateway plus in-service ownership checks |
+| OIDC on all employee-facing endpoints; authorisation enforced in the service | Compliant | AC13, AC20, AC21; architecture AuthN/AuthZ; gateway plus in-service ownership checks |
 | Explicit rate-limit decision per endpoint | Compliant | Seven endpoints, seven decisions in the spec's API Contract |
 | Secrets only from Secrets Manager | Compliant | T14 |
 | TLS in transit; encryption at rest plus field-level for narrative | Compliant | Data Classification |

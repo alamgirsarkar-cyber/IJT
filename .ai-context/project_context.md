@@ -4,7 +4,7 @@
 > agent reads to orient itself before touching a spec. Detail belongs in
 > `architecture.md`, not here.
 
-**Last updated:** 2026-09-01 · **Maintained by:** Alamgir Sarkar
+**Last updated:** 2026-09-08 · **Maintained by:** Alamgir Sarkar
 
 ## Objective
 
@@ -22,8 +22,9 @@ Payroll, IT and Facilities themselves, with no shared record and no visibility.
 - **In scope:** employee-initiated service journeys that span more than one back-office
   function, and the orchestration and status visibility that makes them a single journey.
 - **Out of scope:** being a system of record for employment data (that is the HRIS), payroll
-  calculation, identity administration, and any manager- or HR-initiated process. The portal
-  is the employee's front door and the orchestrator, not the master.
+  calculation, identity administration (login, IdP, password/MFA enrolment), and any
+  manager- or HR-initiated process. The portal reuses corporate OIDC; it is not an identity
+  provider. The portal is the employee's front door and the orchestrator, not the master.
 
 ## Primary Users and Personas
 
@@ -37,7 +38,8 @@ Payroll, IT and Facilities themselves, with no shared record and no visibility.
 
 ## Architecture Summary
 
-- **`employee-portal-web`** — React front end; the employee's single view.
+- **`employee-portal-web`** — React front end; the employee's single view. Reuses the
+  portal OIDC session; transfer routes do not add a login page.
 - **`employee-services`** — Node/TypeScript domain service; owns portal request aggregates,
   their state machines and their APIs. The internal transfer journey is a bounded module
   inside it, not a new service.
@@ -58,17 +60,17 @@ Payroll, IT and Facilities themselves, with no shared record and no visibility.
 | Data         | SQLite 3                                           | Migrations forward-only; cache, idempotency and rate limits in SQLite |
 | Integration  | HTTPS webhooks via outbox relay                    | Transactional outbox pattern; event schemas are contracts             |
 | Test         | Jest, Supertest, React Testing Library, Playwright | Real SQLite file in tests                                             |
-| Platform     | AWS, API Gateway, Secrets Manager, corporate OIDC  | Gateway owns coarse auth; services own fine-grained                   |
+| Platform     | AWS, API Gateway, Secrets Manager, corporate OIDC  | Gateway validates tokens; `employee-services` owns resource AuthZ (token subject / role / HMAC) |
 
 ## Stakeholders and Decision Owners
 
 Named people on this assessment:
 
-| Role            | Name             |
-| --------------- | ---------------- |
-| Owner / author  | Alamgir Sarkar   |
+| Role | Name |
+| --- | --- |
+| Author of record | Alamgir Sarkar |
 | Gate 1 reviewer | Abhijit Adhikari |
-| Gate 2 reviewer | Tapas Dutta      |
+| Gate 2 reviewer | Tapas Dutta |
 
 Functions that own decisions (no named incumbents):
 

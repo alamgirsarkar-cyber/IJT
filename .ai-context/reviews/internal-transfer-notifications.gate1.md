@@ -1,7 +1,9 @@
 # Gate 1 — Spec Peer Review: `internal-transfer-notifications`
 
 > **This record is for the named human reviewer.** An agent may prepare a first sweep using
-> `.agent/workflows/spec-review.md`; it does not sign off here.
+> `.agent/workflows/spec-review.md`; it does not sign off here. The dated verdict is written
+> as `## Gate 1 Review` on the spec per `.agent/rules/governance.md` — this worksheet is
+> findings, not the sign-off.
 
 ## Review Record
 

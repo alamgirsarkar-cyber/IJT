@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gate Review Dashboard</title>
+  <style>
+    :root {
+      --ink: #12202e;
+      --muted: #5b6b7c;
+      --line: #d5dde6;
+      --paper: #f4f1ea;
+      --card: #ffffff;
+      --accent: #0f5c56;
+      --warn: #8a4b12;
+      --block: #8b1e2d;
+      --pass: #1f6b3a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Calibri, system-ui, sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.45;
+    }
+    header {
+      background: var(--ink);
+      color: #f7f4ee;
+      padding: 1.25rem 1.5rem 1rem;
+    }
+    header p { margin: 0.2rem 0 0; color: #c9d3dc; font-size: 0.95rem; }
+    h1 { margin: 0; font-size: 1.35rem; font-weight: 650; letter-spacing: 0.02em; }
+    .meta { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; margin-top: 0.85rem; font-size: 0.9rem; }
+    .meta span strong { color: #9ee0d6; font-weight: 600; }
+    main { padding: 1rem 1.25rem 3rem; }
+    .buckets {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(16rem, 1fr));
+      gap: 0.85rem;
+      align-items: start;
+    }
+    @media (max-width: 1100px) {
+      .buckets { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 700px) {
+      .buckets { grid-template-columns: 1fr; }
+    }
+    .bucket {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-top: 4px solid var(--accent);
+      min-height: 8rem;
+    }
+    .bucket h2 {
+      margin: 0;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--line);
+      color: var(--accent);
+    }
+    .card {
+      border-bottom: 1px solid var(--line);
+      padding: 0.75rem 0.85rem 0.9rem;
+    }
+    .card:last-child { border-bottom: 0; }
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      align-items: flex-start;
+    }
+    .card h3 { margin: 0 0 0.35rem; font-size: 0.95rem; }
+    .sev {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 0.12rem 0.4rem;
+      border: 1px solid var(--line);
+      white-space: nowrap;
+    }
+    .sev.blocker { color: var(--block); border-color: var(--block); }
+    .sev.should { color: var(--warn); border-color: var(--warn); }
+    .sev.nit { color: var(--muted); }
+    .sev.pass { color: var(--pass); border-color: var(--pass); }
+    .source { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.45rem; }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.75rem;
+      background: #f7f8fa;
+      border: 1px solid var(--line);
+      padding: 0.55rem 0.6rem;
+      max-height: 22rem;
+      overflow: auto;
+    }
+    button.copy {
+      font: inherit;
+      font-size: 0.75rem;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 0.15rem 0.45rem;
+      cursor: pointer;
+    }
+    button.copy:hover { border-color: var(--accent); color: var(--accent); }
+    footer {
+      margin: 1.25rem 1.25rem 0;
+      padding: 0.9rem 1rem;
+      background: var(--card);
+      border: 1px solid var(--line);
+    }
+    footer h2 { margin: 0 0 0.4rem; font-size: 0.95rem; }
+    footer p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Gate Review Dashboard</h1>
+    <p>Same page for every tool. Verdict is spoken in chat; the agent writes it back.</p>
+    <div class="meta">
+      <span><strong>Gate</strong> <span id="gate">{{GATE}}</span></span>
+      <span><strong>Slug</strong> <span id="slug">{{SLUG}}</span></span>
+      <span><strong>Reviewer</strong> <span id="reviewer">{{REVIEWER}}</span></span>
+      <span><strong>Generated</strong> <span id="generated">{{GENERATED}}</span></span>
+    </div>
+  </header>
+  <main>
+    <div class="buckets">
+      <section class="bucket" id="bucket-1">
+        <h2>1 · Spec contract</h2>
+        <!-- cards -->
+      </section>
+      <section class="bucket" id="bucket-2">
+        <h2>2 · Constitution &amp; security</h2>
+      </section>
+      <section class="bucket" id="bucket-3">
+        <h2>3 · Plan &amp; sequencing</h2>
+      </section>
+      <section class="bucket" id="bucket-4">
+        <h2>4 · Tests &amp; traceability</h2>
+      </section>
+    </div>
+    <footer>
+      <h2>Verdict (chat only)</h2>
+      <p>Approve / Reject / Changes requested — plus an optional comment. Do not edit this HTML as sign-off.</p>
+    </footer>
+  </main>
+  <script>
+    function copyCard(btn) {
+      var card = btn.closest(".card");
+      var body = card ? card.querySelector("pre") : null;
+      if (!body || !navigator.clipboard) return;
+      navigator.clipboard.writeText(body.textContent || "");
+      btn.textContent = "Copied";
+      setTimeout(function () { btn.textContent = "Copy"; }, 1200);
+    }
+  </script>
+</body>
+</html>

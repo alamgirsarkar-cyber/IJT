@@ -45,10 +45,14 @@ any implementation prompt runs. Prompts are in
 
 - [ ] `internal-transfer-request.T03` — Draft creation and update
       — Acceptance: `API01`, `API02`, `AC1`, `AC2` (optimistic concurrency), `AC8` (create
-        side), `AC13` (ownership and 404-not-403)
-      — Tests first: `UT01`, `UT02`, `UT03`, `UT04`, `UT05`, `UT21`, `UT22`, `UT23`, `UT36`, `UT37`
-      — Touches: `internal-transfer/api/`, `internal-transfer/domain/request.ts`
+        side), `AC13` (ownership and 404-not-403), `AC20` (401 unauthenticated)
+      — Tests first: `UT01`, `UT02`, `UT03`, `UT04`, `UT05`, `UT21`, `UT22`, `UT23`, `UT36`,
+        `UT37`, `UT56`
+      — Touches: `internal-transfer/api/`, `internal-transfer/domain/request.ts`,
+        `internal-transfer/auth/`
       — Depends on: `T01`, `T02`
+      — Note: `requireAuthenticatedEmployee` middleware is introduced here and reused by
+        later API tasks; identity is token subject only
 
 - [ ] `internal-transfer-request.T04` — Business rule set
       — Acceptance: `AC3`, `AC4` (BR7 window and BR8 advisory), `AC5` (BR5), `AC6` (BR6),
@@ -97,8 +101,9 @@ any implementation prompt runs. Prompts are in
 
 - [ ] `internal-transfer-request.T09` — Cross-cutting hardening
       — Acceptance: `AC16` (field-level encryption, log absence), `AC17` (rate limits, hashed
-        counter keys), `AC18` (correlation ID on every audit record)
-      — Tests first: `UT47` (log capture across the whole submit path), `UT49`, `UT50`, `UT51`
+        counter keys), `AC18` (correlation ID on every audit record), `AC20` on API03–API07
+      — Tests first: `UT47` (log capture across the whole submit path), `UT49`, `UT50`, `UT51`,
+        `UT57`
       — Touches: `internal-transfer/security/`, `internal-transfer/observability/`,
         gateway rate-limit configuration
       — Depends on: `T05`, `T07`, `T08`
@@ -107,15 +112,15 @@ any implementation prompt runs. Prompts are in
         redaction function works
 
 - [ ] `internal-transfer-request.T10` — Front end: transfer wizard and status timeline
-      — Acceptance: `AC19` (WCAG 2.1 AA), and the employee-facing surfacing of `AC11`, `AC12`,
-        `AC14`
-      — Tests first: `UT53`, `UT54`, `UT55`, plus a Playwright journey covering draft → submit
-        → view → withdraw
+      — Acceptance: `AC19` (WCAG 2.1 AA), `AC21` (existing portal OIDC session; no transfer
+        login), and the employee-facing surfacing of `AC11`, `AC12`, `AC14`
+      — Tests first: `UT53`, `UT54`, `UT55`, `UT58`, `UT59`, plus a Playwright journey covering
+        draft → submit → view → withdraw
       — Touches: `employee-portal-web/src/features/internal-transfer/`
       — Depends on: `T03`, `T07`, `T08`
       — Note: accessibility is an acceptance condition of this task. Automated axe checks plus
         a manual keyboard and screen-reader pass; the stage timeline must not convey status by
-        colour alone
+        colour alone. Auth is the portal session, not a feature-local credential form.
 
 ## Traceability
 
@@ -138,6 +143,8 @@ before generation.
 | `AC11` — status view and pending-with naming | T07, T10 | UT30–UT33 | Not Started |
 | `AC12` — own requests only, paginated, no reason | T07, T10 | UT34, UT35 | Not Started |
 | `AC13` — ownership, 404 not 403, token-derived identity | T03, T07 | UT36, UT37 | Not Started |
+| `AC20` — unauthenticated 401, no state change | T03, T09 | UT56, UT57 | Not Started |
+| `AC21` — front end uses portal OIDC session only | T10 | UT58, UT59 | Not Started |
 | `AC14` — withdrawal window and stage cancellation | T08, T10 | UT38–UT41 | Not Started |
 | `AC15` — dependency unavailability and degradation | T02, T05 | UT42–UT45 | Not Started |
 | `AC16` — employee narrative handling | T06, T07, T08, T09 | UT46, UT47, UT48 | Not Started |
@@ -146,8 +153,9 @@ before generation.
 | `AC19` — accessibility | T10 | UT53, UT54, UT55 | Not Started |
 
 **Reverse check — every task serves an AC:** T01 → AC1/AC8/AC18 · T02 → AC6/AC15 ·
-T03 → AC1/AC2/AC8/AC13 · T04 → AC3–AC7 · T05 → AC9/AC10/AC15 · T06 → AC9 ·
-T07 → AC11/AC12/AC13/AC16 · T08 → AC14/AC16 · T09 → AC16/AC17/AC18 · T10 → AC19/AC11/AC12/AC14.
+T03 → AC1/AC2/AC8/AC13/AC20 · T04 → AC3–AC7 · T05 → AC9/AC10/AC15 · T06 → AC9 ·
+T07 → AC11/AC12/AC13/AC16 · T08 → AC14/AC16 · T09 → AC16/AC17/AC18/AC20 ·
+T10 → AC19/AC21/AC11/AC12/AC14.
 No orphans in either direction.
 
 ## Deferred — must NOT appear in any of these tasks
@@ -157,6 +165,8 @@ check the implementation did not creep into them:
 
 - Any stage transition beyond creating the stage rows — no approval logic
 - Any notification, including a confirmation message emitted on submit
+- A login page, local user store, or auth-adjacent package when platform OIDC already
+  authenticates the portal
 - Any write to `confirmed_effective_date` or `sla_due_at`
 - Approver delegation resolution
 - The reason-text purge job

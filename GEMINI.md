@@ -1,0 +1,1 @@
+Read `.agent/rules/agent-role.md` and `.agent/rules/governance.md` in full before doing anything else. Gate 1 / Gate 2 reviewer self-identification and Review Dashboard automation live only in `governance.md` — do not copy those rules here.

@@ -4,7 +4,8 @@
 > violates a non-negotiable is a Gate 1 rejection, not a Gate 2 comment.
 >
 > **Complete only after the spec is Approved at Gate 1.** This record is for the named
-> human reviewer.
+> human reviewer. Verdict write-back is still the dated `## Gate 1 Review` line on the spec
+> (`.agent/rules/governance.md`).
 
 ## Review Record
 

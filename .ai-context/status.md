@@ -1,6 +1,6 @@
 # Project Status Board — One-Point Employee Portal
 
-_Last updated: 2026-09-07_
+_Last updated: 2026-09-08_
 
 > Updated by whoever last touched a spec, same day. Answers "what is in flight" without a
 > stand-up. Where a delivery tool exists, this file mirrors **spec-level** state and does not
@@ -22,10 +22,10 @@ Task states are the checkbox state in the feature's `tasks.md`:
 
 | Spec ID                                      | Title                                          | Status                      | Owner          | Last Updated | Notes                                                                                                                                                             |
 | -------------------------------------------- | ---------------------------------------------- | --------------------------- | -------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `internal-transfer-request`                  | Employee Internal Transfer Request             | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07   | Draft v1.1. Reviewer: Abhijit Adhikari. Programme co-submitted with sibling specs 2026-09-07. BR2 date field still open — see Blocked                             |
-| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07   | Draft v1.0 submitted. Review after request. Record: `reviews/internal-transfer-approval-chain.gate1.md`                                                           |
-| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07   | Draft v1.0 submitted. Resume-after-failure still open — Approval requires resolve or defer. Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
-| `internal-transfer-notifications`            | Employee and approver notifications            | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07   | Draft v1.0 submitted. Record: `reviews/internal-transfer-notifications.gate1.md`                                                                                  |
+| `internal-transfer-request`                  | Employee Internal Transfer Request             | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-08   | Draft v1.2 — AuthN/AuthZ made explicit (AC20, AC21). Reviewer: Abhijit Adhikari. BR2 date field still open — see Blocked                             |
+| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-08   | Draft v1.1 — AuthN/AuthZ section, AC13/AC14. Record: `reviews/internal-transfer-approval-chain.gate1.md`                                                           |
+| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-08   | Draft v1.1 — HMAC vs employee OIDC (AC11). Resume-after-failure still open. Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
+| `internal-transfer-notifications`            | Employee and approver notifications            | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-08   | Draft v1.1 — no new OIDC API. Record: `reviews/internal-transfer-notifications.gate1.md`                                                                                  |
 
 ## Released Specs
 
@@ -57,6 +57,22 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
 | Localisation beyond English     | BRD-001 OQ-18 | Product              | Post-v1                                      |
 
 ## Daily Execution Log
+
+### 2026-09-08
+
+- **Governance artefact system added.** Canonical file
+  `.agent/rules/governance.md`. Session procedure in `.agent/rules/agent-role.md`. Six
+  thin tripwires (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.cursor/rules/gate-review.mdc`,
+  `.windsurf/rules/gate-review.md`, `.github/copilot-instructions.md`). Dashboard workflow
+  and HTML design under `.agent/workflows/`. Shared facts in
+  `.ai-context/ownership_index.md`. Gate 2 write-back log
+  `.ai-context/state/completed.md`. Gate 1 still pending Abhijit Adhikari.
+
+- **AuthN/AuthZ written into BRD-001 first** (KD-07, KD-08, BR10–BR14, actor matrix), then
+  architecture _Authentication and Authorisation_, then spec bumps: request v1.2 (AC20,
+  AC21), approval-chain v1.1 (AC13, AC14), downstream v1.1 (AC11), notifications v1.1.
+  Login/IdP remain out of scope — existing portal SSO is reused. Gate 1 still pending
+  Abhijit Adhikari; these are author revisions on the submitted drafts.
 
 ### 2026-09-07
 

@@ -131,7 +131,7 @@ returns the same 503 shape as an outage, so callers have one path to handle.
 
 ## T03 — Draft creation and update
 
-**Context tagged:** spec API01, API02, AC1, AC2, AC8, AC13; task T03; module from T01/T02.
+**Context tagged:** spec API01, API02, AC1, AC2, AC8, AC13, AC20; task T03; module from T01/T02.
 **Model:** lighter.
 
 **RED**
@@ -139,7 +139,7 @@ returns the same 503 shape as an outage, so callers have one path to handle.
 ```
 Generate the failing tests for internal-transfer-request.T03.
 
-From AC1, AC2, AC8, AC13 and the exception tables of API01 and API02:
+From AC1, AC2, AC8, AC13, AC20 and the exception tables of API01 and API02:
 - UT01, UT02: creation, reference format, current-assignment snapshot
 - UT03, UT04, UT05: If-Match matching, stale and absent
 - UT21, UT22, UT23: BR3 blocks on a non-terminal request, does not block on a terminal one,
@@ -147,6 +147,7 @@ From AC1, AC2, AC8, AC13 and the exception tables of API01 and API02:
 - UT36: another employee's request returns 404, and no field of it appears in the body or in
   any log line
 - UT37: an employeeId supplied in the request body is ignored for authorisation
+- UT56: missing Authorization on API01 is 401 and inserts no row
 
 Cover every row of both exception tables, not the happy path plus one error. No implementation.
 ```
@@ -154,10 +155,12 @@ Cover every row of both exception tables, not the happy path plus one error. No 
 **GREEN**
 
 ```
-Implement internal-transfer-request.T03 to make UT01–UT05, UT21–UT23, UT36 and UT37 pass.
+Implement internal-transfer-request.T03 to make UT01–UT05, UT21–UT23, UT36, UT37 and UT56 pass.
 
 - Identity comes from the token subject only. No endpoint reads an employee identifier from a
   body, query or path for authorisation.
+- Missing or expired token is 401 unauthenticated with no persistence (AC20). Reuse platform
+  OIDC middleware; do not add an auth-adjacent package.
 - Not-found and not-owned both return 404 request-not-found. This is deliberate: a 403 would
   confirm the identifier exists (AC13). Do not "improve" it to 403.
 - If-Match is required on update; a mismatch is 409 carrying currentVersion.
@@ -401,19 +404,21 @@ Implement internal-transfer-request.T09.
 
 ## T10 — Front end: transfer wizard and status timeline
 
-**Context tagged:** spec AC11, AC12, AC14, AC19; `int-standards.react.md`; design `OPP/ITR/v1`.
+**Context tagged:** spec AC11, AC12, AC14, AC19, AC21; `int-standards.react.md`; design `OPP/ITR/v1`.
 **Model:** lighter for components, heavier for the accessibility pass.
 
 **RED**
 
 ```
-Generate the failing tests for internal-transfer-request.T10 from AC19, plus the front-end
+Generate the failing tests for internal-transfer-request.T10 from AC19 and AC21, plus the front-end
 surfacing of AC11, AC12 and AC14.
 
 - UT53: the whole wizard is operable by keyboard alone; focus order matches visual order
 - UT54: a submit validation error is announced and is programmatically associated with its
   field
 - UT55: in greyscale, every stage status is still distinguishable as text
+- UT58: unauthenticated visit to the wizard uses portal existing sign-in; no request data
+- UT59: authenticated save sends the bearer token and does not send employeeId for AuthZ
 - A Playwright journey: draft → submit → view status → withdraw
 
 React Testing Library queried by accessible role and name, never by test ID — a component
@@ -431,7 +436,8 @@ Implement internal-transfer-request.T10.
   required" — the employee sees the step was considered, not skipped by mistake.
 - Label the requested effective date as requested until a confirmed date exists (BRD-001 OQ-05).
 - Show the reference-data freshness notice when stale is true.
-- Redux Toolkit and RTK Query only; no second state library.
+- Redux Toolkit and RTK Query only; no second state library. Reuse the portal OIDC session;
+  attach the bearer token; do not add a transfer login form (AC21).
 - Externalise all copy into resource files. Do not add a localisation library — localisation
   is explicitly out of scope; only the copy structure is being prepared.
 - Accessibility is an acceptance condition of this task, not a follow-up.

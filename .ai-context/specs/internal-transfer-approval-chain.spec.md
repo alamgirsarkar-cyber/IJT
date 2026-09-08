@@ -6,7 +6,7 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.0 submitted 2026-09-07 for review by Abhijit Adhikari.
+**In Peer Review (Gate 1)** — Draft v1.1 submitted 2026-09-08 for review by Abhijit Adhikari.
 Full state machine in `.ai-context/status.md`. Do not generate a plan or code until
 **Approved**.
 
@@ -25,7 +25,7 @@ approving only after `internal-transfer-request` is Approved, or co-review that 
 | Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-07 (_pending outcome_) |
 | Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
-Gate 1 record: `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`
+Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`.
 
 ## Intent
 
@@ -51,6 +51,7 @@ send notifications.
   when this spec sets status `FULFILMENT`.
 - Related: `internal-transfer-notifications` — **In Peer Review**. Consumes
   transitions this spec records.
+- Shared facts: `.ai-context/ownership_index.md` (OWN-01 … OWN-05, OWN-07)
 - API contract consumed: none beyond the request aggregate. HRIS is not called on a
   decision path (assignees were snapshotted at submit).
 - Design: portal design system; manager inbox / decision and HR inbox / validation
@@ -70,9 +71,23 @@ are the units of work.
 | `internal-transfer-approval-chain.BR3` | HR sets the confirmed effective date when approving `HR_VALIDATION`. Until then the date remains requested.                                                                                                                                                                                     | BRD-001 OQ-05                                                                 | Business                                                       |
 | `internal-transfer-approval-chain.BR4` | Open disciplinary or performance cases are validated **by HR as a person**, not by the portal. Completing `HR_VALIDATION` with `APPROVE` records that HR has finished those checks. The portal must not call a disciplinary API and must not present manager approval as eligibility clearance. | BRD-001 BR9, OQ-04                                                            | Business                                                       |
 | `internal-transfer-approval-chain.BR5` | Transfer reason text is visible to the HR Business Partner and the owning employee only. It is not returned to either manager.                                                                                                                                                                  | BRD-001 OQ-12 (proposed in the request spec)                                  | Business                                                       |
-| `internal-transfer-approval-chain.BR6` | Line-manager and receiving-manager decisions are authorised only when the token subject equals that stage's `assigned_party_ref`. HR validation is authorised for any principal whose token has role `HR_BUSINESS_PARTNER`.                                                                     | BRD-001 OQ-11 (role vs named person); assignee snapshot from the request spec | Technical (enforcement of a business assignment)               |
+| `internal-transfer-approval-chain.BR6` | Line-manager and receiving-manager decisions are authorised only when the token subject equals that stage's `assigned_party_ref`. HR validation is authorised for any principal whose token has role `HR_BUSINESS_PARTNER`.                                                                     | BRD-001 BR12, BR13, OQ-11; assignee snapshot from the request spec | Technical (enforcement of a business assignment)               |
 | `internal-transfer-approval-chain.BR7` | Approver delegation is not supported. An assigned manager who is absent is handled outside the portal.                                                                                                                                                                                          | BRD-001 OQ-16                                                                 | Business — deferred; this spec must not implement a substitute |
 | `internal-transfer-approval-chain.BR8` | No SLA timer, reminder or escalation is evaluated.                                                                                                                                                                                                                                              | BRD-001 OQ-15                                                                 | Business — deferred                                            |
+
+## Authentication and Authorisation
+
+Cites BRD-001 KD-07, KD-08, BR10, BR12, BR13 and `.ai-context/architecture.md` —
+_Authentication and Authorisation_. Login and identity administration are out of scope.
+
+| Concern | Rule on this spec |
+| --- | --- |
+| Authentication | Same portal OIDC session as the request spec. Gateway validates the token. Token subject = employee id. |
+| Authorisation | BR6 / BR12 / BR13: manager stages require subject = `assigned_party_ref`; `HR_VALIDATION` requires role `HR_BUSINESS_PARTNER`. In-service, not from a caller-supplied employee id (AC6). |
+| Unauthenticated | HTTP 401 `unauthenticated`; no stage or request status change (AC13). |
+| Unauthorised resource | HTTP 404 `request-not-found`, never 403 (AC6). |
+| Front end | Manager and HR inbox/decision routes require the existing portal session and send the bearer token (AC14). No transfer-specific login form. |
+| Reason text | Returned only to `HR_BUSINESS_PARTNER` on detail (AC7), never to managers. |
 
 ## API Contract
 
@@ -310,6 +325,18 @@ writes nothing.
     label, every error is announced and associated with its field, and stage status is
     exposed as text, meeting WCAG 2.1 AA.
 
+13. `internal-transfer-approval-chain.AC13` — Given a caller with no access token, or with
+    an invalid or expired token, when they call API01, API02 or API03, then HTTP 401
+    `unauthenticated` is returned and no stage, request status, audit row or outbox row
+    changes.
+
+14. `internal-transfer-approval-chain.AC14` — Given an unauthenticated browser session,
+    when the user opens manager or HR inbox or decision routes, then those screens are not
+    rendered with request data and the user is handled by the portal's existing OIDC
+    sign-in; given an authenticated manager or HR Business Partner, when they use those
+    screens, then API calls send the session bearer token and do not send a caller-chosen
+    employee id for authorisation.
+
 ## Unit Test Cases (spec-derived)
 
 | Test ID                                 | Maps to AC | Scenario                                                  | Expected                                                                                                                                    |
@@ -341,6 +368,8 @@ writes nothing.
 | `internal-transfer-approval-chain.UT25` | AC11       | Attempt to update an audit row                            | Rejected at the database layer                                                                                                              |
 | `internal-transfer-approval-chain.UT26` | AC12       | Decision screen by keyboard only                          | Every control reachable; focus order matches visual order                                                                                   |
 | `internal-transfer-approval-chain.UT27` | AC12       | 422 announced to screen reader                            | Error associated with its field                                                                                                             |
+| `internal-transfer-approval-chain.UT28` | AC13       | API03 with no `Authorization` header                      | 401; stage still `IN_PROGRESS`                                                                                                              |
+| `internal-transfer-approval-chain.UT29` | AC14       | Unauthenticated visit to manager inbox                    | Portal existing sign-in; inbox does not list another employee's stages                                                                      |
 
 ## Surfaces
 
@@ -370,6 +399,7 @@ Layout and component structure are not specified here.
 - Free-text approver comments — not in BRD-001; not on the API.
 - Manager- or HR-initiated transfers.
 - Employee-facing wizard and status page — request spec.
+- Login, registration, password reset or MFA enrolment — portal existing OIDC (BRD-001 KD-07).
 
 ## Open Questions
 
@@ -414,3 +444,4 @@ Approved.
 | Version | Date       | Change        | Driver  |
 | ------- | ---------- | ------------- | ------- |
 | v1.0    | 2026-09-03 | Initial draft | BRD-001 |
+| v1.1    | 2026-09-08 | Authentication and authorisation section; AC13 (401), AC14 (front-end session); cites BRD-001 BR12–BR13 | BRD-001 KD-07, KD-08 |

@@ -45,7 +45,11 @@ machine in `.ai-context/status.md`.>
 |---|---|---|
 | Author | <name> | <date> |
 | Gate 1 reviewer (never the author) | <name> | <date> |
+| Gate 2 reviewer | <name> | <date> |
 | Security / Architecture sign-off (if the plan touches a constitution rule) | <name> | <date> |
+
+Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`).
+Findings worksheets under `.ai-context/reviews/` are not the sign-off.
 
 ## Intent
 
@@ -58,6 +62,7 @@ be tested. Two competent engineers reading this must build materially the same t
 - Related: `.ai-context/specs/<related-spec>.spec.md` — <state: must be Approved or Released>
 - API contract consumed (if any): <path or link>
 - Design tokens / UX reference: <path or link>
+- Shared facts: `.ai-context/ownership_index.md` — cite row IDs; do not silently redefine
 
 ## Business Rules
 

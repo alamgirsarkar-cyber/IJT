@@ -7,7 +7,8 @@
 > wrong intent. A code-review miss is contained to its PR. A spec-review miss propagates.
 >
 > The agent pass below is a first sweep for the reviewer, never the reviewer. The named
-> human peer signs off.
+> human peer signs off. Verdict write-back is only `.agent/rules/governance.md`. Chat is
+> not capture. Reviewer sessions use `.agent/workflows/gate-review-dashboard.md`.
 
 ## Who reviews
 
@@ -84,4 +85,6 @@ Binary at the status level, even where the feedback is nuanced:
   version marker bumped (`Draft v1.1`) so the revision history is visible in the file
   itself, not only in git blame.
 
-Record the outcome in `.ai-context/status.md` the same day.
+Record the outcome in `.ai-context/status.md` the same day, and write the dated
+`## Gate 1 Review` block on the spec per `.agent/rules/governance.md`. Do not treat
+chat as the sign-off.

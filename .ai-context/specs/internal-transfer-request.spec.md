@@ -6,7 +6,7 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.1 submitted for review by Abhijit Adhikari.
+**In Peer Review (Gate 1)** — Draft v1.2 submitted for review by Abhijit Adhikari.
 Revision history at the end of this file. Full state machine in `.ai-context/status.md`.
 Implementation must not start until this spec is **Approved**.
 
@@ -22,7 +22,7 @@ Implementation must not start until this spec is **Approved**.
 | Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-07 (_pending outcome_) |
 | Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
-Gate 1 record: `.ai-context/reviews/internal-transfer-request.gate1.md`
+Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-request.gate1.md`.
 
 ## Intent
 
@@ -41,7 +41,7 @@ simulate, any approval decision.
 ## Context
 
 - Builds on: `.ai-context/architecture.md` — _Components_, _Integration Points_,
-  _Cross-Cutting Concerns_
+  _Authentication and Authorisation_, _Cross-Cutting Concerns_
 - Constitution: `.ai-context/constitution.md` — Security Posture, Architectural
   Constraints, Non-Functional Baselines all apply and are not restated here
 - Related specs (co-submitted to Gate 1 2026-09-07 — none Approved yet):
@@ -50,6 +50,7 @@ simulate, any approval decision.
   - `internal-transfer-notifications` — **In Peer Review** — consumes state transitions this spec records
 - API contract consumed: HRIS read API — `docs/contracts/hris-read-api.md`
 - Design: portal design system; internal transfer wizard screens, Figma `OPP/ITR/v1`
+- Shared facts: `.ai-context/ownership_index.md` (OWN-01, OWN-02, OWN-05, OWN-07)
 
 **Note on the state machine (for Gate 1 reviewers):** this spec _defines_ the
 full request state machine because it owns the aggregate, but it only _drives_ the
@@ -73,6 +74,8 @@ passes.
 | `internal-transfer-request.BR7` | Requested effective date ≥ today + 14 days and ≤ today + 180 days                                      | BRD-001 BR7 | Business | Yes — AC4                                                                         |
 | `internal-transfer-request.BR8` | Non-payroll-aligned effective dates are permitted but flagged as likely to move                        | BRD-001 BR8 | Business | Yes — AC4 (advisory, non-blocking)                                                |
 | `internal-transfer-request.BR9` | Open disciplinary or performance cases block a transfer                                                | BRD-001 BR9 | Business | **No — validated manually by HR.** The portal must not imply it has checked (AC7) |
+| `internal-transfer-request.BR10` | Only an authenticated employee may call employee-facing transfer APIs or open the wizard/status routes | BRD-001 BR10, KD-07 | Technical | Yes — AC20, AC21 |
+| `internal-transfer-request.BR11` | The caller may create, update, submit, withdraw and view only requests whose `employee_id` equals the token subject | BRD-001 BR11 | Business | Yes — AC12, AC13 |
 
 ## Request State Machine
 
@@ -109,11 +112,26 @@ Non-applicable stages are persisted with `applicable: false` and rendered as _No
 — they are shown, not hidden, so the employee can see the journey was considered rather
 than wonder whether a step was skipped by mistake.
 
+## Authentication and Authorisation
+
+Cites BRD-001 KD-07, KD-08, BR10, BR11 and `.ai-context/architecture.md` —
+_Authentication and Authorisation_. This spec does not add an IdP, login page, or
+session timeout.
+
+| Concern | Rule on this spec |
+| --- | --- |
+| Authentication | Corporate OIDC via the existing portal session. Gateway validates the access token. Token **subject** = acting `employee_id`. |
+| Authorisation | In `employee-services`: the principal may act only on requests they own (BR11). A caller-supplied `employeeId` in body, query or path is ignored (AC13). |
+| Unauthenticated | HTTP 401 `unauthenticated`; no draft, submit, or withdraw is persisted (AC20). |
+| Unauthorised resource | HTTP 404 `request-not-found`, never 403 (AC13). |
+| Front end | Wizard and status routes require the portal OIDC session, attach the bearer token, and do not collect credentials (AC21). |
+| Not used here | Role `HR_BUSINESS_PARTNER` and stage-assignee checks — `internal-transfer-approval-chain`. HMAC webhooks — `internal-transfer-downstream-orchestration`. |
+
 ## API Contract
 
 All endpoints are under `/api/v1/internal-transfers`, behind the gateway's OIDC validation.
 The acting employee is derived from the token subject; **no endpoint accepts an employee
-identifier from the caller** (AC13).
+identifier from the caller** (AC13). Missing or invalid tokens are 401 (AC20).
 
 All error responses use RFC 7807 `application/problem+json`, per `constitution.md`:
 
@@ -637,6 +655,19 @@ being served past its freshness window — the UI must say so rather than presen
     stage timeline exposes each stage's status as text rather than by colour alone,
     meeting WCAG 2.1 AA.
 
+20. `internal-transfer-request.AC20` — Given a caller with no access token, or with an
+    invalid or expired token, when they call any of API01–API07, then HTTP 401
+    `unauthenticated` is returned, no transfer row, stage, audit row or outbox row is
+    written or updated, and authorisation is not inferred from any employee identifier in
+    the body, query or path.
+
+21. `internal-transfer-request.AC21` — Given an unauthenticated browser session, when the
+    employee navigates to the transfer wizard or status routes, then those screens are not
+    rendered with request data and the user is handled by the portal's existing OIDC
+    sign-in — this feature must not show a transfer-specific username/password form; and
+    given an authenticated employee, when they use those screens, then API calls send the
+    session bearer token and do not send a caller-chosen employee id for authorisation.
+
 ## Unit Test Cases (spec-derived)
 
 | Test ID                          | Maps to AC | Scenario                                                      | Expected                                                                             |
@@ -696,6 +727,10 @@ being served past its freshness window — the UI must say so rather than presen
 | `internal-transfer-request.UT53` | AC19       | Wizard traversed by keyboard only                             | Every control reachable and operable; focus order matches visual order               |
 | `internal-transfer-request.UT54` | AC19       | Submit with a validation error, screen reader                 | Error announced and programmatically associated with its field                       |
 | `internal-transfer-request.UT55` | AC19       | Stage timeline rendered in greyscale                          | Each stage status remains distinguishable as text                                    |
+| `internal-transfer-request.UT56` | AC20       | API01 with no `Authorization` header                          | 401 `unauthenticated`; no `transfer_request` row inserted                            |
+| `internal-transfer-request.UT57` | AC20       | API03 with an expired token                                   | 401; draft status unchanged                                                          |
+| `internal-transfer-request.UT58` | AC21       | Unauthenticated visit to the wizard route                     | Portal existing sign-in; wizard does not load another employee's data                |
+| `internal-transfer-request.UT59` | AC21       | Authenticated wizard save                                     | Request carries bearer token; no `employeeId` used for AuthZ                         |
 
 ## Explicitly Out of Scope
 
@@ -717,6 +752,8 @@ being served past its freshness window — the UI must say so rather than presen
 - **Localisation.** English only. Copy is externalised so a later spec can localise without
   reworking the components, but no second locale is delivered.
 - **Native mobile applications.** Responsive web only.
+- **Login, registration, password reset or MFA enrolment.** Authentication is the portal's
+  existing OIDC session (BRD-001 KD-07). This spec only consumes that session.
 - **Editing a request after submission.** A submitted request is immutable to the employee;
   the only employee action is withdrawal.
 
@@ -733,11 +770,14 @@ being served past its freshness window — the UI must say so rather than presen
   Contract above (AC17).
 - Audit records are immutable and retained 7 years; reason text is purged at 24 months
   (BRD-001 OQ-17).
+- Unauthenticated calls return 401 and change no transfer state (AC20). Front end reuses
+  the portal OIDC session and does not add a login page (AC21).
 - Migrations forward-only and compatible with the previously deployed version.
 
 ## Revision History
 
 | Version | Date       | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Driver                                                                                                                                                                |
 | ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| v1.0    | 2026-08-27 | Initial draft                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | BRD-001                                                                                                                                                               |
-| v1.1    | 2026-08-28 | AC7 split so each eligibility rule is cited individually and the BR9 advisory is mandatory; AC11 rewritten to resolve who may be named in `pendingWith`; AC13 changed from 403 to 404 with the enumeration rationale stated; AC14 given explicit behaviour for an already-withdrawn request and for a draft; AC16 added covering reason-text handling end to end; API03 exception table extended with `active-request-exists`, `idempotency-key-conflict` and the 503 case; state-machine note added to Context explaining the definition-vs-build dependency | Author revision before Gate 1 submission — findings to be recorded in `.ai-context/reviews/internal-transfer-request.gate1.md` when Abhijit Adhikari completes review |
+| v1.0    | 2026-08-27 | Initial draft | BRD-001 |
+| v1.1    | 2026-08-28 | AC7 split so each eligibility rule is cited individually and the BR9 advisory is mandatory; AC11 rewritten to resolve who may be named in `pendingWith`; AC13 changed from 403 to 404 with the enumeration rationale stated; AC14 given explicit behaviour for an already-withdrawn request and for a draft; AC16 added covering reason-text handling end to end; API03 exception table extended with `active-request-exists`, `idempotency-key-conflict` and the 503 case; state-machine note added to Context explaining the definition-vs-build dependency | Author revision before Gate 1 submission |
+| v1.2    | 2026-09-08 | Authentication and authorisation section added (BR10, BR11, AC20, AC21); cites architecture AuthN/AuthZ; login remains out of scope | BRD-001 KD-07, KD-08, BR10, BR11 |

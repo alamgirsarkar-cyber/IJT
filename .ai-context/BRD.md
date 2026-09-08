@@ -79,6 +79,8 @@ anywhere. See OQ-08.
 | KD-04 | The portal **orchestrates** downstream activities rather than the employee chasing each function | Business |
 | KD-05 | The employee can view current status and which actions are pending with which stakeholders | Business |
 | KD-06 | The transfer touches HRIS, Payroll, IT and Facilities as downstream consumers | Business |
+| KD-07 | Callers authenticate with the portal's **existing corporate SSO/OIDC**. This journey does not add login, registration, password reset, MFA enrolment or identity administration (AS-01) | Business (platform) |
+| KD-08 | **Authorisation** (who may act on a request) is the matrix below; it is enforced in the service from the token, never from a caller-supplied employee id | Business + Technical |
 
 ### Open questions
 
@@ -121,6 +123,41 @@ anywhere. See OQ-08.
 | BR7 | The requested effective date must be at least 14 calendar days ahead and no more than 180 days ahead | Business | HR Policy §4.6 (handover minimum) |
 | BR8 | Effective dates that do not align to a payroll cycle boundary are permitted but flagged to the employee as likely to be moved by HR | Business | Payroll |
 | BR9 | Open disciplinary or performance cases block a transfer — **validated manually by HR**, not by the portal | Business | OQ-04 |
+| BR10 | Only an authenticated principal may use the journey. Missing, expired or invalid tokens are refused before any transfer state changes | Technical enforcement of KD-07 | AS-01; constitution Security Posture |
+| BR11 | The owning employee may create, update, submit, withdraw and view **their own** requests only | Business | KD-02, KD-05 |
+| BR12 | Line-manager release and receiving-manager accept may be decided only by the principal whose token subject equals that stage's assigned party | Business | OQ-01, OQ-11 |
+| BR13 | HR validation may be decided by any principal whose token carries role `HR_BUSINESS_PARTNER`. Approver delegation is out of v1 (OQ-16) | Business | OQ-02, OQ-16 |
+| BR14 | Downstream fulfilment callbacks authenticate with a **webhook signing secret**, not an employee OIDC token. An employee token must not authorise a stage-completion webhook | Technical | KD-06; AS-03 |
+
+### Authentication and authorisation
+
+> Written here because a spec must not be the first place a requirement appears. Identity
+> **administration** stays out of scope (project context). Identity **use** on this journey
+> is in scope.
+
+**Authentication (AuthN)** — the corporate IdP and the existing portal session. The API
+gateway validates the OIDC access token on every employee- and approver-facing `/api/v1/`
+call. The token **subject** is the portal employee id used as `employee_id` and as
+`assigned_party_ref`. This journey does not define a second login, a second session
+timeout, or IdP claim names beyond: subject = employee id; role `HR_BUSINESS_PARTNER` for
+HR. Session lifetime remains the portal's existing OIDC session.
+
+**Authorisation (AuthZ)** — enforced **in `employee-services`**, not inferred from the
+request body, query or path (constitution). Unauthorised access to another person's
+request returns **404** `request-not-found`, not 403, so identifiers cannot be enumerated.
+
+| Actor | Authenticated as | May | Must not |
+| --- | --- | --- | --- |
+| Employee | Token subject = owning `employee_id` | Draft, submit, withdraw (within window), view own status and list | See or change another employee's request; decide manager or HR stages |
+| Current line manager | Token subject = `MANAGER_RELEASE.assigned_party_ref` | Inbox and decide `MANAGER_RELEASE` only | Read reason text; decide later stages; act as a different manager |
+| Receiving manager | Token subject = `MANAGER_ACCEPT.assigned_party_ref` | Inbox and decide `MANAGER_ACCEPT` only (after release) | Read reason text; skip ahead to HR |
+| HR Business Partner | Token role `HR_BUSINESS_PARTNER` | Inbox and decide `HR_VALIDATION`; read reason text | Decide manager stages unless also the assigned manager |
+| Downstream adapter | HMAC webhook secret for that source | Report SUCCESS/FAILED on a fulfilment stage | Call employee OIDC APIs as a person; supply an employee id as proof of identity |
+| Unauthenticated visitor | None | Nothing on this journey | See wizard, inbox, status, or any request field |
+
+Front end: transfer and approval routes use the **existing** portal OIDC session (bearer
+token on API calls). This feature does not add a login page. Unauthenticated navigation is
+handled by the portal's existing sign-in, not by a transfer-specific credential form.
 
 ### Business decisions vs technical decisions
 
@@ -141,6 +178,7 @@ anywhere. See OQ-08.
 | Retention periods (OQ-17) | Purge implementation and its scheduling |
 | WCAG 2.1 AA obligation (OQ-18) | Component library, testing tooling, audit approach |
 | That the portal is the employee's single view (KD-04, KD-05) | That the portal owns the request aggregate and the HRIS does not ([ADR-0002](decisions/ADR-0002-transfer-request-system-of-record.md)) |
+| Who may act on a request, and that SSO is reused (KD-07, KD-08, BR10–BR14) | Gateway OIDC validation, in-service AuthZ from token subject/role, 401 vs 404, HMAC on webhooks |
 
 ### Assumptions
 
@@ -161,7 +199,7 @@ anywhere. See OQ-08.
 |---|---|---|---|
 | HRIS | Employee master, employment status, service dates, org units, positions | HR Systems | Read availability at submission time; reference-data freshness |
 | Position management | Open, internally fillable positions (BR6) | Talent Acquisition | Data quality — positions not kept current |
-| Corporate IdP (OIDC) | Authentication, employee identity | Security Engineering | None expected — already in use |
+| Corporate IdP (OIDC) | Authentication; token subject = employee id; role `HR_BUSINESS_PARTNER` for HR | Security Engineering | If subject is not the portal employee id, or HR role is named differently, BR12–BR13 cannot be implemented as specified |
 | Payroll system | Payroll assignment update | Finance Systems | Event consumption not yet built (their backlog) |
 | ITSM | Access provisioning/deprovisioning | IT Service Management | Their intake contract is ticket-based, not event-based |
 | Facilities / workplace management | Seating and location arrangement | Facilities | Lowest digital maturity of the four — may stay manual in v1 |
@@ -178,6 +216,8 @@ anywhere. See OQ-08.
 - Approval SLA escalation (OQ-15) and approver delegation (OQ-16)
 - Automated disciplinary/performance gating (OQ-04, BR9)
 - Localisation beyond English (OQ-18); native mobile applications (OQ-19)
+- Login, registration, password reset, MFA enrolment, tenant provisioning, or any other
+  identity administration — the portal's existing SSO is reused (KD-07, AS-01)
 
 ### Spec map — how BRD-001 decomposes
 
@@ -187,10 +227,10 @@ anywhere. See OQ-08.
 
 | Spec slug | Owns | Depends on | Status |
 |---|---|---|---|
-| `internal-transfer-request` | Employee-facing request: draft, validate, submit, withdraw, and the employee's view of status and pending actions. Owns the request aggregate and its stage plan. | — | **In Peer Review (Gate 1)** — Draft v1.1 |
-| `internal-transfer-approval-chain` | Line manager release, receiving manager acceptance, HR eligibility validation; decisions and terminal rejection. Transitions stages this spec creates. | `internal-transfer-request` | **In Peer Review (Gate 1)** — Draft v1.0 |
-| `internal-transfer-downstream-orchestration` | Conditional fan-out to HRIS org update, Payroll, IT and Facilities; completion tracking and compensation on failure. | `internal-transfer-approval-chain` | **In Peer Review (Gate 1)** — Draft v1.0; resume-after-failure still open |
-| `internal-transfer-notifications` | Notifications to employee and approvers on every state transition. | `internal-transfer-request` | **In Peer Review (Gate 1)** — Draft v1.0 |
+| `internal-transfer-request` | Employee-facing request: draft, validate, submit, withdraw, and the employee's view of status and pending actions. Owns the request aggregate and its stage plan. | — | **In Peer Review (Gate 1)** — Draft v1.2 |
+| `internal-transfer-approval-chain` | Line manager release, receiving manager acceptance, HR eligibility validation; decisions and terminal rejection. Transitions stages this spec creates. | `internal-transfer-request` | **In Peer Review (Gate 1)** — Draft v1.1 |
+| `internal-transfer-downstream-orchestration` | Conditional fan-out to HRIS org update, Payroll, IT and Facilities; completion tracking and compensation on failure. | `internal-transfer-approval-chain` | **In Peer Review (Gate 1)** — Draft v1.1; resume-after-failure still open |
+| `internal-transfer-notifications` | Notifications to employee and approvers on every state transition. | `internal-transfer-request` | **In Peer Review (Gate 1)** — Draft v1.1 |
 
 **Scoping note (recorded because a reviewer will ask):** status visibility is kept inside
 `internal-transfer-request` rather than split into its own spec, because it reads the same
@@ -204,10 +244,10 @@ what allows it to pass the Gate 1 dependency check.
 
 | Function | Decision covered |
 |---|---|
-| Product | Scope, KD-01…KD-06, v1 boundary |
-| HR Policy | BR1–BR9, OQ-03, OQ-05, OQ-06, OQ-07, OQ-13 |
+| Product | Scope, KD-01…KD-08, v1 boundary |
+| HR Policy | BR1–BR13, OQ-03, OQ-05, OQ-06, OQ-07, OQ-13 |
 | Data Privacy | OQ-11, OQ-12, OQ-17 |
 | Architecture | OQ-09, OQ-10, OQ-14, AS-06 |
-| Security | OQ-04 deferral, reason-text handling |
+| Security | OQ-04 deferral, reason-text handling, AuthN/AuthZ (KD-07, KD-08, BR10–BR14) |
 
 **Artefact owner:** Alamgir Sarkar

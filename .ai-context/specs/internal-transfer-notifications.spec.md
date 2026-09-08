@@ -6,7 +6,7 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.0 submitted 2026-09-07 for review by Abhijit Adhikari.
+**In Peer Review (Gate 1)** — Draft v1.1 submitted 2026-09-08 for review by Abhijit Adhikari.
 Full state machine in `.ai-context/status.md`. Do not generate a plan or code until
 **Approved**.
 
@@ -26,7 +26,7 @@ sequence implementation after the first submit release.
 | Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-07 (_pending outcome_) |
 | Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
-Gate 1 record: `.ai-context/reviews/internal-transfer-notifications.gate1.md`
+Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-notifications.gate1.md`.
 
 ## Intent
 
@@ -41,7 +41,8 @@ does not fulfil downstream systems.
 ## Context
 
 - Builds on: `.ai-context/architecture.md` — Notification service row in _Integration
-  Points_ (HTTPS webhook, async; loss does not affect request state)
+  Points_ (HTTPS webhook, async; loss does not affect request state);
+  _Authentication and Authorisation_
 - Constitution: `.ai-context/constitution.md` — PII and free-text narrative must not
   appear in notification payloads; events via outbox
 - Related: `.ai-context/specs/internal-transfer-request.spec.md` — **In Peer Review**.
@@ -52,6 +53,7 @@ does not fulfil downstream systems.
 - Related: `.ai-context/specs/internal-transfer-downstream-orchestration.spec.md` —
   **In Peer Review**. Emits `employee.transfer.completed.v1` and stage-failure (no employee
   mail required on compensate beyond the employee COMPLETED/not-completed view)
+- Shared facts: `.ai-context/ownership_index.md` (OWN-01, OWN-04, OWN-05, OWN-07)
 - API contract consumed: existing notification-service webhook (platform). This spec
   does not define that service's internals
 - Design: no new screen; copy lives in notification templates owned by Product
@@ -84,6 +86,18 @@ fulfilment webhooks, not this spec).
 Duplicate deliveries from at-least-once outbox must not produce a second notification
 for the same `requestId` + template id + recipient id within 24 hours (idempotent
 enqueue to the notification service).
+
+## Authentication and Authorisation
+
+Cites BRD-001 KD-07 and `.ai-context/architecture.md` — _Authentication and Authorisation_.
+This spec exposes **no** public employee, manager or HR HTTP API and does not add login.
+
+| Concern | Rule on this spec |
+| --- | --- |
+| Employee / approver AuthN | Not used on a new endpoint here. Recipients are already-authenticated portal users addressed by employee id or role already stored on the aggregate (BR5). |
+| Notification service | Platform webhook authentication already in use (AS-03). This spec does not introduce a second credential scheme. |
+| Authorisation of content | Payload matrix is the allow-list. Reason text, names and contact details are forbidden regardless of who could theoretically read a mail. |
+| Inbox UI | Not added. Approvers act through the approval-chain screens, which use OIDC. |
 
 ## API Contract
 
@@ -167,6 +181,8 @@ specified here beyond template ids in the matrix.
 - SMS, native push, or a second locale (OQ-18, OQ-19).
 - Notifying Payroll, IT or Facilities (fulfilment webhooks).
 - Digest/batching, user notification preferences, or unsubscribe (not in BRD-001).
+- A login, mailbox, or OIDC endpoint — authentication remains the existing portal and
+  notification service.
 - Including confirmed effective date, assignment titles or manager names in the payload
   (not required by the BRD; titles/names are PII risk — matrix omits them).
 
@@ -207,3 +223,4 @@ legal-sounding HR prose in code; it references the template id.
 | Version | Date       | Change        | Driver  |
 | ------- | ---------- | ------------- | ------- |
 | v1.0    | 2026-09-03 | Initial draft | BRD-001 |
+| v1.1    | 2026-09-08 | Authentication and authorisation section: no new OIDC API; recipients from aggregate ids only | BRD-001 KD-07 |
