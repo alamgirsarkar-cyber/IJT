@@ -6,9 +6,11 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.1 submitted for review by Abhijit Adhikary.
-Revision history at the end of this file. Full state machine in `.ai-context/status.md`.
-Implementation must not start until this spec is **Approved**.
+**Changes Requested (Gate 1)** — Draft v1.1 reviewed 2026-09-09 by Abhijit Adhikary.
+Findings recorded in `.ai-context/reviews/internal-transfer-request.gate1.md` — 8 Blocker
+and 6 Should-fix items. Author to revise, bump version, and resubmit. Revision history at
+the end of this file. Full state machine in `.ai-context/status.md`. Implementation must
+not start until this spec is **Approved**.
 
 ## Linked BRD
 
@@ -19,7 +21,7 @@ Implementation must not start until this spec is **Approved**.
 | Role | Name | Date |
 |---|---|---|
 | Author / owner | Alamgir Sarkar | 2026-08-27 |
-| Gate 1 reviewer (never the author) | Abhijit Adhikary | 2026-09-07 (_pending outcome_) |
+| Gate 1 reviewer (never the author) | Abhijit Adhikary | 2026-09-09 (_Changes Requested_) |
 | Gate 2 reviewer | Tapas Dutta | — |
 
 Gate 1 record: `.ai-context/reviews/internal-transfer-request.gate1.md`

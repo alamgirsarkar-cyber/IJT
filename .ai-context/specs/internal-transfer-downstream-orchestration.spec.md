@@ -6,9 +6,10 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.0 submitted 2026-09-07 for review by Abhijit Adhikary.
-Full state machine in `.ai-context/status.md`. Do not generate a plan or code until
-**Approved**.
+**Changes Requested (Gate 1)** — Draft v1.0 reviewed 2026-09-09 by Abhijit Adhikary.
+Findings recorded in `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`
+— 5 Blocker (P0) and 7 Should-fix (P1) items. Author to revise, bump version, and resubmit.
+Do not generate a plan or code until **Approved**.
 
 **Reviewer note:** depends on approval-chain (and thereby request). Open question on
 resume-after-failure must be **resolved or explicitly deferred** before this spec can be
@@ -23,7 +24,7 @@ Approved — see Open Questions and `status.md` Blocked.
 | Role | Name | Date |
 |---|---|---|
 | Author / owner | Alamgir Sarkar | 2026-09-03 |
-| Gate 1 reviewer (never the author) | Abhijit Adhikary | 2026-09-07 (_pending outcome_) |
+| Gate 1 reviewer (never the author) | Abhijit Adhikary | 2026-09-09 (_Changes Requested_) |
 | Gate 2 reviewer | Tapas Dutta | — |
 
 Gate 1 record: `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`

@@ -22,10 +22,10 @@ Task states are the checkbox state in the feature's `tasks.md`:
 
 | Spec ID | Title | Status | Owner | Last Updated | Notes |
 |---|---|---|---|---|---|
-| `internal-transfer-request` | Employee Internal Transfer Request | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07 | Draft v1.1. Reviewer: Abhijit Adhikary. Programme co-submitted with sibling specs 2026-09-07. BR2 date field still open — see Blocked |
-| `internal-transfer-approval-chain` | Manager release, manager accept, HR validation | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07 | Draft v1.0 submitted. Review after request. Record: `reviews/internal-transfer-approval-chain.gate1.md` |
-| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07 | Draft v1.0 submitted. Resume-after-failure still open — Approval requires resolve or defer. Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
-| `internal-transfer-notifications` | Employee and approver notifications | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-07 | Draft v1.0 submitted. Record: `reviews/internal-transfer-notifications.gate1.md` |
+| `internal-transfer-request` | Employee Internal Transfer Request | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-09 | Draft v1.1. Review complete by Abhijit Adhikary: **Changes Requested** — 8 Blocker items: PENDING/IN_PROGRESS stage-status contradiction, state-transition contract, submit-timing clarification, event name standardization, requested.v1 schema, OQ-11 cross-spec confirmation, employee-ID/PII classification, concurrent withdraw-vs-approval behaviour. 6 Should-fix items also recorded. Record: `reviews/internal-transfer-request.gate1.md` |
+| `internal-transfer-approval-chain` | Manager release, manager accept, HR validation | **Approved** | Alamgir Sarkar | 2026-09-09 | Draft v1.0. Review complete by Abhijit Adhikary: **Approved**. Blockers (OQ-11/OQ-12 dependency, stage-plan contract) resolved; 5 should-fix items carried forward as non-blocking follow-ups. Outstanding risk: approved ahead of `internal-transfer-request` (still Changes Requested). Record: `reviews/internal-transfer-approval-chain.gate1.md` |
+| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-09 | Draft v1.0. Review complete by Abhijit Adhikary: **Changes Requested** — 5 Blocker (P0) items: failure/compensation/recovery lifecycle, resume-after-FAILED decision, compensation ack/failure semantics, NOT_STARTED-stage handling after failure, operational owner of failed fulfilment. 7 Should-fix (P1) items also recorded. Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
+| `internal-transfer-notifications` | Employee and approver notifications | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-09 | Draft v1.0. Review complete by Abhijit Adhikary: **Changes Requested** — 5 Blocker (P0) items: "every state transition" vs. matrix contradiction, event name/versioning standardization, outbox/dedupe boundary, recipient-level idempotency/retry, payload contract. 5 Should-fix (P1) items also recorded. Record: `reviews/internal-transfer-notifications.gate1.md` |
 
 ## Released Specs
 
@@ -57,6 +57,63 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
 | Localisation beyond English | BRD-001 OQ-18 | Product | Post-v1 |
 
 ## Daily Execution Log
+
+### 2026-09-09
+
+- **BRD-001 OQ-11 / OQ-12**: Gate 1 reviewed by Abhijit Adhikary. **Approved with comment**
+  — the proposed spec v1.1 answers (AC11, AC16) stand, but must be formally confirmed as
+  final or explicitly marked deferred before `internal-transfer-approval-chain` BR5/BR6 are
+  treated as closed. See `.ai-context/BRD.md`.
+- **`internal-transfer-approval-chain`**: Gate 1 review completed by Abhijit Adhikary.
+  Outcome: **Approved**. Both Blockers cleared (OQ-11/OQ-12 dependency, resolved via the
+  BRD comment above; stage-plan handoff contract, accepted as-is for Gate 1). Five
+  Should-fix items (API02 historical-approver access, confirmed effective-date constraint,
+  event payload schemas, API-level test coverage, BRD→Spec→AC→Test traceability) carried
+  forward as non-blocking follow-ups for a later revision. Outstanding risk: approved ahead
+  of `internal-transfer-request`, which is still In Peer Review (Changes Requested) — track
+  at programme level before plan drafting begins. Record:
+  `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`.
+- **`internal-transfer-downstream-orchestration`**: Gate 1 review completed by Abhijit
+  Adhikary. Outcome: **Changes Requested**. Five P0 blockers: the failure / compensation /
+  recovery lifecycle is incomplete, resume-after-`FAILED` is undecided, compensation
+  acknowledgement/failure semantics are undefined, handling of later `NOT_STARTED` stages
+  after a failure is undefined, and no operational owner is named for a failed fulfilment.
+  Seven P1 items (sequential-vs-parallel execution, event envelope/schema, duplicate-eventId
+  conflict handling, HMAC contract, state-transition matrix, BRD→BR→AC→Test traceability,
+  negative/out-of-order tests) strongly recommended but non-blocking. Record:
+  `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
+- **`internal-transfer-notifications`**: Gate 1 review completed by Abhijit Adhikary.
+  Outcome: **Changes Requested**. Five P0 blockers: BR1 contradicts the notification
+  matrix on "every state transition," domain event names/versioning are inconsistent, the
+  transactional/outbox/dedupe boundary is left as a plan-time choice, recipient-level
+  idempotency/retry behavior is underspecified, and the portal → notification-service
+  payload contract has no formal schema. Five P1 items (OQ-11 read-across confirmation,
+  out-of-order event handling, documenting why fulfilment failures don't notify employees,
+  negative/failure test cases, BRD→BR→AC→Test traceability) strongly recommended but
+  non-blocking. Record: `.ai-context/reviews/internal-transfer-notifications.gate1.md`.
+- **`internal-transfer-request`**: Gate 1 review completed by Abhijit Adhikary (supersedes
+  the 2026-09-08 entry below — the gate1 review record had not actually been filled in on
+  2026-09-08). Outcome: **Changes Requested**. Eight Blocker items: `PENDING` vs.
+  `IN_PROGRESS` stage-status contradiction between this spec and `internal-transfer-approval-chain`,
+  no authoritative request/stage state-transition contract, unclear whether
+  `SUBMITTED → MANAGER_REVIEW` is synchronous with submission, inconsistent domain event
+  naming/versioning, no `employee.transfer.requested.v1` schema, OQ-11 not formally
+  confirmed across dependent specs, unclear employee-ID/PII classification in audit
+  records, and undefined concurrent withdrawal-vs-approval behaviour. Six Should-fix items
+  (database-level BR3 invariant, precise service-length calculation — this subsumes the
+  2026-09-08 leave-of-absence concern below, draft-vs-frozen assignment data, cached vs.
+  authoritative reference data, cross-spec integration tests, BRD→BR→AC→Test traceability)
+  carried forward as non-blocking follow-ups. Record:
+  `.ai-context/reviews/internal-transfer-request.gate1.md`.
+
+### 2026-09-08
+
+- **`internal-transfer-request`**: _Superseded by the 2026-09-09 entry above — this entry
+  predates the reviewer actually completing and recording Gate 1 findings._ Original note:
+  Gate 1 review completed by Abhijit Adhikary. Outcome: **Changes Requested**. The blocker
+  is the BR2 eligibility rule: the spec does not yet state which HRIS service date governs
+  after a leave of absence, so the implementation outcome remains materially ambiguous. The
+  reviewer record is in `.ai-context/reviews/internal-transfer-request.gate1.md`.
 
 ### 2026-09-07
 

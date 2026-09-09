@@ -6,12 +6,16 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.0 submitted 2026-09-07 for review by Abhijit Adhikary.
-Full state machine in `.ai-context/status.md`. Do not generate a plan or code until
-**Approved**.
+**Approved (Gate 1)** — Draft v1.0 reviewed 2026-09-09 by Abhijit Adhikary. Two Blocker
+findings (stage-plan handoff contract; BRD OQ-11/OQ-12 dependency) are resolved — see
+`.ai-context/reviews/internal-transfer-approval-chain.gate1.md`. Five Should-fix findings
+(G1-F02, F03, F05, F06, F07) are carried forward as non-blocking follow-ups for the author
+to address in a later revision.
 
-**Reviewer note:** this spec consumes the request aggregate and stage plan. Prefer
-approving only after `internal-transfer-request` is Approved, or co-review that file first.
+**Reviewer note:** this spec consumes the request aggregate and stage plan.
+`internal-transfer-request` is still In Peer Review (Changes Requested), so this approval
+is granted ahead of that dependency being Approved — track that as an open programme-level
+risk before plan drafting begins.
 
 ## Linked BRD
 
@@ -22,7 +26,7 @@ approving only after `internal-transfer-request` is Approved, or co-review that 
 | Role | Name | Date |
 |---|---|---|
 | Author / owner | Alamgir Sarkar | 2026-09-03 |
-| Gate 1 reviewer (never the author) | Abhijit Adhikary | 2026-09-07 (_pending outcome_) |
+| Gate 1 reviewer (never the author) | Abhijit Adhikary | 2026-09-09 (_Approved_) |
 | Gate 2 reviewer | Tapas Dutta | — |
 
 Gate 1 record: `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`
