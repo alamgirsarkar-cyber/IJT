@@ -4,13 +4,13 @@
 > or significant decision. A stale `architecture.md` is worse than no doc, because the next
 > agent session will believe it.
 
-**Last updated:** 2026-09-02 · **Updated by:** Alamgir Sarkar · **Driven by:** stack simplification — SQLite and Express only (no Redis, no Kafka)
+**Last updated:** 2026-09-08 · **Updated by:** Alamgir Sarkar · **Driven by:** Authentication and authorisation made explicit for BRD-001 (KD-07, KD-08, BR10–BR14)
 
 ## Currency Check
 
 | Question | Answer |
 |---|---|
-| Last plan reviewed that touched this file | `internal-transfer-request`, 2026-08-31 |
+| Last plan reviewed that touched this file | `internal-transfer-request`, 2026-08-31 (AuthN/AuthZ section added 2026-09-08 from BRD-001; plan not yet re-reviewed) |
 | Known-stale sections | Downstream fulfilment — webhook consumers are not yet built; v1 stores and relays outbox rows only |
 
 ---
@@ -83,7 +83,7 @@
 
 | Integration | Direction | Protocol | Sync/Async | Failure mode | Owner | Contract |
 |---|---|---|---|---|---|---|
-| Corporate IdP | Inbound | OIDC | Sync | Gateway rejects; portal unaffected | Security Engineering | Platform standard |
+| Corporate IdP | Inbound | OIDC | Sync | Gateway rejects; portal unaffected | Security Engineering | Token subject = portal employee id; role `HR_BUSINESS_PARTNER` for HR (BRD-001 BR10–BR13) |
 | HRIS read API | Outbound | REST | Sync, cached in SQLite | Cache serves stale within TTL; 503 if cache empty and HRIS down | HR Systems | `docs/contracts/hris-read-api.md` |
 | Position management | Outbound | REST (via HRIS read API) | Sync, cached | As above | Talent Acquisition | As above |
 | Downstream webhooks `employee.transfer.v1` | Outbound | HTTPS POST via outbox relay | Async | Outbox retains and retries; submission unaffected | Portal | `docs/contracts/` event schemas |
@@ -92,12 +92,44 @@
 | Facilities endpoint | Inbound to Facilities | HTTPS webhook | Async | Not yet built; manual in v1 | Facilities | Not yet built |
 | Notification service | Outbound | HTTPS webhook | Async | Notification loss does not affect request state | Portal platform | Existing |
 
+## Authentication and Authorisation
+
+Source: BRD-001 KD-07, KD-08, BR10–BR14 and the constitution Security Posture. Specs cite
+this section; they do not invent a second scheme.
+
+```
+Browser ── existing portal OIDC session ──▶ employee-portal-web
+                                              │ Bearer access token
+                                              ▼
+API Gateway ── validates OIDC token ──▶ employee-services
+                                         │ principal = token subject (employee id)
+                                         │ roles from token (HR_BUSINESS_PARTNER)
+                                         ▼
+                              in-service AuthZ (owner / assignee / role / HMAC)
+```
+
+| Layer | Authenticates | Authorises | Failure |
+| --- | --- | --- | --- |
+| Corporate IdP | Employee / manager / HR signs in to the **existing** portal | Issues token: subject = portal employee id; optional role `HR_BUSINESS_PARTNER` | Sign-in is a platform concern; this journey adds no login UI |
+| API Gateway | Access token present, valid, not expired, intended for this API | Coarse: authenticated caller only. Does **not** decide request ownership | 401 `unauthenticated` — service not reached |
+| `employee-services` | Trusts gateway-validated token; reads subject and roles; **never** a body/query/path employee id | Fine-grained: BR11–BR14 matrix. Owner, stage assignee, or HR role | 401 if token missing inside the service; **404** `request-not-found` if the principal is not allowed to see that resource (not 403) |
+| `employee-portal-web` | Reuses portal OIDC session; attaches `Authorization: Bearer` on `/api/v1/internal-transfers` | Route access: transfer wizard/status for any authenticated employee; manager/HR inboxes only when the session can call those APIs. UI is not the enforcement boundary | Unauthenticated navigation uses the portal's existing sign-in. 401 from API → same portal session recovery. Never prompt for a transfer-specific password |
+| Downstream webhook | HMAC of the body with the source's signing secret from Secrets Manager | That source may complete only fulfilment stage codes; body `requestId` is data, not identity | 401 `unauthenticated` on missing/invalid signature. An employee OIDC token on this URL is not accepted |
+
+**Not in this architecture:** a local user store, API keys for employees, a second session
+timeout for transfer, or trusting `employeeId` in JSON for AuthZ.
+
+**Front end state:** Redux Toolkit holds the portal session the same way other journeys do.
+Transfer feature state must not store a copy of the access token in a second place, and
+must not put reason text in client logs.
+
 ## Cross-Cutting Concerns
 
-- **Authentication / authorisation:** the gateway validates the OIDC token; `employee-services`
-  derives employee identity from the token subject only. A caller-supplied employee ID in a
-  body, query or path is never trusted for authorisation. Resource ownership is enforced in
-  the service on every read and write.
+- **Authentication / authorisation:** see **Authentication and Authorisation** above.
+  Gateway validates OIDC; `employee-services` derives identity from the token subject
+  only. A caller-supplied employee ID in a body, query or path is never trusted.
+  Resource ownership and stage assignment are enforced in the service on every read and
+  write. Webhooks use HMAC, not employee tokens.
 - **Logging and tracing:** structured JSON, correlation ID propagated from the gateway.
   Employee ID is permitted; PII as defined in the constitution is not, at any level. A
   redaction layer strips known sensitive field names before emission — a safety net, not a
@@ -136,4 +168,4 @@
 | ITSM intake is ticket-based, not webhook-based | An adapter will be needed | IT Service Management | Same |
 | HRIS read API has no bulk position endpoint | Reference-data cache is warmed per org unit rather than wholesale | Architecture | If cache warm time exceeds the TTL |
 | Approval SLA and delegation deferred (BRD-001 OQ-15, OQ-16) | Stalled approvals are chased manually by HR | HR Policy | After v1 usage data exists |
-
+

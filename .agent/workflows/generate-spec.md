@@ -30,6 +30,7 @@ Tag exactly these. Do not let the agent scan the workspace.
 - `.ai-context/templates/_TEMPLATE.spec.md`
 - Related specs the BRD's spec map names — **Approved or Released only**; if this spec
   would depend on one that is Draft or Not started, stop and split or defer
+- `.ai-context/ownership_index.md` — shared facts; cite a row, do not silently redefine
 - Existing API conventions in `architecture.md` (error shape, versioning, auth)
 
 Do **not** tag `src/`, `prompts.md`, or an existing plan. Those are downstream.
@@ -107,6 +108,7 @@ Do not send to review until every box is ticked.
 - [ ] No open question remains that a plan would have to guess
 - [ ] No PII, secrets, or invented personal names in examples
 - [ ] Related / Builds-on specs are Approved or Released, or this spec does not depend on them
+- [ ] Shared facts cite `.ai-context/ownership_index.md` rather than being restated as new
 - [ ] Status is `Draft v1.0`
 - [ ] `.ai-context/status.md` has a row for this slug (In Peer Review once submitted)
 

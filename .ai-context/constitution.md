@@ -2,7 +2,7 @@
 
 > The law this project runs under. Written once at kickoff by the artefact owner,
 > amended rarely, and never silently. Every Gate 1 plan review is checked against this
-> file line by line — a plan that is *silent* on a rule here is a gap, not a pass.
+> file line by line — a plan that is _silent_ on a rule here is a gap, not a pass.
 >
 > Rules belong here only if they are true for **every** feature this portal will ever
 > build, and only if they are specific enough that a reviewer can point at a line and say
@@ -136,8 +136,8 @@
 An amendment is proposed as a short spec-like change request, reviewed with the same rigour
 as any spec, and dated.
 
-| Date | Section amended | Change | Driver | Approved by |
-|---|---|---|---|---|
-| 2026-08-24 | All | Initial ratification at project kickoff | Portal programme start | Alamgir Sarkar |
-| 2026-08-28 | Security Posture | Proposed: free-text employee narrative rule; explicit "employee ID is not PII" carve-out | BRD-001 OQ-12 | Alamgir Sarkar — **pending Gate 1 review (Abhijit Adhikary)** |
-| 2026-09-02 | Architectural Constraints | Removed Redis and Kafka; SQLite-only datastore; async integration via outbox + HTTPS webhooks | Stack simplification | Alamgir Sarkar — **pending Gate 1 review (Abhijit Adhikary)** |
+| Date       | Section amended           | Change                                                                                        | Driver                 | Approved by                                                   |
+| ---------- | ------------------------- | --------------------------------------------------------------------------------------------- | ---------------------- | ------------------------------------------------------------- |
+| 2026-08-24 | All                       | Initial ratification at project kickoff                                                       | Portal programme start | Alamgir Sarkar                                                |
+| 2026-08-28 | Security Posture          | Proposed: free-text employee narrative rule; explicit "employee ID is not PII" carve-out      | BRD-001 OQ-12          | Alamgir Sarkar — **pending Gate 1 review (Abhijit Adhikari)** |
+| 2026-09-02 | Architectural Constraints | Removed Redis and Kafka; SQLite-only datastore; async integration via outbox + HTTPS webhooks | Stack simplification   | Alamgir Sarkar — **pending Gate 1 review (Abhijit Adhikari)** |

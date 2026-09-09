@@ -14,6 +14,7 @@ Tag exactly these. Do not let the agent scan the workspace.
 - `.ai-context/constitution.md`
 - `.ai-context/architecture.md` (only the sections the spec's Context names)
 - `.ai-context/templates/_TEMPLATE.plan.md`
+- `.ai-context/ownership_index.md` — cite existing rows; do not silently redefine
 - Any related plan the spec's Context links, plus ADRs it depends on
 - The specific modules the feature will touch — not their parent trees
 
@@ -60,6 +61,7 @@ assumption.
       at the plan, where it is cheapest to remove)
 - [ ] Sequencing steps are independently mergeable
 - [ ] ADR candidates assessed against the day-of-rework test
+- [ ] Anything deferred to a missing NFR or coverage-floor value is named as a deferral, not invented
 - [ ] Documentation Impact filled in
 
 ## Next step

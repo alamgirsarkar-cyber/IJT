@@ -2,12 +2,12 @@
 
 ## Derived From
 
-`.ai-context/specs/internal-transfer-request.spec.md` (v1.1, In Peer Review — not yet Approved)
+`.ai-context/specs/internal-transfer-request.spec.md` (v1.2, In Peer Review — not yet Approved)
 
 ## Status
 
-**Plan Drafted** — awaiting spec **Approved** at Gate 1, then plan review by Abhijit Adhikary
-**Author:** Alamgir Sarkar · **Gate 1 reviewer:** Abhijit Adhikary (_plan review pending_)
+**Plan Drafted** — awaiting spec **Approved** at Gate 1, then plan review by Abhijit Adhikari
+**Author:** Alamgir Sarkar · **Gate 1 reviewer:** Abhijit Adhikari (_plan review pending_)
 Review record: `.ai-context/reviews/internal-transfer-request.gate1-plan.md`
 
 ## Architecture Approach
@@ -17,7 +17,7 @@ Review record: `.ai-context/reviews/internal-transfer-request.gate1-plan.md`
   without an ADR." It owns its own schema namespace and exposes its own routers; nothing
   outside the module reads its tables.
 - **The request aggregate is portal-owned.** `transfer_request` and its children are the
-  system of record for the *request*; the HRIS remains the system of record for employment
+  system of record for the _request_; the HRIS remains the system of record for employment
   and organisational data, which the portal only ever reads and snapshots. See
   [ADR-0002](../decisions/ADR-0002-transfer-request-system-of-record.md).
 - **Downstream integration is event-driven through a transactional outbox.** Submission
@@ -43,7 +43,14 @@ Review record: `.ai-context/reviews/internal-transfer-request.gate1-plan.md`
 - **Front end** is a new route in `employee-portal-web` using the portal design system: a
   four-step wizard (target → date → reason → review) plus a status timeline, with Redux
   Toolkit for state and RTK Query for the API layer, per the constitution's single-state-library
-  rule.
+  rule. The wizard **reuses the portal OIDC session**; RTK Query attaches the bearer token.
+  There is no transfer login page. Unauthenticated users hit the portal's existing sign-in
+  (AC21).
+- **Authentication and authorisation** reuse the platform: gateway validates OIDC;
+  Express middleware `requireAuthenticatedEmployee` reads the token subject as
+  `employee_id` and never a body field. Ownership checks run in the service (AC13, AC20).
+  No new auth-adjacent npm package — platform OIDC middleware already on `employee-services`.
+  Rate-limit counters stay keyed by a salted hash of that subject (AC17).
 
 ## Data Model
 
@@ -52,23 +59,23 @@ the migration is rolling-deploy safe.
 
 **`transfer_request`**
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | uuid PK | |
-| `reference_no` | varchar(16) unique | `ITR-<yyyy>-<6 digits>` from `transfer_reference_seq` |
-| `employee_id` | varchar(32) | Pseudonymous HRIS identifier; indexed |
-| `status` | varchar(24) | Enum-checked; see the spec's state machine |
-| `current_department_id`, `current_location_id`, `current_position_id` | varchar(32) | Snapshot, frozen at submit |
-| `current_grade`, `current_cost_centre` | varchar(32) | Snapshot; drives stage applicability |
-| `target_department_id`, `target_location_id`, `target_position_id` | varchar(32) | |
-| `target_grade`, `target_cost_centre` | varchar(32) | Resolved from position management at submit |
-| `service_in_position_months` | int | Snapshot at submit, for audit of the BR2 decision |
-| `requested_effective_date` | date | |
-| `confirmed_effective_date` | date null | Never set by this feature; the column exists so the approval-chain spec needs no migration |
-| `reason_ciphertext` | bytea null | Field-level encrypted (AC16) |
-| `withdrawal_reason_ciphertext` | bytea null | Same handling |
-| `version` | int | Optimistic concurrency (AC2) |
-| `submitted_at`, `created_at`, `updated_at` | timestamptz | |
+| Column                                                                | Type               | Notes                                                                                      |
+| --------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------ |
+| `id`                                                                  | uuid PK            |                                                                                            |
+| `reference_no`                                                        | varchar(16) unique | `ITR-<yyyy>-<6 digits>` from `transfer_reference_seq`                                      |
+| `employee_id`                                                         | varchar(32)        | Pseudonymous HRIS identifier; indexed                                                      |
+| `status`                                                              | varchar(24)        | Enum-checked; see the spec's state machine                                                 |
+| `current_department_id`, `current_location_id`, `current_position_id` | varchar(32)        | Snapshot, frozen at submit                                                                 |
+| `current_grade`, `current_cost_centre`                                | varchar(32)        | Snapshot; drives stage applicability                                                       |
+| `target_department_id`, `target_location_id`, `target_position_id`    | varchar(32)        |                                                                                            |
+| `target_grade`, `target_cost_centre`                                  | varchar(32)        | Resolved from position management at submit                                                |
+| `service_in_position_months`                                          | int                | Snapshot at submit, for audit of the BR2 decision                                          |
+| `requested_effective_date`                                            | date               |                                                                                            |
+| `confirmed_effective_date`                                            | date null          | Never set by this feature; the column exists so the approval-chain spec needs no migration |
+| `reason_ciphertext`                                                   | bytea null         | Field-level encrypted (AC16)                                                               |
+| `withdrawal_reason_ciphertext`                                        | bytea null         | Same handling                                                                              |
+| `version`                                                             | int                | Optimistic concurrency (AC2)                                                               |
+| `submitted_at`, `created_at`, `updated_at`                            | timestamptz        |                                                                                            |
 
 **Partial unique index** `uniq_active_request_per_employee` on `employee_id`
 `WHERE status IN ('DRAFT','SUBMITTED','MANAGER_REVIEW','HR_VALIDATION','FULFILMENT')`.
@@ -92,23 +99,23 @@ allow-list, so a future column cannot leak into an event by default (AC16).
 
 **SQLite auxiliary tables** — all in the same database file:
 
-| Table | Purpose | TTL / retention |
-|---|---|---|
+| Table                  | Purpose                                                 | TTL / retention                 |
+| ---------------------- | ------------------------------------------------------- | ------------------------------- |
 | `reference_data_cache` | HRIS reference data (departments, locations, positions) | 900 s, served stale past expiry |
-| `idempotency_record` | Idempotency key and stored response (AC10) | 24 h |
-| `rate_limit_counter` | Per-endpoint rate-limit window (AC17) | Window length |
+| `idempotency_record`   | Idempotency key and stored response (AC10)              | 24 h                            |
+| `rate_limit_counter`   | Per-endpoint rate-limit window (AC17)                   | Window length                   |
 
 **Migration:** forward-only, additive. Rollback is by leaving the tables in place, unused —
 dropping them would lose submitted requests.
 
 ## Integration Points
 
-| System | Direction | Sync/Async | Failure behaviour | Timeout / retry | Owner |
-|---|---|---|---|---|---|
-| HRIS read API — employee employment data | Outbound | Sync, **uncached** | Submit returns 503, request stays `DRAFT` (AC15) | 2 s timeout, 1 retry, circuit breaker at 50% over 20 calls | HR Systems |
-| HRIS read API — org and position reference data | Outbound | Sync, cached 15 min | Serve cached, flag `stale`; 503 only if the cache is empty | 2 s timeout, 1 retry | HR Systems |
-| Downstream webhooks `employee.transfer.v1` | Outbound | Async via outbox relay | Outbox retains and retries with backoff; submission is unaffected | Relay: exponential backoff, unbounded retries, alert at 15 min unpublished | Portal |
-| Corporate IdP | Inbound | Sync | Gateway rejects before the service is reached | Platform standard | Security Engineering |
+| System                                          | Direction | Sync/Async             | Failure behaviour                                                 | Timeout / retry                                                            | Owner                |
+| ----------------------------------------------- | --------- | ---------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------- | -------------------- |
+| HRIS read API — employee employment data        | Outbound  | Sync, **uncached**     | Submit returns 503, request stays `DRAFT` (AC15)                  | 2 s timeout, 1 retry, circuit breaker at 50% over 20 calls                 | HR Systems           |
+| HRIS read API — org and position reference data | Outbound  | Sync, cached 15 min    | Serve cached, flag `stale`; 503 only if the cache is empty        | 2 s timeout, 1 retry                                                       | HR Systems           |
+| Downstream webhooks `employee.transfer.v1`      | Outbound  | Async via outbox relay | Outbox retains and retries with backoff; submission is unaffected | Relay: exponential backoff, unbounded retries, alert at 15 min unpublished | Portal               |
+| Corporate IdP                                   | Inbound   | Sync                   | Gateway rejects before the service is reached                     | Platform standard                                                          | Security Engineering |
 
 **Events emitted** (schemas registered, additive-only per the constitution):
 
@@ -121,22 +128,22 @@ dropping them would lose submitted requests.
 
 ## Failure and Boundary Handling
 
-| Scenario | Behaviour | Maps to AC |
-|---|---|---|
-| HRIS unavailable at draft creation | 503; no request created — the current-assignment snapshot is part of the record and a request without it is not usable | AC1, AC15 |
-| HRIS unavailable at submit | 503; request stays `DRAFT`, nothing partially written; eligibility is never evaluated against cached employment data | AC15 |
-| HRIS reference data unavailable, cache warm | Serve cached with `stale` flag; the wizard displays a freshness notice | AC15 |
-| Position closed between drafting and submitting | 422 citing BR6 — validated at submit against live reference data, not against what was selectable when drafted | AC6 |
-| Two concurrent creates for one employee | Partial unique index rejects the second; the service maps the constraint violation to 409, it does not surface a database error | AC8 |
-| Two concurrent draft updates | Optimistic concurrency on `version`; second gets 409 with the current version | AC2 |
-| Double-clicked submit | Idempotency record returns the stored response; no second event, no second audit row | AC10 |
-| Submit succeeds, outbox insert fails | Whole transaction rolls back; request stays `DRAFT` | AC9 |
-| Outbox row committed, downstream webhook unreachable | Relay retries with backoff; the request is `SUBMITTED` and correct, the event is merely late; alert fires at 15 minutes | AC9 |
-| Relay publishes twice after a crash between publish and mark-published | At-least-once by design; consumers must be idempotent, and the event carries `requestId` as the natural dedupe key. Stated in the event contract | ADR-0001 |
-| Withdrawal races a stage transition into `FULFILMENT` | Row-level lock on the aggregate for the status check and the write; the loser gets 409 `withdrawal-window-closed` | AC14 |
-| SQLite unavailable | All transfer endpoints return 503; no partial writes | AC1, AC15 |
-| Clock skew across instances for date-window checks | All date arithmetic in UTC against the database clock, not the application clock | AC4 |
-| Employee's line manager changes between submit and view | `assigned_party_ref` is snapshotted at submit; the view resolves the name at read time and shows the role alone if the reference no longer resolves | AC11 |
+| Scenario                                                               | Behaviour                                                                                                                                           | Maps to AC |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| HRIS unavailable at draft creation                                     | 503; no request created — the current-assignment snapshot is part of the record and a request without it is not usable                              | AC1, AC15  |
+| HRIS unavailable at submit                                             | 503; request stays `DRAFT`, nothing partially written; eligibility is never evaluated against cached employment data                                | AC15       |
+| HRIS reference data unavailable, cache warm                            | Serve cached with `stale` flag; the wizard displays a freshness notice                                                                              | AC15       |
+| Position closed between drafting and submitting                        | 422 citing BR6 — validated at submit against live reference data, not against what was selectable when drafted                                      | AC6        |
+| Two concurrent creates for one employee                                | Partial unique index rejects the second; the service maps the constraint violation to 409, it does not surface a database error                     | AC8        |
+| Two concurrent draft updates                                           | Optimistic concurrency on `version`; second gets 409 with the current version                                                                       | AC2        |
+| Double-clicked submit                                                  | Idempotency record returns the stored response; no second event, no second audit row                                                                | AC10       |
+| Submit succeeds, outbox insert fails                                   | Whole transaction rolls back; request stays `DRAFT`                                                                                                 | AC9        |
+| Outbox row committed, downstream webhook unreachable                   | Relay retries with backoff; the request is `SUBMITTED` and correct, the event is merely late; alert fires at 15 minutes                             | AC9        |
+| Relay publishes twice after a crash between publish and mark-published | At-least-once by design; consumers must be idempotent, and the event carries `requestId` as the natural dedupe key. Stated in the event contract    | ADR-0001   |
+| Withdrawal races a stage transition into `FULFILMENT`                  | Row-level lock on the aggregate for the status check and the write; the loser gets 409 `withdrawal-window-closed`                                   | AC14       |
+| SQLite unavailable                                                     | All transfer endpoints return 503; no partial writes                                                                                                | AC1, AC15  |
+| Clock skew across instances for date-window checks                     | All date arithmetic in UTC against the database clock, not the application clock                                                                    | AC4        |
+| Employee's line manager changes between submit and view                | `assigned_party_ref` is snapshotted at submit; the view resolves the name at read time and shows the role alone if the reference no longer resolves | AC11       |
 
 ## Constitution Check
 
@@ -168,19 +175,19 @@ dropping them would lose submitted requests.
 
 ## ADR Candidates
 
-| Decision | Significant? | ADR |
-|---|---|---|
-| Event-driven downstream orchestration via a transactional outbox, rather than synchronous calls | **Yes** — reversing it would mean rewriting every downstream integration and the submit path; far more than a day | [ADR-0001](../decisions/ADR-0001-outbox-event-driven-transfer-orchestration.md) |
-| Portal owns the transfer request; HRIS stays the system of record for employment data | **Yes** — the alternative changes data ownership across two organisations | [ADR-0002](../decisions/ADR-0002-transfer-request-system-of-record.md) |
-| Rules in explicit code functions rather than a rules engine | No — nine rule functions could be moved behind an engine in well under a day if the rule count grows | Recorded here only |
-| Optimistic concurrency rather than pessimistic locking on drafts | No — localised to one endpoint | Recorded here only |
-| Eligibility data read uncached while reference data is cached | Borderline; the reasoning is load-bearing enough to be worth writing down, but reversing it is a configuration change | Recorded here and in Architecture Approach |
+| Decision                                                                                        | Significant?                                                                                                          | ADR                                                                             |
+| ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Event-driven downstream orchestration via a transactional outbox, rather than synchronous calls | **Yes** — reversing it would mean rewriting every downstream integration and the submit path; far more than a day     | [ADR-0001](../decisions/ADR-0001-outbox-event-driven-transfer-orchestration.md) |
+| Portal owns the transfer request; HRIS stays the system of record for employment data           | **Yes** — the alternative changes data ownership across two organisations                                             | [ADR-0002](../decisions/ADR-0002-transfer-request-system-of-record.md)          |
+| Rules in explicit code functions rather than a rules engine                                     | No — nine rule functions could be moved behind an engine in well under a day if the rule count grows                  | Recorded here only                                                              |
+| Optimistic concurrency rather than pessimistic locking on drafts                                | No — localised to one endpoint                                                                                        | Recorded here only                                                              |
+| Eligibility data read uncached while reference data is cached                                   | Borderline; the reasoning is load-bearing enough to be worth writing down, but reversing it is a configuration change | Recorded here and in Architecture Approach                                      |
 
 ## Explicitly Deferred
 
 - **Approval decisioning** — every stage transition after `SUBMITTED`. Deferred to
   `internal-transfer-approval-chain`. This plan creates the stage rows and nothing else acts
-  on them. *Gate 2 must verify that no approval logic appeared in the implementation.*
+  on them. _Gate 2 must verify that no approval logic appeared in the implementation._
 - **Downstream fulfilment consumers** — Payroll, ITSM, Facilities. Deferred to
   `internal-transfer-downstream-orchestration`. v1 emits an event with no consumer, knowingly.
 - **Notifications** — deferred to `internal-transfer-notifications`. No email, no push, no
@@ -195,6 +202,9 @@ dropping them would lose submitted requests.
   purge is a platform-wide capability; raised as a separate backlog item rather than built
   here, because a feature-local purge job is the wrong place for it.
 - **Localisation** — copy is externalised into resource files; no second locale is delivered.
+- **Identity administration** — login, registration, password reset, MFA enrolment, a
+  second session timeout, or an auth-adjacent package. Authentication is the existing
+  portal OIDC session (BRD-001 KD-07). _Gate 2 must verify no transfer login form appeared._
 
 ## Sequencing
 
@@ -204,8 +214,8 @@ Each step is independently generatable, reviewable and mergeable.
    index, revoked audit privileges.
 2. **Reference-data provider** — HRIS client, SQLite cache, staleness handling, the API07
    endpoint.
-3. **Draft lifecycle** — create and update, optimistic concurrency, ownership checks
-   (API01, API02).
+3. **Draft lifecycle** — create and update, optimistic concurrency, OIDC middleware and
+   ownership checks (API01, API02, AC13, AC20).
 4. **Rule set** — one function per business rule, returning violations carrying rule IDs.
 5. **Submit transaction** — validation, stage-plan construction, audit, outbox, idempotency
    (API03).
@@ -215,12 +225,13 @@ Each step is independently generatable, reviewable and mergeable.
 8. **Withdrawal** — state guard, stage cancellation, event (API06).
 9. **Cross-cutting hardening** — rate limiting, log redaction and its test, field-level
    encryption, correlation-ID propagation.
-10. **Front end** — wizard, status timeline, accessibility.
+10. **Front end** — wizard, status timeline, accessibility, existing portal session (AC21).
 
 ## Documentation Impact
 
-- [x] `architecture.md` — Components, Data Model, Integration Points, Decisions in Force and
-      Known Constraints all updated on plan approval (2026-09-01)
+- [x] `architecture.md` — Components, Data Model, Integration Points, Authentication and
+      Authorisation, Decisions in Force and Known Constraints updated (AuthN/AuthZ section
+      2026-09-08; remainder on plan drafting 2026-09-01)
 - [x] `decisions/` — ADR-0001 and ADR-0002 filed
 - [ ] `README.md` — no operational change until the first deploy adds a migration step
 - [ ] `docs/contracts/` — event schemas to be registered when T06 merges

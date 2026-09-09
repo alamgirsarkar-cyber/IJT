@@ -7,8 +7,8 @@
 
 ## Derived From
 
-`.ai-context/specs/internal-transfer-request.spec.md` (v1.1, In Peer Review)
-**Owner:** Alamgir Sarkar · **Last updated:** 2026-09-01
+`.ai-context/specs/internal-transfer-request.spec.md` (v1.2, In Peer Review)
+**Owner:** Alamgir Sarkar · **Last updated:** 2026-09-08
 
 ## Coverage Summary
 
@@ -26,13 +26,15 @@
 | AC10 | UT27–UT29 | UT27a, UT27b | — | Not Run |
 | AC11 | UT30–UT33 | UT30a, UT31a | — | Not Run |
 | AC12 | UT34, UT35 | UT34a, UT34b | PT02 | Not Run |
-| AC13 | UT36, UT37 | NT01–NT04 | ST01 | Not Run |
+| AC13 | UT36, UT37 | NT01, NT02, NT04 | ST01 | Not Run |
 | AC14 | UT38–UT41 | UT38a, UT39a | — | Not Run |
 | AC15 | UT42–UT45 | IT01–IT04 | — | Not Run |
 | AC16 | UT46–UT48 | ST02–ST05 | — | Not Run |
 | AC17 | UT49, UT50 | NT05 | PT03 | Not Run |
 | AC18 | UT51, UT52 | UT51a | — | Not Run |
 | AC19 | UT53–UT55 | AT01–AT05 | — | Not Run |
+| AC20 | UT56, UT57 | NT03, NT10 | — | Not Run |
+| AC21 | UT58, UT59 | NT11 | — | Not Run |
 
 ## Spec-Derived Cases
 
@@ -80,7 +82,9 @@ goes stale. QA owns the expansions below.
 |---|---|---|---|
 | `NT01` | AC13 | Employee A requests employee B's request by its real UUID | 404 `request-not-found`; response and logs contain no field of B's request |
 | `NT02` | AC13 | Valid token, `employeeId` of another employee supplied in the body of API03 | Ignored; acts on the token subject's own request |
-| `NT03` | AC13 | Expired token | 401; no service-side processing |
+| `NT03` | AC20 | Expired token | 401; no service-side processing |
+| `NT10` | AC20 | Missing `Authorization` header on API01 | 401 `unauthenticated`; no row inserted |
+| `NT11` | AC21 | Unauthenticated browser opens wizard URL | Portal existing sign-in; no request data rendered |
 | `NT04` | AC13 | Token valid for a different tenant or a non-employee principal | 403 at the gateway; the service is never reached |
 | `NT05` | AC17 | Rate limit exhausted, then a valid request after `Retry-After` elapses | 429 then 200; no state change during the blocked window |
 | `NT06` | AC3 | SQL metacharacters in `reason` | Stored and returned verbatim; no query error, no injection |

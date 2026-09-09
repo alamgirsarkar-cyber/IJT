@@ -6,7 +6,9 @@
 > same bad premise, and documentation that faithfully records the wrong intent.
 >
 > **This record is for the named human reviewer.** An agent may prepare a first sweep using
-> `.agent/workflows/spec-review.md`; it does not sign off here.
+> `.agent/workflows/spec-review.md`; it does not sign off here. The dated verdict is written
+> as `## Gate 1 Review` on the spec per `.agent/rules/governance.md` — this worksheet is
+> findings, not the sign-off.
 
 ## Review Record
 
@@ -15,7 +17,7 @@
 | Spec under review | `.ai-context/specs/internal-transfer-request.spec.md` |
 | Version submitted | v1.1 |
 | Author | Alamgir Sarkar |
-| **Reviewer (not the author)** | Abhijit Adhikary |
+| **Reviewer (not the author)** | Abhijit Adhikari |
 | Security / Architecture (constitution check) | _Pending — name reviewer and date when obtained_ |
 | Submitted | 2026-09-07 (reconfirmed with full BRD-001 programme submission) |
 | Outcome | **Changes Requested** (2026-09-09) — 8 Blocker, 6 Should-fix findings |

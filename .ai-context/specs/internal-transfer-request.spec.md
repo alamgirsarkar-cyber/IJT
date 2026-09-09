@@ -6,11 +6,9 @@
 
 ## Status
 
-**Changes Requested (Gate 1)** — Draft v1.1 reviewed 2026-09-09 by Abhijit Adhikary.
-Findings recorded in `.ai-context/reviews/internal-transfer-request.gate1.md` — 8 Blocker
-and 6 Should-fix items. Author to revise, bump version, and resubmit. Revision history at
-the end of this file. Full state machine in `.ai-context/status.md`. Implementation must
-not start until this spec is **Approved**.
+**In Peer Review (Gate 1)** — Draft v1.2 submitted for review by Abhijit Adhikari.
+Revision history at the end of this file. Full state machine in `.ai-context/status.md`.
+Implementation must not start until this spec is **Approved**.
 
 ## Linked BRD
 
@@ -18,13 +16,13 @@ not start until this spec is **Approved**.
 
 ## Owner / Reviewer
 
-| Role | Name | Date |
-|---|---|---|
-| Author / owner | Alamgir Sarkar | 2026-08-27 |
-| Gate 1 reviewer (never the author) | Abhijit Adhikary | 2026-09-09 (_Changes Requested_) |
-| Gate 2 reviewer | Tapas Dutta | — |
+| Role                               | Name             | Date                           |
+| ---------------------------------- | ---------------- | ------------------------------ |
+| Author / owner                     | Alamgir Sarkar   | 2026-08-27                     |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-07 (_pending outcome_) |
+| Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
-Gate 1 record: `.ai-context/reviews/internal-transfer-request.gate1.md`
+Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-request.gate1.md`.
 
 ## Intent
 
@@ -42,8 +40,8 @@ simulate, any approval decision.
 
 ## Context
 
-- Builds on: `.ai-context/architecture.md` — *Components*, *Integration Points*,
-  *Cross-Cutting Concerns*
+- Builds on: `.ai-context/architecture.md` — _Components_, _Integration Points_,
+  _Authentication and Authorisation_, _Cross-Cutting Concerns_
 - Constitution: `.ai-context/constitution.md` — Security Posture, Architectural
   Constraints, Non-Functional Baselines all apply and are not restated here
 - Related specs (co-submitted to Gate 1 2026-09-07 — none Approved yet):
@@ -52,29 +50,32 @@ simulate, any approval decision.
   - `internal-transfer-notifications` — **In Peer Review** — consumes state transitions this spec records
 - API contract consumed: HRIS read API — `docs/contracts/hris-read-api.md`
 - Design: portal design system; internal transfer wizard screens, Figma `OPP/ITR/v1`
+- Shared facts: `.ai-context/ownership_index.md` (OWN-01, OWN-02, OWN-05, OWN-07)
 
-**Note on the state machine (for Gate 1 reviewers):** this spec *defines* the
-full request state machine because it owns the aggregate, but it only *drives* the
+**Note on the state machine (for Gate 1 reviewers):** this spec _defines_ the
+full request state machine because it owns the aggregate, but it only _drives_ the
 transitions `DRAFT → SUBMITTED`, `DRAFT → DISCARDED` and `SUBMITTED → WITHDRAWN`. States
 from `MANAGER_REVIEW` onward are defined here and transitioned by
 `internal-transfer-approval-chain`. Acceptance criteria that reference those states
-(AC14) specify *the rule*, and are verified against states set directly in test fixtures.
+(AC14) specify _the rule_, and are verified against states set directly in test fixtures.
 This is a definition dependency, not a build dependency, so the Gate 1 dependency check
 passes.
 
 ## Business Rules Applied
 
-| Rule ID | Rule | Source | Type | Enforced by this spec? |
-|---|---|---|---|---|
-| `internal-transfer-request.BR1` | Employment status must be Active and confirmed; employees on probation may not request a transfer | BRD-001 BR1 | Business | Yes — AC7 |
-| `internal-transfer-request.BR2` | Minimum 12 months continuous service in the current position, measured at the requested effective date | BRD-001 BR2 | Business | Yes — AC7 |
-| `internal-transfer-request.BR3` | Only one transfer request in a non-terminal state per employee | BRD-001 BR3 | Business | Yes — AC8 |
-| `internal-transfer-request.BR4` | No active resignation or exit process | BRD-001 BR4 | Business | Yes — AC7 |
-| `internal-transfer-request.BR5` | Target must differ from current in at least one of department, location, position | BRD-001 BR5 | Business | Yes — AC5 |
-| `internal-transfer-request.BR6` | Target position must be open and internally fillable | BRD-001 BR6 | Business | Yes — AC6 |
-| `internal-transfer-request.BR7` | Requested effective date ≥ today + 14 days and ≤ today + 180 days | BRD-001 BR7 | Business | Yes — AC4 |
-| `internal-transfer-request.BR8` | Non-payroll-aligned effective dates are permitted but flagged as likely to move | BRD-001 BR8 | Business | Yes — AC4 (advisory, non-blocking) |
-| `internal-transfer-request.BR9` | Open disciplinary or performance cases block a transfer | BRD-001 BR9 | Business | **No — validated manually by HR.** The portal must not imply it has checked (AC7) |
+| Rule ID                         | Rule                                                                                                   | Source      | Type     | Enforced by this spec?                                                            |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------ | ----------- | -------- | --------------------------------------------------------------------------------- |
+| `internal-transfer-request.BR1` | Employment status must be Active and confirmed; employees on probation may not request a transfer      | BRD-001 BR1 | Business | Yes — AC7                                                                         |
+| `internal-transfer-request.BR2` | Minimum 12 months continuous service in the current position, measured at the requested effective date | BRD-001 BR2 | Business | Yes — AC7                                                                         |
+| `internal-transfer-request.BR3` | Only one transfer request in a non-terminal state per employee                                         | BRD-001 BR3 | Business | Yes — AC8                                                                         |
+| `internal-transfer-request.BR4` | No active resignation or exit process                                                                  | BRD-001 BR4 | Business | Yes — AC7                                                                         |
+| `internal-transfer-request.BR5` | Target must differ from current in at least one of department, location, position                      | BRD-001 BR5 | Business | Yes — AC5                                                                         |
+| `internal-transfer-request.BR6` | Target position must be open and internally fillable                                                   | BRD-001 BR6 | Business | Yes — AC6                                                                         |
+| `internal-transfer-request.BR7` | Requested effective date ≥ today + 14 days and ≤ today + 180 days                                      | BRD-001 BR7 | Business | Yes — AC4                                                                         |
+| `internal-transfer-request.BR8` | Non-payroll-aligned effective dates are permitted but flagged as likely to move                        | BRD-001 BR8 | Business | Yes — AC4 (advisory, non-blocking)                                                |
+| `internal-transfer-request.BR9` | Open disciplinary or performance cases block a transfer                                                | BRD-001 BR9 | Business | **No — validated manually by HR.** The portal must not imply it has checked (AC7) |
+| `internal-transfer-request.BR10` | Only an authenticated employee may call employee-facing transfer APIs or open the wizard/status routes | BRD-001 BR10, KD-07 | Technical | Yes — AC20, AC21 |
+| `internal-transfer-request.BR11` | The caller may create, update, submit, withdraw and view only requests whose `employee_id` equals the token subject | BRD-001 BR11 | Business | Yes — AC12, AC13 |
 
 ## Request State Machine
 
@@ -96,26 +97,41 @@ Non-terminal for the purposes of BR3: `DRAFT`, `SUBMITTED`, `MANAGER_REVIEW`,
 Fixed at submission and never recalculated afterwards, so the employee's view cannot change
 underneath them when reference data changes.
 
-| Stage code | Sequence | Assigned role | Applicability rule |
-|---|---|---|---|
-| `MANAGER_RELEASE` | 1 | Current line manager | Always |
-| `MANAGER_ACCEPT` | 2 | Receiving manager | Always |
-| `HR_VALIDATION` | 3 | HR Business Partner | Always |
-| `ORG_DATA_UPDATE` | 4 | HR Operations | Always |
-| `PAYROLL_UPDATE` | 5 | Payroll | Only if target cost centre or grade differs from current |
-| `IT_ACCESS` | 6 | IT service desk | Only if target department differs from current |
-| `FACILITIES` | 7 | Facilities | Only if target location differs from current |
-| `EMPLOYEE_CONFIRMATION` | 8 | Employee | Always |
+| Stage code              | Sequence | Assigned role        | Applicability rule                                       |
+| ----------------------- | -------- | -------------------- | -------------------------------------------------------- |
+| `MANAGER_RELEASE`       | 1        | Current line manager | Always                                                   |
+| `MANAGER_ACCEPT`        | 2        | Receiving manager    | Always                                                   |
+| `HR_VALIDATION`         | 3        | HR Business Partner  | Always                                                   |
+| `ORG_DATA_UPDATE`       | 4        | HR Operations        | Always                                                   |
+| `PAYROLL_UPDATE`        | 5        | Payroll              | Only if target cost centre or grade differs from current |
+| `IT_ACCESS`             | 6        | IT service desk      | Only if target department differs from current           |
+| `FACILITIES`            | 7        | Facilities           | Only if target location differs from current             |
+| `EMPLOYEE_CONFIRMATION` | 8        | Employee             | Always                                                   |
 
-Non-applicable stages are persisted with `applicable: false` and rendered as *Not required*
+Non-applicable stages are persisted with `applicable: false` and rendered as _Not required_
 — they are shown, not hidden, so the employee can see the journey was considered rather
 than wonder whether a step was skipped by mistake.
+
+## Authentication and Authorisation
+
+Cites BRD-001 KD-07, KD-08, BR10, BR11 and `.ai-context/architecture.md` —
+_Authentication and Authorisation_. This spec does not add an IdP, login page, or
+session timeout.
+
+| Concern | Rule on this spec |
+| --- | --- |
+| Authentication | Corporate OIDC via the existing portal session. Gateway validates the access token. Token **subject** = acting `employee_id`. |
+| Authorisation | In `employee-services`: the principal may act only on requests they own (BR11). A caller-supplied `employeeId` in body, query or path is ignored (AC13). |
+| Unauthenticated | HTTP 401 `unauthenticated`; no draft, submit, or withdraw is persisted (AC20). |
+| Unauthorised resource | HTTP 404 `request-not-found`, never 403 (AC13). |
+| Front end | Wizard and status routes require the portal OIDC session, attach the bearer token, and do not collect credentials (AC21). |
+| Not used here | Role `HR_BUSINESS_PARTNER` and stage-assignee checks — `internal-transfer-approval-chain`. HMAC webhooks — `internal-transfer-downstream-orchestration`. |
 
 ## API Contract
 
 All endpoints are under `/api/v1/internal-transfers`, behind the gateway's OIDC validation.
 The acting employee is derived from the token subject; **no endpoint accepts an employee
-identifier from the caller** (AC13).
+identifier from the caller** (AC13). Missing or invalid tokens are 401 (AC20).
 
 All error responses use RFC 7807 `application/problem+json`, per `constitution.md`:
 
@@ -166,9 +182,12 @@ never re-implements the rule itself.
   "status": "DRAFT",
   "version": 1,
   "currentAssignment": {
-    "departmentId": "string", "departmentName": "string",
-    "locationId": "string", "locationName": "string",
-    "positionId": "string", "positionTitle": "string",
+    "departmentId": "string",
+    "departmentName": "string",
+    "locationId": "string",
+    "locationName": "string",
+    "positionId": "string",
+    "positionTitle": "string",
     "serviceInPositionMonths": 18
   },
   "target": { "departmentId": null, "locationId": null, "positionId": null },
@@ -181,13 +200,13 @@ never re-implements the rule itself.
 
 **Exceptions:**
 
-| Code | Condition | Response body |
-|---|---|---|
-| 401 | No or invalid token | Problem, `type: unauthenticated` |
-| 409 | Employee already has a non-terminal request (BR3) | Problem, `type: active-request-exists`, `violations[0].ruleId = ...BR3`, plus `existingRequestId` and `existingReferenceNo` |
-| 422 | Payload present but malformed field types or `reason` over 2000 characters | Problem, `type: validation-failed`, `violations[].field` populated |
-| 429 | Rate limit exceeded | Problem, `type: rate-limited`, `Retry-After` header |
-| 503 | HRIS unavailable and no cached employee assignment — the current-assignment snapshot cannot be resolved | Problem, `type: reference-data-unavailable`, `Retry-After` header |
+| Code | Condition                                                                                               | Response body                                                                                                               |
+| ---- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| 401  | No or invalid token                                                                                     | Problem, `type: unauthenticated`                                                                                            |
+| 409  | Employee already has a non-terminal request (BR3)                                                       | Problem, `type: active-request-exists`, `violations[0].ruleId = ...BR3`, plus `existingRequestId` and `existingReferenceNo` |
+| 422  | Payload present but malformed field types or `reason` over 2000 characters                              | Problem, `type: validation-failed`, `violations[].field` populated                                                          |
+| 429  | Rate limit exceeded                                                                                     | Problem, `type: rate-limited`, `Retry-After` header                                                                         |
+| 503  | HRIS unavailable and no cached employee assignment — the current-assignment snapshot cannot be resolved | Problem, `type: reference-data-unavailable`, `Retry-After` header                                                           |
 
 ---
 
@@ -217,15 +236,15 @@ where the date is close to the threshold).
 
 **Exceptions:**
 
-| Code | Condition | Response body |
-|---|---|---|
-| 400 | `If-Match` header absent | Problem, `type: precondition-required` |
-| 401 | No or invalid token | Problem, `type: unauthenticated` |
-| 404 | Request does not exist, **or exists and is not owned by the caller** (deliberate — see AC13) | Problem, `type: request-not-found` |
-| 409 | `If-Match` version does not match current version | Problem, `type: version-conflict`, with `currentVersion` |
-| 409 | Request is not in `DRAFT` | Problem, `type: invalid-state-transition`, with `currentStatus` |
-| 422 | Malformed fields, unknown reference IDs, or `reason` over 2000 characters | Problem, `type: validation-failed`, `violations[].field` populated |
-| 429 | Rate limit exceeded | Problem, `type: rate-limited` |
+| Code | Condition                                                                                    | Response body                                                      |
+| ---- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| 400  | `If-Match` header absent                                                                     | Problem, `type: precondition-required`                             |
+| 401  | No or invalid token                                                                          | Problem, `type: unauthenticated`                                   |
+| 404  | Request does not exist, **or exists and is not owned by the caller** (deliberate — see AC13) | Problem, `type: request-not-found`                                 |
+| 409  | `If-Match` version does not match current version                                            | Problem, `type: version-conflict`, with `currentVersion`           |
+| 409  | Request is not in `DRAFT`                                                                    | Problem, `type: invalid-state-transition`, with `currentStatus`    |
+| 422  | Malformed fields, unknown reference IDs, or `reason` over 2000 characters                    | Problem, `type: validation-failed`, `violations[].field` populated |
+| 429  | Rate limit exceeded                                                                          | Problem, `type: rate-limited`                                      |
 
 ---
 
@@ -252,39 +271,63 @@ never introduce values that were never validated.
   "requestedEffectiveDate": "2026-10-01",
   "effectiveDateStatus": "REQUESTED",
   "stages": [
-    { "stageCode": "MANAGER_RELEASE", "sequence": 1, "status": "PENDING",
-      "assignedRole": "LINE_MANAGER", "assignedPartyName": "<line manager display name>", "applicable": true },
-    { "stageCode": "MANAGER_ACCEPT", "sequence": 2, "status": "NOT_STARTED",
-      "assignedRole": "RECEIVING_MANAGER", "assignedPartyName": null, "applicable": true },
-    { "stageCode": "PAYROLL_UPDATE", "sequence": 5, "status": "NOT_STARTED",
-      "assignedRole": "PAYROLL", "assignedPartyName": null, "applicable": false }
+    {
+      "stageCode": "MANAGER_RELEASE",
+      "sequence": 1,
+      "status": "PENDING",
+      "assignedRole": "LINE_MANAGER",
+      "assignedPartyName": "<line manager display name>",
+      "applicable": true
+    },
+    {
+      "stageCode": "MANAGER_ACCEPT",
+      "sequence": 2,
+      "status": "NOT_STARTED",
+      "assignedRole": "RECEIVING_MANAGER",
+      "assignedPartyName": null,
+      "applicable": true
+    },
+    {
+      "stageCode": "PAYROLL_UPDATE",
+      "sequence": 5,
+      "status": "NOT_STARTED",
+      "assignedRole": "PAYROLL",
+      "assignedPartyName": null,
+      "applicable": false
+    }
   ],
   "advisories": [
-    { "code": "PAYROLL_CYCLE_MISALIGNED", "ruleId": "internal-transfer-request.BR8",
-      "message": "Your requested date is mid-cycle and HR may move it to the 1st of the month." },
-    { "code": "MANUAL_HR_CHECKS_PENDING", "ruleId": "internal-transfer-request.BR9",
-      "message": "HR will carry out further eligibility checks that the portal does not perform." }
+    {
+      "code": "PAYROLL_CYCLE_MISALIGNED",
+      "ruleId": "internal-transfer-request.BR8",
+      "message": "Your requested date is mid-cycle and HR may move it to the 1st of the month."
+    },
+    {
+      "code": "MANUAL_HR_CHECKS_PENDING",
+      "ruleId": "internal-transfer-request.BR9",
+      "message": "HR will carry out further eligibility checks that the portal does not perform."
+    }
   ]
 }
 ```
 
 **Exceptions:**
 
-| Code | Condition | Response body |
-|---|---|---|
-| 400 | `Idempotency-Key` header absent | Problem, `type: idempotency-key-required` |
-| 401 | No or invalid token | Problem, `type: unauthenticated` |
-| 404 | Not found, or not owned by the caller | Problem, `type: request-not-found` |
-| 409 | Request is not in `DRAFT` | Problem, `type: invalid-state-transition`, with `currentStatus` |
-| 409 | Employee acquired another non-terminal request since the draft was created (BR3) | Problem, `type: active-request-exists` |
-| 409 | `Idempotency-Key` reused with a different request body or a different request ID | Problem, `type: idempotency-key-conflict` |
-| 422 | Mandatory fields missing (AC3) | Problem, `type: validation-failed`, one `violations` entry per missing field |
-| 422 | Effective date outside the permitted window (BR7) | Problem, `type: validation-failed`, `ruleId = ...BR7` |
-| 422 | Target identical to current assignment (BR5) | Problem, `type: validation-failed`, `ruleId = ...BR5` |
-| 422 | Target position no longer open or internally fillable (BR6) | Problem, `type: validation-failed`, `ruleId = ...BR6` |
-| 422 | Eligibility rules failed (BR1, BR2, BR4) | Problem, `type: eligibility-failed`, one `violations` entry per failed rule |
-| 429 | Rate limit exceeded | Problem, `type: rate-limited` |
-| 503 | HRIS unavailable, so eligibility cannot be evaluated | Problem, `type: reference-data-unavailable`, `Retry-After`. **The request stays `DRAFT`, unchanged.** |
+| Code | Condition                                                                        | Response body                                                                                         |
+| ---- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| 400  | `Idempotency-Key` header absent                                                  | Problem, `type: idempotency-key-required`                                                             |
+| 401  | No or invalid token                                                              | Problem, `type: unauthenticated`                                                                      |
+| 404  | Not found, or not owned by the caller                                            | Problem, `type: request-not-found`                                                                    |
+| 409  | Request is not in `DRAFT`                                                        | Problem, `type: invalid-state-transition`, with `currentStatus`                                       |
+| 409  | Employee acquired another non-terminal request since the draft was created (BR3) | Problem, `type: active-request-exists`                                                                |
+| 409  | `Idempotency-Key` reused with a different request body or a different request ID | Problem, `type: idempotency-key-conflict`                                                             |
+| 422  | Mandatory fields missing (AC3)                                                   | Problem, `type: validation-failed`, one `violations` entry per missing field                          |
+| 422  | Effective date outside the permitted window (BR7)                                | Problem, `type: validation-failed`, `ruleId = ...BR7`                                                 |
+| 422  | Target identical to current assignment (BR5)                                     | Problem, `type: validation-failed`, `ruleId = ...BR5`                                                 |
+| 422  | Target position no longer open or internally fillable (BR6)                      | Problem, `type: validation-failed`, `ruleId = ...BR6`                                                 |
+| 422  | Eligibility rules failed (BR1, BR2, BR4)                                         | Problem, `type: eligibility-failed`, one `violations` entry per failed rule                           |
+| 429  | Rate limit exceeded                                                              | Problem, `type: rate-limited`                                                                         |
+| 503  | HRIS unavailable, so eligibility cannot be evaluated                             | Problem, `type: reference-data-unavailable`, `Retry-After`. **The request stays `DRAFT`, unchanged.** |
 
 ---
 
@@ -303,18 +346,33 @@ never introduce values that were never validated.
   "status": "MANAGER_REVIEW",
   "statusDisplay": "With your manager",
   "version": 4,
-  "currentAssignment": { "departmentName": "string", "locationName": "string", "positionTitle": "string" },
+  "currentAssignment": {
+    "departmentName": "string",
+    "locationName": "string",
+    "positionTitle": "string"
+  },
   "target": { "departmentName": "string", "locationName": "string", "positionTitle": "string" },
   "requestedEffectiveDate": "2026-10-01",
   "confirmedEffectiveDate": null,
   "effectiveDateStatus": "REQUESTED",
   "reason": "string | null",
   "submittedAt": "2026-09-01T09:31:44Z",
-  "pendingWith": { "stageCode": "MANAGER_RELEASE", "role": "LINE_MANAGER", "partyName": "<line manager display name>" },
+  "pendingWith": {
+    "stageCode": "MANAGER_RELEASE",
+    "role": "LINE_MANAGER",
+    "partyName": "<line manager display name>"
+  },
   "stages": [
-    { "stageCode": "MANAGER_RELEASE", "sequence": 1, "status": "IN_PROGRESS", "applicable": true,
-      "assignedRole": "LINE_MANAGER", "assignedPartyName": "<line manager display name>",
-      "startedAt": "2026-09-01T09:31:45Z", "completedAt": null }
+    {
+      "stageCode": "MANAGER_RELEASE",
+      "sequence": 1,
+      "status": "IN_PROGRESS",
+      "applicable": true,
+      "assignedRole": "LINE_MANAGER",
+      "assignedPartyName": "<line manager display name>",
+      "startedAt": "2026-09-01T09:31:45Z",
+      "completedAt": null
+    }
   ],
   "history": [
     { "event": "SUBMITTED", "occurredAt": "2026-09-01T09:31:44Z", "actorRole": "EMPLOYEE" }
@@ -330,11 +388,11 @@ principal by any endpoint in this spec.
 
 **Exceptions:**
 
-| Code | Condition | Response body |
-|---|---|---|
-| 401 | No or invalid token | Problem, `type: unauthenticated` |
-| 404 | Not found, or not owned by the caller | Problem, `type: request-not-found` |
-| 429 | Rate limit exceeded | Problem, `type: rate-limited` |
+| Code | Condition                             | Response body                      |
+| ---- | ------------------------------------- | ---------------------------------- |
+| 401  | No or invalid token                   | Problem, `type: unauthenticated`   |
+| 404  | Not found, or not owned by the caller | Problem, `type: request-not-found` |
+| 429  | Rate limit exceeded                   | Problem, `type: rate-limited`      |
 
 ---
 
@@ -351,12 +409,21 @@ sorted by `createdAt` descending.
 ```json
 {
   "items": [
-    { "requestId": "uuid", "referenceNo": "ITR-2026-000123", "status": "MANAGER_REVIEW",
-      "statusDisplay": "With your manager", "targetPositionTitle": "string",
-      "requestedEffectiveDate": "2026-10-01", "createdAt": "2026-09-01T09:14:02Z",
-      "pendingWithRole": "LINE_MANAGER" }
+    {
+      "requestId": "uuid",
+      "referenceNo": "ITR-2026-000123",
+      "status": "MANAGER_REVIEW",
+      "statusDisplay": "With your manager",
+      "targetPositionTitle": "string",
+      "requestedEffectiveDate": "2026-10-01",
+      "createdAt": "2026-09-01T09:14:02Z",
+      "pendingWithRole": "LINE_MANAGER"
+    }
   ],
-  "page": 1, "size": 10, "totalItems": 3, "totalPages": 1
+  "page": 1,
+  "size": 10,
+  "totalItems": 3,
+  "totalPages": 1
 }
 ```
 
@@ -364,11 +431,11 @@ sorted by `createdAt` descending.
 
 **Exceptions:**
 
-| Code | Condition | Response body |
-|---|---|---|
-| 400 | `size` outside the permitted set, or unknown `status` value | Problem, `type: validation-failed` |
-| 401 | No or invalid token | Problem, `type: unauthenticated` |
-| 429 | Rate limit exceeded | Problem, `type: rate-limited` |
+| Code | Condition                                                   | Response body                      |
+| ---- | ----------------------------------------------------------- | ---------------------------------- |
+| 400  | `size` outside the permitted set, or unknown `status` value | Problem, `type: validation-failed` |
+| 401  | No or invalid token                                         | Problem, `type: unauthenticated`   |
+| 429  | Rate limit exceeded                                         | Problem, `type: rate-limited`      |
 
 ---
 
@@ -394,14 +461,14 @@ incomplete stages set to `CANCELLED`, and `availableActions: []`.
 
 **Exceptions:**
 
-| Code | Condition | Response body |
-|---|---|---|
-| 401 | No or invalid token | Problem, `type: unauthenticated` |
-| 404 | Not found, or not owned by the caller | Problem, `type: request-not-found` |
-| 409 | Status is `FULFILMENT`, `COMPLETED`, `REJECTED` or `CANCELLED` | Problem, `type: withdrawal-window-closed`, `detail` telling the employee to contact HR, plus `currentStatus` |
-| 409 | Status is `DRAFT` | Problem, `type: invalid-state-transition` — a draft is discarded, not withdrawn |
-| 422 | `withdrawalReason` over 2000 characters | Problem, `type: validation-failed` |
-| 429 | Rate limit exceeded | Problem, `type: rate-limited` |
+| Code | Condition                                                      | Response body                                                                                                |
+| ---- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| 401  | No or invalid token                                            | Problem, `type: unauthenticated`                                                                             |
+| 404  | Not found, or not owned by the caller                          | Problem, `type: request-not-found`                                                                           |
+| 409  | Status is `FULFILMENT`, `COMPLETED`, `REJECTED` or `CANCELLED` | Problem, `type: withdrawal-window-closed`, `detail` telling the employee to contact HR, plus `currentStatus` |
+| 409  | Status is `DRAFT`                                              | Problem, `type: invalid-state-transition` — a draft is discarded, not withdrawn                              |
+| 422  | `withdrawalReason` over 2000 characters                        | Problem, `type: validation-failed`                                                                           |
+| 429  | Rate limit exceeded                                            | Problem, `type: rate-limited`                                                                                |
 
 ---
 
@@ -418,11 +485,17 @@ reflects any individual request.
 
 ```json
 {
-  "departments": [ { "id": "string", "name": "string" } ],
-  "locations": [ { "id": "string", "name": "string", "city": "string", "country": "string" } ],
+  "departments": [{ "id": "string", "name": "string" }],
+  "locations": [{ "id": "string", "name": "string", "city": "string", "country": "string" }],
   "positions": [
-    { "id": "string", "title": "string", "departmentId": "string", "locationId": "string",
-      "grade": "string", "openFrom": "2026-08-01" }
+    {
+      "id": "string",
+      "title": "string",
+      "departmentId": "string",
+      "locationId": "string",
+      "grade": "string",
+      "openFrom": "2026-08-01"
+    }
   ],
   "dateWindow": { "earliest": "2026-09-15", "latest": "2027-02-28" },
   "asOf": "2026-09-01T09:10:00Z",
@@ -436,11 +509,11 @@ being served past its freshness window — the UI must say so rather than presen
 
 **Exceptions:**
 
-| Code | Condition | Response body |
-|---|---|---|
-| 401 | No or invalid token | Problem, `type: unauthenticated` |
-| 429 | Rate limit exceeded | Problem, `type: rate-limited` |
-| 503 | HRIS unavailable **and** the cache is empty | Problem, `type: reference-data-unavailable`, `Retry-After` |
+| Code | Condition                                   | Response body                                              |
+| ---- | ------------------------------------------- | ---------------------------------------------------------- |
+| 401  | No or invalid token                         | Problem, `type: unauthenticated`                           |
+| 429  | Rate limit exceeded                         | Problem, `type: rate-limited`                              |
+| 503  | HRIS unavailable **and** the cache is empty | Problem, `type: reference-data-unavailable`, `Retry-After` |
 
 ---
 
@@ -513,7 +586,7 @@ being served past its freshness window — the UI must say so rather than presen
     `Idempotency-Key` that has already been used successfully by the same employee within
     24 hours for the same request, when it is replayed, then the original response is
     returned unchanged, no second event is written and no second audit record is created;
-    and given the same key replayed against a *different* request, then HTTP 409
+    and given the same key replayed against a _different_ request, then HTTP 409
     `idempotency-key-conflict` is returned; and given a submit with no `Idempotency-Key`
     header, then HTTP 400 is returned and nothing is persisted.
 
@@ -582,65 +655,82 @@ being served past its freshness window — the UI must say so rather than presen
     stage timeline exposes each stage's status as text rather than by colour alone,
     meeting WCAG 2.1 AA.
 
+20. `internal-transfer-request.AC20` — Given a caller with no access token, or with an
+    invalid or expired token, when they call any of API01–API07, then HTTP 401
+    `unauthenticated` is returned, no transfer row, stage, audit row or outbox row is
+    written or updated, and authorisation is not inferred from any employee identifier in
+    the body, query or path.
+
+21. `internal-transfer-request.AC21` — Given an unauthenticated browser session, when the
+    employee navigates to the transfer wizard or status routes, then those screens are not
+    rendered with request data and the user is handled by the portal's existing OIDC
+    sign-in — this feature must not show a transfer-specific username/password form; and
+    given an authenticated employee, when they use those screens, then API calls send the
+    session bearer token and do not send a caller-chosen employee id for authorisation.
+
 ## Unit Test Cases (spec-derived)
 
-| Test ID | Maps to AC | Scenario | Expected |
-|---|---|---|---|
-| `internal-transfer-request.UT01` | AC1 | Employee with no active request creates one | 201; status `DRAFT`, version 1, reference matches `ITR-\d{4}-\d{6}` |
-| `internal-transfer-request.UT02` | AC1 | Draft creation snapshots current assignment | Response `currentAssignment` matches HRIS values, `serviceInPositionMonths` computed |
-| `internal-transfer-request.UT03` | AC2 | Update draft with matching `If-Match` | 200; fields persisted, version incremented |
-| `internal-transfer-request.UT04` | AC2 | Update draft with stale `If-Match` | 409 `version-conflict`; stored record unchanged |
-| `internal-transfer-request.UT05` | AC2 | Update draft with no `If-Match` header | 400 `precondition-required` |
-| `internal-transfer-request.UT06` | AC3 | Submit with target position missing | 422; one violation naming `targetPositionId`; status still `DRAFT` |
-| `internal-transfer-request.UT07` | AC3 | Submit with all four mandatory fields missing | 422; exactly four violations |
-| `internal-transfer-request.UT08` | AC4 | Submit with effective date today + 13 days | 422 citing `BR7` |
-| `internal-transfer-request.UT09` | AC4 | Submit with effective date today + 14 days | 200 — boundary is inclusive |
-| `internal-transfer-request.UT10` | AC4 | Submit with effective date today + 181 days | 422 citing `BR7` |
-| `internal-transfer-request.UT11` | AC4 | Submit with in-window, mid-payroll-cycle date | 200 with advisory `PAYROLL_CYCLE_MISALIGNED` citing `BR8` |
-| `internal-transfer-request.UT12` | AC5 | Submit where target equals current on all three attributes | 422 citing `BR5` |
-| `internal-transfer-request.UT13` | AC5 | Submit where only location differs | 200 — one differing attribute is sufficient |
-| `internal-transfer-request.UT14` | AC6 | Position open when drafted, closed at submit | 422 citing `BR6` |
-| `internal-transfer-request.UT15` | AC7 | Employee on probation submits | 422 `eligibility-failed` citing `BR1` |
-| `internal-transfer-request.UT16` | AC7 | Employee with 11 months in position at effective date | 422 citing `BR2` |
-| `internal-transfer-request.UT17` | AC7 | Employee at exactly 12 months at effective date | 200 — boundary is inclusive |
-| `internal-transfer-request.UT18` | AC7 | Employee with an active resignation | 422 citing `BR4` |
-| `internal-transfer-request.UT19` | AC7 | Employee failing BR1 and BR2 together | 422 with two violations, not one |
-| `internal-transfer-request.UT20` | AC7 | Successful submission | Response advisories include `MANUAL_HR_CHECKS_PENDING` citing `BR9` |
-| `internal-transfer-request.UT21` | AC8 | Create while a `SUBMITTED` request exists | 409 citing `BR3`, identifying the existing request |
-| `internal-transfer-request.UT22` | AC8 | Create while a `WITHDRAWN` request exists | 201 — terminal states do not block |
-| `internal-transfer-request.UT23` | AC8 | Two concurrent creates for one employee | Exactly one 201, one 409; one row in the database |
-| `internal-transfer-request.UT24` | AC9 | Successful submit | Status `SUBMITTED`, 8 stage rows, audit row, 1 outbox row |
-| `internal-transfer-request.UT25` | AC9 | Stage applicability, target in same department and location | `PAYROLL_UPDATE`, `IT_ACCESS`, `FACILITIES` persisted with `applicable: false` |
-| `internal-transfer-request.UT26` | AC9 | Outbox write fails during submit | Transaction rolls back; status still `DRAFT`; no stage or audit rows |
-| `internal-transfer-request.UT27` | AC10 | Submit replayed with the same `Idempotency-Key` | Identical response; still one outbox row and one audit row |
-| `internal-transfer-request.UT28` | AC10 | Same key reused on a different request | 409 `idempotency-key-conflict` |
-| `internal-transfer-request.UT29` | AC10 | Submit with no `Idempotency-Key` | 400; nothing persisted |
-| `internal-transfer-request.UT30` | AC11 | Retrieve a submitted request | All stages returned in sequence including non-applicable ones; single `pendingWith` |
-| `internal-transfer-request.UT31` | AC11 | Stage assigned to the caller's own line manager | `assignedPartyName` populated |
-| `internal-transfer-request.UT32` | AC11 | Stage assigned to HR or the receiving manager | `assignedPartyName` is null; role present |
-| `internal-transfer-request.UT33` | AC11 | Request with no confirmed date | `effectiveDateStatus` is `REQUESTED`, `confirmedEffectiveDate` null |
-| `internal-transfer-request.UT34` | AC12 | List with requests belonging to two employees in the database | Only the caller's are returned |
-| `internal-transfer-request.UT35` | AC12 | List response body | No `reason` key present on any item |
-| `internal-transfer-request.UT36` | AC13 | GET another employee's request by ID | 404 `request-not-found`; no field of that request in body or logs |
-| `internal-transfer-request.UT37` | AC13 | Submit with a spoofed `employeeId` in the body | Identifier ignored; authorisation from token subject |
-| `internal-transfer-request.UT38` | AC14 | Withdraw a `SUBMITTED` request | 200 `WITHDRAWN`; incomplete stages `CANCELLED`; audit and outbox rows written |
-| `internal-transfer-request.UT39` | AC14 | Withdraw a `FULFILMENT` request | 409 `withdrawal-window-closed` naming HR as the route |
-| `internal-transfer-request.UT40` | AC14 | Withdraw an already-`WITHDRAWN` request | 200, resource unchanged, no second audit row |
-| `internal-transfer-request.UT41` | AC14 | Withdraw a `DRAFT` request | 409 `invalid-state-transition` |
-| `internal-transfer-request.UT42` | AC15 | Reference data with HRIS down, cache warm within TTL | 200, `stale: false` |
-| `internal-transfer-request.UT43` | AC15 | Reference data with HRIS down, cache past TTL | 200, `stale: true` |
-| `internal-transfer-request.UT44` | AC15 | Reference data with HRIS down, cache empty | 503 with `Retry-After` |
-| `internal-transfer-request.UT45` | AC15 | Submit with HRIS down | 503; status still `DRAFT`; no stage, audit or outbox rows |
-| `internal-transfer-request.UT46` | AC16 | Submit a request carrying reason text | Emitted event payload contains no reason field |
-| `internal-transfer-request.UT47` | AC16 | Log capture across the full submit path | No log line at any level contains the reason text |
-| `internal-transfer-request.UT48` | AC16 | Retrieve list and detail as the owner | Reason present in detail, absent from list |
-| `internal-transfer-request.UT49` | AC17 | Sixth submit inside one hour | 429 with `Retry-After`; no state change |
-| `internal-transfer-request.UT50` | AC17 | Inspect the rate-limit key | Key contains a salted hash, not a raw employee identifier |
-| `internal-transfer-request.UT51` | AC18 | Create, update, submit, withdraw in sequence | Four audit rows with correct from/to statuses and the same correlation ID per call |
-| `internal-transfer-request.UT52` | AC18 | Attempt to update an audit row | Rejected at the database layer |
-| `internal-transfer-request.UT53` | AC19 | Wizard traversed by keyboard only | Every control reachable and operable; focus order matches visual order |
-| `internal-transfer-request.UT54` | AC19 | Submit with a validation error, screen reader | Error announced and programmatically associated with its field |
-| `internal-transfer-request.UT55` | AC19 | Stage timeline rendered in greyscale | Each stage status remains distinguishable as text |
+| Test ID                          | Maps to AC | Scenario                                                      | Expected                                                                             |
+| -------------------------------- | ---------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `internal-transfer-request.UT01` | AC1        | Employee with no active request creates one                   | 201; status `DRAFT`, version 1, reference matches `ITR-\d{4}-\d{6}`                  |
+| `internal-transfer-request.UT02` | AC1        | Draft creation snapshots current assignment                   | Response `currentAssignment` matches HRIS values, `serviceInPositionMonths` computed |
+| `internal-transfer-request.UT03` | AC2        | Update draft with matching `If-Match`                         | 200; fields persisted, version incremented                                           |
+| `internal-transfer-request.UT04` | AC2        | Update draft with stale `If-Match`                            | 409 `version-conflict`; stored record unchanged                                      |
+| `internal-transfer-request.UT05` | AC2        | Update draft with no `If-Match` header                        | 400 `precondition-required`                                                          |
+| `internal-transfer-request.UT06` | AC3        | Submit with target position missing                           | 422; one violation naming `targetPositionId`; status still `DRAFT`                   |
+| `internal-transfer-request.UT07` | AC3        | Submit with all four mandatory fields missing                 | 422; exactly four violations                                                         |
+| `internal-transfer-request.UT08` | AC4        | Submit with effective date today + 13 days                    | 422 citing `BR7`                                                                     |
+| `internal-transfer-request.UT09` | AC4        | Submit with effective date today + 14 days                    | 200 — boundary is inclusive                                                          |
+| `internal-transfer-request.UT10` | AC4        | Submit with effective date today + 181 days                   | 422 citing `BR7`                                                                     |
+| `internal-transfer-request.UT11` | AC4        | Submit with in-window, mid-payroll-cycle date                 | 200 with advisory `PAYROLL_CYCLE_MISALIGNED` citing `BR8`                            |
+| `internal-transfer-request.UT12` | AC5        | Submit where target equals current on all three attributes    | 422 citing `BR5`                                                                     |
+| `internal-transfer-request.UT13` | AC5        | Submit where only location differs                            | 200 — one differing attribute is sufficient                                          |
+| `internal-transfer-request.UT14` | AC6        | Position open when drafted, closed at submit                  | 422 citing `BR6`                                                                     |
+| `internal-transfer-request.UT15` | AC7        | Employee on probation submits                                 | 422 `eligibility-failed` citing `BR1`                                                |
+| `internal-transfer-request.UT16` | AC7        | Employee with 11 months in position at effective date         | 422 citing `BR2`                                                                     |
+| `internal-transfer-request.UT17` | AC7        | Employee at exactly 12 months at effective date               | 200 — boundary is inclusive                                                          |
+| `internal-transfer-request.UT18` | AC7        | Employee with an active resignation                           | 422 citing `BR4`                                                                     |
+| `internal-transfer-request.UT19` | AC7        | Employee failing BR1 and BR2 together                         | 422 with two violations, not one                                                     |
+| `internal-transfer-request.UT20` | AC7        | Successful submission                                         | Response advisories include `MANUAL_HR_CHECKS_PENDING` citing `BR9`                  |
+| `internal-transfer-request.UT21` | AC8        | Create while a `SUBMITTED` request exists                     | 409 citing `BR3`, identifying the existing request                                   |
+| `internal-transfer-request.UT22` | AC8        | Create while a `WITHDRAWN` request exists                     | 201 — terminal states do not block                                                   |
+| `internal-transfer-request.UT23` | AC8        | Two concurrent creates for one employee                       | Exactly one 201, one 409; one row in the database                                    |
+| `internal-transfer-request.UT24` | AC9        | Successful submit                                             | Status `SUBMITTED`, 8 stage rows, audit row, 1 outbox row                            |
+| `internal-transfer-request.UT25` | AC9        | Stage applicability, target in same department and location   | `PAYROLL_UPDATE`, `IT_ACCESS`, `FACILITIES` persisted with `applicable: false`       |
+| `internal-transfer-request.UT26` | AC9        | Outbox write fails during submit                              | Transaction rolls back; status still `DRAFT`; no stage or audit rows                 |
+| `internal-transfer-request.UT27` | AC10       | Submit replayed with the same `Idempotency-Key`               | Identical response; still one outbox row and one audit row                           |
+| `internal-transfer-request.UT28` | AC10       | Same key reused on a different request                        | 409 `idempotency-key-conflict`                                                       |
+| `internal-transfer-request.UT29` | AC10       | Submit with no `Idempotency-Key`                              | 400; nothing persisted                                                               |
+| `internal-transfer-request.UT30` | AC11       | Retrieve a submitted request                                  | All stages returned in sequence including non-applicable ones; single `pendingWith`  |
+| `internal-transfer-request.UT31` | AC11       | Stage assigned to the caller's own line manager               | `assignedPartyName` populated                                                        |
+| `internal-transfer-request.UT32` | AC11       | Stage assigned to HR or the receiving manager                 | `assignedPartyName` is null; role present                                            |
+| `internal-transfer-request.UT33` | AC11       | Request with no confirmed date                                | `effectiveDateStatus` is `REQUESTED`, `confirmedEffectiveDate` null                  |
+| `internal-transfer-request.UT34` | AC12       | List with requests belonging to two employees in the database | Only the caller's are returned                                                       |
+| `internal-transfer-request.UT35` | AC12       | List response body                                            | No `reason` key present on any item                                                  |
+| `internal-transfer-request.UT36` | AC13       | GET another employee's request by ID                          | 404 `request-not-found`; no field of that request in body or logs                    |
+| `internal-transfer-request.UT37` | AC13       | Submit with a spoofed `employeeId` in the body                | Identifier ignored; authorisation from token subject                                 |
+| `internal-transfer-request.UT38` | AC14       | Withdraw a `SUBMITTED` request                                | 200 `WITHDRAWN`; incomplete stages `CANCELLED`; audit and outbox rows written        |
+| `internal-transfer-request.UT39` | AC14       | Withdraw a `FULFILMENT` request                               | 409 `withdrawal-window-closed` naming HR as the route                                |
+| `internal-transfer-request.UT40` | AC14       | Withdraw an already-`WITHDRAWN` request                       | 200, resource unchanged, no second audit row                                         |
+| `internal-transfer-request.UT41` | AC14       | Withdraw a `DRAFT` request                                    | 409 `invalid-state-transition`                                                       |
+| `internal-transfer-request.UT42` | AC15       | Reference data with HRIS down, cache warm within TTL          | 200, `stale: false`                                                                  |
+| `internal-transfer-request.UT43` | AC15       | Reference data with HRIS down, cache past TTL                 | 200, `stale: true`                                                                   |
+| `internal-transfer-request.UT44` | AC15       | Reference data with HRIS down, cache empty                    | 503 with `Retry-After`                                                               |
+| `internal-transfer-request.UT45` | AC15       | Submit with HRIS down                                         | 503; status still `DRAFT`; no stage, audit or outbox rows                            |
+| `internal-transfer-request.UT46` | AC16       | Submit a request carrying reason text                         | Emitted event payload contains no reason field                                       |
+| `internal-transfer-request.UT47` | AC16       | Log capture across the full submit path                       | No log line at any level contains the reason text                                    |
+| `internal-transfer-request.UT48` | AC16       | Retrieve list and detail as the owner                         | Reason present in detail, absent from list                                           |
+| `internal-transfer-request.UT49` | AC17       | Sixth submit inside one hour                                  | 429 with `Retry-After`; no state change                                              |
+| `internal-transfer-request.UT50` | AC17       | Inspect the rate-limit key                                    | Key contains a salted hash, not a raw employee identifier                            |
+| `internal-transfer-request.UT51` | AC18       | Create, update, submit, withdraw in sequence                  | Four audit rows with correct from/to statuses and the same correlation ID per call   |
+| `internal-transfer-request.UT52` | AC18       | Attempt to update an audit row                                | Rejected at the database layer                                                       |
+| `internal-transfer-request.UT53` | AC19       | Wizard traversed by keyboard only                             | Every control reachable and operable; focus order matches visual order               |
+| `internal-transfer-request.UT54` | AC19       | Submit with a validation error, screen reader                 | Error announced and programmatically associated with its field                       |
+| `internal-transfer-request.UT55` | AC19       | Stage timeline rendered in greyscale                          | Each stage status remains distinguishable as text                                    |
+| `internal-transfer-request.UT56` | AC20       | API01 with no `Authorization` header                          | 401 `unauthenticated`; no `transfer_request` row inserted                            |
+| `internal-transfer-request.UT57` | AC20       | API03 with an expired token                                   | 401; draft status unchanged                                                          |
+| `internal-transfer-request.UT58` | AC21       | Unauthenticated visit to the wizard route                     | Portal existing sign-in; wizard does not load another employee's data                |
+| `internal-transfer-request.UT59` | AC21       | Authenticated wizard save                                     | Request carries bearer token; no `employeeId` used for AuthZ                         |
 
 ## Explicitly Out of Scope
 
@@ -662,6 +752,8 @@ being served past its freshness window — the UI must say so rather than presen
 - **Localisation.** English only. Copy is externalised so a later spec can localise without
   reworking the components, but no second locale is delivered.
 - **Native mobile applications.** Responsive web only.
+- **Login, registration, password reset or MFA enrolment.** Authentication is the portal's
+  existing OIDC session (BRD-001 KD-07). This spec only consumes that session.
 - **Editing a request after submission.** A submitted request is immutable to the employee;
   the only employee action is withdrawal.
 
@@ -678,11 +770,14 @@ being served past its freshness window — the UI must say so rather than presen
   Contract above (AC17).
 - Audit records are immutable and retained 7 years; reason text is purged at 24 months
   (BRD-001 OQ-17).
+- Unauthenticated calls return 401 and change no transfer state (AC20). Front end reuses
+  the portal OIDC session and does not add a login page (AC21).
 - Migrations forward-only and compatible with the previously deployed version.
 
 ## Revision History
 
-| Version | Date | Change | Driver |
-|---|---|---|---|
-| v1.0 | 2026-08-27 | Initial draft | BRD-001 |
-| v1.1 | 2026-08-28 | AC7 split so each eligibility rule is cited individually and the BR9 advisory is mandatory; AC11 rewritten to resolve who may be named in `pendingWith`; AC13 changed from 403 to 404 with the enumeration rationale stated; AC14 given explicit behaviour for an already-withdrawn request and for a draft; AC16 added covering reason-text handling end to end; API03 exception table extended with `active-request-exists`, `idempotency-key-conflict` and the 503 case; state-machine note added to Context explaining the definition-vs-build dependency | Author revision before Gate 1 submission — findings to be recorded in `.ai-context/reviews/internal-transfer-request.gate1.md` when Abhijit Adhikary completes review |
+| Version | Date       | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Driver                                                                                                                                                                |
+| ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| v1.0    | 2026-08-27 | Initial draft | BRD-001 |
+| v1.1    | 2026-08-28 | AC7 split so each eligibility rule is cited individually and the BR9 advisory is mandatory; AC11 rewritten to resolve who may be named in `pendingWith`; AC13 changed from 403 to 404 with the enumeration rationale stated; AC14 given explicit behaviour for an already-withdrawn request and for a draft; AC16 added covering reason-text handling end to end; API03 exception table extended with `active-request-exists`, `idempotency-key-conflict` and the 503 case; state-machine note added to Context explaining the definition-vs-build dependency | Author revision before Gate 1 submission |
+| v1.2    | 2026-09-08 | Authentication and authorisation section added (BR10, BR11, AC20, AC21); cites architecture AuthN/AuthZ; login remains out of scope | BRD-001 KD-07, KD-08, BR10, BR11 |

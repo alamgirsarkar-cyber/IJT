@@ -4,7 +4,7 @@
 
 **Accepted**
 
-**Date:** 2026-08-28 · **Author:** Alamgir Sarkar · **Gate 1 sign-off:** _Pending — Abhijit Adhikary_
+**Date:** 2026-08-28 · **Author:** Alamgir Sarkar · **Gate 1 sign-off:** _Pending — Abhijit Adhikari_
 **Consulted functions:** HR Systems, HR Policy, Data Privacy, Product
 
 ## Related
@@ -37,19 +37,19 @@ Two forces:
   for lives in a system they cannot see, whose availability the portal does not control, and
   whose data model has no concept of an in-flight, not-yet-approved intention.
 
-The HRIS has no representation of a *proposed* transfer that may never happen. Modelling one
+The HRIS has no representation of a _proposed_ transfer that may never happen. Modelling one
 inside it would mean either adding a custom object — HR Systems' change cadence is quarterly
 — or writing speculative future-dated assignments, which would be visible to payroll and
 statutory reporting as though they were real.
 
 ## Options Considered
 
-| Option | Pros | Cons | Rejected because |
-|---|---|---|---|
-| HRIS owns the request as a custom object; the portal is a thin UI | Single record; no duplication; HR Systems own the whole thing | Quarterly change cadence blocks portal delivery; portal availability becomes HRIS availability; the HRIS has no in-flight-intention model; the employee's view depends on a system they cannot reach directly | Delivery cadence and availability coupling, and the model does not fit |
-| Portal owns both the request **and** a mastered copy of employment data | Fully autonomous; no runtime HRIS dependency | Creates a second source of truth for regulated employment data; reconciliation and compliance risk; explicitly rejected by HR Systems | Compliance — a second master for employment data is not acceptable |
-| **Portal owns the request; HRIS remains master for employment data; the portal reads and snapshots** | Clean ownership boundary; portal delivers on its own cadence; no second master; snapshots are honestly labelled as point-in-time copies | Snapshot can diverge from the HRIS between submit and effective date; two systems to look at when investigating | **Chosen** |
-| Portal owns the request and reads employment data live on every access, never storing it | No divergence | Every status view becomes an HRIS call; view unavailable when the HRIS is; and the record of *what was true when the decision was made* is lost, which audit needs | Availability, and the loss of decision-time context |
+| Option                                                                                               | Pros                                                                                                                                    | Cons                                                                                                                                                                                                          | Rejected because                                                       |
+| ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| HRIS owns the request as a custom object; the portal is a thin UI                                    | Single record; no duplication; HR Systems own the whole thing                                                                           | Quarterly change cadence blocks portal delivery; portal availability becomes HRIS availability; the HRIS has no in-flight-intention model; the employee's view depends on a system they cannot reach directly | Delivery cadence and availability coupling, and the model does not fit |
+| Portal owns both the request **and** a mastered copy of employment data                              | Fully autonomous; no runtime HRIS dependency                                                                                            | Creates a second source of truth for regulated employment data; reconciliation and compliance risk; explicitly rejected by HR Systems                                                                         | Compliance — a second master for employment data is not acceptable     |
+| **Portal owns the request; HRIS remains master for employment data; the portal reads and snapshots** | Clean ownership boundary; portal delivers on its own cadence; no second master; snapshots are honestly labelled as point-in-time copies | Snapshot can diverge from the HRIS between submit and effective date; two systems to look at when investigating                                                                                               | **Chosen**                                                             |
+| Portal owns the request and reads employment data live on every access, never storing it             | No divergence                                                                                                                           | Every status view becomes an HRIS call; view unavailable when the HRIS is; and the record of _what was true when the decision was made_ is lost, which audit needs                                            | Availability, and the loss of decision-time context                    |
 
 ## Decision
 
@@ -77,6 +77,7 @@ snapshot taken at submission**, not as a copy kept in sync:
 ## Consequences
 
 **Positive:**
+
 - Ownership is unambiguous, which is what makes the failure behaviour in the plan derivable
   rather than debatable: the request survives HRIS unavailability because the portal owns it;
   a submit is refused during HRIS unavailability because the portal does not own the facts
@@ -86,15 +87,17 @@ snapshot taken at submission**, not as a copy kept in sync:
 - The audit record explains itself years later, because it holds decision-time values.
 
 **Negative / accepted trade-offs:**
+
 - A snapshot can diverge from the HRIS between submission and effective date — for example if
   the employee's position is corrected mid-flight. Accepted: HR revalidates at the HR
   validation stage, which is where a human is looking anyway. The divergence is visible
   rather than hidden, because both values exist.
 - Investigating a transfer means looking at two systems.
-- The portal is unavailable *for new submissions* when the HRIS is down, by design (AC15).
+- The portal is unavailable _for new submissions_ when the HRIS is down, by design (AC15).
   Accepted in preference to submitting requests whose eligibility was never evaluated.
 
 **Does not solve:**
+
 - **What happens if the HRIS org update fails after all approvals have been given.** The
   request would be `FULFILMENT` with an HRIS that never changed. Detection and compensation
   belong to `internal-transfer-downstream-orchestration`; this decision only establishes that

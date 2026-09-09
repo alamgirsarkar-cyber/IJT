@@ -1,7 +1,9 @@
 # SDD Checklists — Quick Reference
 
 > Lifted from the INT SDD Blueprint §30 so the gates are usable without reopening the
-> standard. Gate 1 and Gate 2 also exist as agent workflows in `.agent/workflows/`.
+> standard. Canonical Gate 1 / Gate 2 roles, DoR/DoD, reviewer self-identification and
+> verdict write-back live in `.agent/rules/governance.md` — do not duplicate those rules
+> here. Agent first-sweep workflows remain in `.agent/workflows/`.
 
 ## Definition of Ready (spec → development)
 
