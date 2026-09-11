@@ -98,10 +98,39 @@ cross-spec integration tests; and a formal BRD → BR → AC → Test traceabili
 | Field | Value |
 |---|---|
 | **Outcome** | **Changes Requested** |
-| **Spec version after review** | v1.1 — Changes Requested |
+| **Spec version after review** | v1.1 — Changes Requested. Author revision **v1.3** resubmitted 2026-09-11 |
 | **Date** | 2026-09-09 |
 | **Next step if Approved** | Plan may proceed to Gate 1 (plan) review |
 | **Next step if Changes Requested** | Author revises spec, bumps version, resubmits |
 
 _When complete: update `.ai-context/specs/internal-transfer-request.spec.md` status,
 `.ai-context/status.md`, and any BRD open questions the review resolves._
+
+---
+
+## Re-review queue — v1.3 (not yet reviewed)
+
+Author revision v1.3 (2026-09-11) responds to G1-F01–G1-F14; the disposition table is in
+the spec's own `## Gate 1 Review` section. **No Gate 1 outcome is recorded for v1.3** — it
+awaits this reviewer. Four things to weigh when it is picked up:
+
+1. **G1-F03 was decided, not merely clarified, and it removes a published status.**
+   Submission is synchronous; `SUBMITTED` is now a history/audit event type, not a request
+   status. The asynchronous alternative is written out on the spec so the choice can be
+   reversed without rediscovery. Agreeing with this is agreeing to take `SUBMITTED` out of
+   the state machine.
+2. **G1-F06 is not closed and cannot be closed here.** OQ-11 remains a business decision
+   owned by HR Ops and Data Privacy. v1.3 stops treating it as settled and declares the
+   spec not Approvable until `BRD.md` confirms or explicitly defers it. Approval-chain has
+   the same dependency.
+3. **Two states have no producer.** Building the G1-F02 contract showed `DISCARDED` is
+   audited but has no endpoint, and `CANCELLED` is defined but no spec transitions a
+   request into it. Both are flagged for a scope call rather than filled in with invented
+   behaviour.
+4. **_Checks Performed_ above is the original v1.1 review** and is left as the reviewer
+   wrote it, including the Fail rows that v1.3 claims to address. Those rows are not
+   re-ticked here.
+
+**Product 2026-09-11:** OQ-11 and OQ-22 are now Resolved in `BRD.md`; draft-discard is
+deferred. Spec version for re-review is **v1.4**. Point 2 above is closed from the
+business side.

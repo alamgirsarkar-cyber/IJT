@@ -1,6 +1,6 @@
 # Project Status Board — One-Point Employee Portal
 
-_Last updated: 2026-09-08_
+_Last updated: 2026-09-11_
 
 > Updated by whoever last touched a spec, same day. Answers "what is in flight" without a
 > stand-up. Where a delivery tool exists, this file mirrors **spec-level** state and does not
@@ -22,10 +22,10 @@ Task states are the checkbox state in the feature's `tasks.md`:
 
 | Spec ID                                      | Title                                          | Status                      | Owner          | Last Updated | Notes                                                                                                                                                             |
 | -------------------------------------------- | ---------------------------------------------- | --------------------------- | -------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `internal-transfer-request`                  | Employee Internal Transfer Request             | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-08   | Draft v1.2 — AuthN/AuthZ made explicit (AC20, AC21). Reviewer: Abhijit Adhikari. BR2 date field still open — see Blocked                             |
-| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-08   | Draft v1.1 — AuthN/AuthZ section, AC13/AC14. Record: `reviews/internal-transfer-approval-chain.gate1.md`                                                           |
-| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-08   | Draft v1.1 — HMAC vs employee OIDC (AC11). Resume-after-failure still open. Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
-| `internal-transfer-notifications`            | Employee and approver notifications            | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-08   | Draft v1.1 — no new OIDC API. Record: `reviews/internal-transfer-notifications.gate1.md`                                                                                  |
+| `internal-transfer-request`                  | Employee Internal Transfer Request             | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-11   | Gate 1 **Changes Requested** 2026-09-09. **Draft v1.4** — Product locked OQ-11 (OWN-12) and OQ-22; discard endpoint deferred. Record: `reviews/internal-transfer-request.gate1.md` |
+| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-11   | Draft v1.2 — Product locked OQ-11 and OQ-12. Record: `reviews/internal-transfer-approval-chain.gate1.md` |
+| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-11   | Gate 1 **Changes Requested** 2026-09-09. **Draft v1.3** — Product locked OQ-20 (off-portal closeout; portal resume deferred). Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
+| `internal-transfer-notifications`            | Employee and approver notifications            | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-11   | Gate 1 **Changes Requested** 2026-09-09. **Draft v1.3** — Product locked OQ-21 (silent on fulfilment failure). Record: `reviews/internal-transfer-notifications.gate1.md` |
 
 ## Released Specs
 
@@ -35,13 +35,9 @@ Task states are the checkbox state in the feature's `tasks.md`:
 
 ## Blocked / Awaiting Decision
 
-| Spec ID                                      | Blocked on                                                                                                                                                                                                                                             | Owner of the decision      | Raised     | Expected                  |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------- | ---------- | ------------------------- |
-| `internal-transfer-request`                  | BR2 says "12 months continuous service in current position." The HRIS exposes both `positionStartDate` and `continuousServiceDate`, which differ after a leave of absence. The spec does not say which governs. QA found it expanding AC7 (case UT16c) | HR Policy                  | 2026-09-01 | 2026-09-02                |
-| `internal-transfer-downstream-orchestration` | After a fulfilment stage fails and compensate events are emitted, who records that reversal happened and whether fulfilment can resume? Spec leaves the request in `FULFILMENT` with a `FAILED` stage and does not define a resume API                 | HR Ops + downstream owners | 2026-09-03 | Before that spec's Gate 1 |
-
-Not a blocker for T01 or T02, so work starts while it is resolved. It **is** a blocker for
-T04, and T04 will not start until AC7 says which date governs. QA has not encoded a guess.
+| Spec ID | Blocked on | Owner of the decision | Raised | Expected |
+| ------- | ---------- | --------------------- | ------ | -------- |
+| —       | _None._ BRD-001 OQ-11, OQ-12, OQ-20, OQ-21 and OQ-22 were locked by Product on 2026-09-11. Gate 1 re-review of the four specs is still outstanding (Abhijit Adhikari) — that is a review queue, not a business blocker | — | — | — |
 
 ## Deferred, Tracked
 
@@ -54,9 +50,121 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
 | Automated disciplinary gating   | BRD-001 OQ-04 | HR Policy + Security | If HR exposes an eligibility API             |
 | Reason-text purge at 24 months  | BRD-001 OQ-17 | Data Privacy         | **Before the first records reach 24 months** |
 | Return-for-edit after rejection | BRD-001 OQ-07 | Product              | Post-v1                                      |
+| Portal resume / retry of a failed fulfilment stage | BRD-001 OQ-20 | Product | Post-v1 — **deferred 2026-09-11**. v1 closeout is off-portal (OWN-08) |
+| Parallel fan-out of Payroll / IT / Facilities | Downstream BR2, A4 | Payroll + ITSM + Facilities | When a consumer exists and asks for it — additive, no contract change |
+| Employee notification when a fulfilment stage fails | BRD-001 OQ-21 | Product | Post-v1 — **confirmed silent for v1, 2026-09-11** |
+| Draft reminders / notifications on draft transitions | Notifications A3 | Product | If Product asks — a new matrix row, not a redesign |
+| Draft-discard endpoint producing `DISCARDED` | Request spec _States with no owner_ | Product | **Deferred 2026-09-11.** Employee updates the existing draft |
+| Request-level `CANCELLED` transition | Request spec OWN-10; BRD-001 OQ-06 | Product | **Confirmed unreachable in v1, 2026-09-11.** Post-window cancellation stays an HR action outside the portal |
 | Localisation beyond English     | BRD-001 OQ-18 | Product              | Post-v1                                      |
 
 ## Daily Execution Log
+
+### 2026-09-11
+
+- **Product v1 lock of remaining BRD-001 open questions.** Acting as Product owner,
+  confirmed or deferred every question Gate 1 had left with an action-required flag:
+  **OQ-11** named person only for the employee's own line manager (OWN-12);
+  **OQ-12** reason text visible to employee and HR Business Partner only (OWN-05);
+  **OQ-20** off-portal closeout by HR Operations, portal resume deferred (OWN-08);
+  **OQ-21** no employee notification on fulfilment failure;
+  **OQ-22** no leave deduction from service length;
+  **OQ-03** closed as BR1–BR9 plus OQ-04 deferral.
+  Two scope calls with no OQ number: **no draft-discard endpoint**; **`CANCELLED` stays
+  unreachable**. Specs bumped: request v1.4, approval-chain v1.2, downstream v1.3,
+  notifications v1.3. Behaviour is the proposed answers those specs already implemented —
+  they are now the contract, not a proposal. A later HR Policy or Data Privacy objection
+  is a new increment, not a v1 blocker. **Blocked / Awaiting Decision is empty.** Gate 1
+  re-review of the four specs remains outstanding.
+
+- **`internal-transfer-downstream-orchestration` revised to v1.2** in response to Gate 1
+  **Changes Requested** (Abhijit Adhikari, 2026-09-09 — 5 Blocker, 7 Should-fix). All five
+  Blockers answered: a new _Fulfilment Lifecycle and State Transitions_ section (stage
+  status vocabulary, the four paths, stage and request transition matrices where every
+  unlisted pair is an explicit 409, and the shapes a request can rest in); BR8 (later
+  `NOT_STARTED` stages become `CANCELLED`); BR9 (compensation must be acknowledged, with
+  three additive stage statuses); BR10 (no automatic and no portal-driven resume in v1);
+  OWN-08 (**HR Operations** is the operational owner of a failed fulfilment). All seven
+  Should-fix items answered too: BR2 settled as sequential, event envelope with types and
+  an evolution rule, `idempotency-key-conflict` on `eventId` reuse, a full webhook
+  signature contract (headers, canonical string, ±300 s replay window, key rotation), the
+  transition matrices, a two-way traceability matrix, and UT16–UT30 with three
+  contract-double integration rows. Finding-by-finding disposition is in the spec's
+  `## Gate 1 Review` section; the reviewer's worksheet now carries G1-F01–G1-F12 as stable
+  IDs transcribed from his closing note.
+
+- **BRD-001 OQ-20 raised** for the one thing a spec must not decide for itself: whether an
+  off-portal closeout by HR Operations is acceptable for v1, or HR needs a portal resume
+  capability. Recorded with a proposed answer and an explicit action-required flag, the same
+  pattern as OQ-11 and OQ-12. **Gate 1 Approval for downstream waits on HR Ops.**
+
+- **`internal-transfer-notifications` revised to v1.2** in response to Gate 1 **Changes
+  Requested** (Abhijit Adhikari, 2026-09-09 — 5 P0, 5 P1). All five P0s answered: a
+  _Transition coverage_ inventory that accounts for every event the four specs emit as
+  notified or deliberately silent with a reason, which is what finally squares BR1 with the
+  BRD's "on every state transition"; OWN-09 event naming with the dual spellings removed;
+  the dispatch boundary **decided** rather than left to the plan (handler after the domain
+  commit, its own transaction, relay-only egress); three keyed idempotency layers with a
+  database unique constraint and bounded retry ending in `UNDELIVERABLE` plus an alert; and
+  a formal portal → notification-service payload schema with a response-handling table. All
+  five P1s answered too: OQ-11 confirmed as *not* a dependency of this spec (it governs
+  disclosure, while recipients come from OWN-04), out-of-order behaviour defined with a
+  staleness guard on action-required mail, the fulfilment-failure silence reasoned and
+  asserted by test, UT11–UT25 covering failure and negative paths plus two contract-double
+  integration rows, and a two-way traceability matrix.
+
+- **Two defects found while answering, both recorded rather than patched over.** v1.1's
+  dedupe key would have **suppressed a legitimate notification** where one person is both
+  the releasing and receiving manager — fixed by keying on the domain `eventId` with
+  `eventType` and `stageCode` in the secondary key (AC6, UT11). And `CANCELLED` sits in the
+  request state machine while **no spec transitions a request into it**, so v1 has no
+  cancellation path at all; noted in _Transition coverage_ for a reviewer to rule on rather
+  than given an invented matrix row.
+
+- **BRD-001 OQ-21 raised** for whether the employee is told when fulfilment fails —
+  employee-communication policy belongs to Product. Proposed answer recorded with an
+  action-required flag. P1, so it need not block Approval, but it should be answered before
+  the spec is built.
+
+- **Gate 1 verdicts written back onto the specs.** `governance.md` requires the dated
+  `## Gate 1 Review` block to live on the spec, not only in the findings worksheet;
+  downstream, notifications and `internal-transfer-request` now have one.
+  `internal-transfer-approval-chain` still does not — its recorded verdict sits in
+  `reviews/*.gate1.md` only, which is the remaining governance gap.
+
+- **`internal-transfer-request` revised to v1.3** in response to Gate 1 **Changes
+  Requested** (Abhijit Adhikari, 2026-09-09 — 8 Blocker, 6 Should-fix). All eight Blockers
+  answered except G1-F06, which cannot be closed here: one stage-status vocabulary
+  (`IN_PROGRESS`, never `PENDING`); an authoritative state and transition contract
+  registered as OWN-10, including the fulfilment-failure rows that leave the request in
+  `FULFILMENT`; submission decided **synchronous**, which demotes `SUBMITTED` from a status
+  to a history event type; OWN-09 event names plus typed schemas for `requested.v1` and
+  `withdrawn.v1`; employee ID in audit settled from the constitution (raw ID permitted,
+  not PII); withdraw given `If-Match` and a race table that distinguishes `version-conflict`
+  from `withdrawal-window-closed` (OWN-11). All six Should-fix items answered too: a
+  partial unique index for BR3, service-length arithmetic in BR12 with the leave-of-absence
+  policy escalated as OQ-22, draft assignment marked informational, cached reference data
+  barred from validation decisions, two cross-spec integration tests, and a two-way
+  traceability matrix. Employee-facing labels for the four compensation stage statuses
+  (downstream's A6 follow-up) now live here, including the previously missing
+  `COMPENSATION_REQUESTED`. Finding-by-finding disposition is in the spec's `## Gate 1
+  Review` section.
+
+- **Two states with no owner, recorded rather than invented.** Building the G1-F02
+  contract showed `DISCARDED` is audited but has no endpoint, and `CANCELLED` is defined
+  but no spec transitions a request into it. Both are flagged for a scope call.
+
+- **BRD-001 OQ-11 re-marked open and Approval-blocking** for this spec and
+  approval-chain — v1.1 had treated it as settled independently, which is the failure mode
+  a shared open question creates. **OQ-22 raised** for whether unpaid leave breaks BR2
+  continuity. The 2026-09-01 BR2 date-field blocker is superseded by OQ-22; the OWN-09
+  rename that blocked notifications is closed.
+
+- **Cross-spec follow-ups closed from this side.** Status-view display labels for
+  `FAILED` / `COMPENSATION_*` are now in this spec's vocabulary (UT76). Event names are
+  OWN-09 compliant, so the notifications handler can match `requested.v1` and
+  `withdrawn.v1`. Approval-chain still needs its own Gate 1 write-back and still depends
+  on OQ-11.
 
 ### 2026-09-08
 

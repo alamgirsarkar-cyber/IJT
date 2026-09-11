@@ -6,14 +6,12 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.0 submitted 2026-09-07 for review by Abhijit Adhikary.
-Full state machine in `.ai-context/status.md`. Do not generate a plan or code until
-**Approved**.
+**In Peer Review (Gate 1)** — Draft v1.2. AuthN/AuthZ was v1.1; v1.2 records Product's
+2026-09-11 lock of BRD-001 **OQ-11** (OWN-12) and **OQ-12** (OWN-05). Full state machine in
+`.ai-context/status.md`. Do not generate a plan or code until **Approved**.
 
 **Reviewer note:** this spec consumes the request aggregate and stage plan.
-`internal-transfer-request` is still In Peer Review (Changes Requested), so this approval
-is granted ahead of that dependency being Approved — track that as an open programme-level
-risk before plan drafting begins.
+`internal-transfer-request` is still In Peer Review. OQ-11 and OQ-12 are no longer open.
 
 ## Linked BRD
 
@@ -24,7 +22,7 @@ risk before plan drafting begins.
 | Role | Name | Date |
 |---|---|---|
 | Author / owner | Alamgir Sarkar | 2026-09-03 |
-| Gate 1 reviewer (never the author) | Abhijit Adhikary | 2026-09-07 (_pending outcome_) |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-09 — v1.2 not yet reviewed |
 | Gate 2 reviewer | Tapas Dutta | — |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`.
@@ -72,8 +70,8 @@ are the units of work.
 | `internal-transfer-approval-chain.BR2` | Rejection at `MANAGER_RELEASE`, `MANAGER_ACCEPT` or `HR_VALIDATION` is terminal. The employee raises a new request; this spec does not return the request for edit.                                                                                                                             | BRD-001 OQ-07                                                                 | Business                                                       |
 | `internal-transfer-approval-chain.BR3` | HR sets the confirmed effective date when approving `HR_VALIDATION`. Until then the date remains requested.                                                                                                                                                                                     | BRD-001 OQ-05                                                                 | Business                                                       |
 | `internal-transfer-approval-chain.BR4` | Open disciplinary or performance cases are validated **by HR as a person**, not by the portal. Completing `HR_VALIDATION` with `APPROVE` records that HR has finished those checks. The portal must not call a disciplinary API and must not present manager approval as eligibility clearance. | BRD-001 BR9, OQ-04                                                            | Business                                                       |
-| `internal-transfer-approval-chain.BR5` | Transfer reason text is visible to the HR Business Partner and the owning employee only. It is not returned to either manager.                                                                                                                                                                  | BRD-001 OQ-12 (proposed in the request spec)                                  | Business                                                       |
-| `internal-transfer-approval-chain.BR6` | Line-manager and receiving-manager decisions are authorised only when the token subject equals that stage's `assigned_party_ref`. HR validation is authorised for any principal whose token has role `HR_BUSINESS_PARTNER`.                                                                     | BRD-001 BR12, BR13, OQ-11; assignee snapshot from the request spec | Technical (enforcement of a business assignment)               |
+| `internal-transfer-approval-chain.BR5` | Transfer reason text is visible to the HR Business Partner and the owning employee only. It is not returned to either manager.                                                                                                                                                                  | BRD-001 OQ-12 (**Resolved 2026-09-11, Product v1**); OWN-05                    | Business                                                       |
+| `internal-transfer-approval-chain.BR6` | Line-manager and receiving-manager decisions are authorised only when the token subject equals that stage's `assigned_party_ref`. HR validation is authorised for any principal whose token has role `HR_BUSINESS_PARTNER`.                                                                     | BRD-001 BR12, BR13; OWN-04; OWN-12 (OQ-11 Resolved 2026-09-11) | Technical (enforcement of a business assignment)               |
 | `internal-transfer-approval-chain.BR7` | Approver delegation is not supported. An assigned manager who is absent is handled outside the portal.                                                                                                                                                                                          | BRD-001 OQ-16                                                                 | Business — deferred; this spec must not implement a substitute |
 | `internal-transfer-approval-chain.BR8` | No SLA timer, reminder or escalation is evaluated.                                                                                                                                                                                                                                              | BRD-001 OQ-15                                                                 | Business — deferred                                            |
 
@@ -407,12 +405,11 @@ Layout and component structure are not specified here.
 
 | #   | Question                                                                                        | Owner | Needed by | Resolution                                   |
 | --- | ----------------------------------------------------------------------------------------------- | ----- | --------- | -------------------------------------------- |
-| 1   | None that change approve/reject sequencing, terminal rejection, or who sets the confirmed date. | —     | —         | Closed in BRD-001 OQ-01, OQ-02, OQ-05, OQ-07 |
+| 1   | None that change approve/reject sequencing, terminal rejection, or who sets the confirmed date. | —     | —         | Closed in BRD-001 OQ-01, OQ-02, OQ-05, OQ-07. OQ-11 and OQ-12 **Resolved 2026-09-11 (Product v1)** — OWN-12 and OWN-05. |
 
-BR6's "any `HR_BUSINESS_PARTNER` may complete `HR_VALIDATION`" is recorded as Assumption
-A3, not as an unanswered business question: OQ-11 already says HR is shown as a role, not
-a named person. If HR Policy later assigns a named BP per request, BR6 must change before
-Approved.
+BR6's "any `HR_BUSINESS_PARTNER` may complete `HR_VALIDATION`" remains Assumption A3.
+OQ-11 confirms HR is shown as a role, not a named person. If HR Policy later assigns a
+named BP per request, BR6 must change in a new increment.
 
 ## Assumptions
 
@@ -447,3 +444,4 @@ Approved.
 | ------- | ---------- | ------------- | ------- |
 | v1.0    | 2026-09-03 | Initial draft | BRD-001 |
 | v1.1    | 2026-09-08 | Authentication and authorisation section; AC13 (401), AC14 (front-end session); cites BRD-001 BR12–BR13 | BRD-001 KD-07, KD-08 |
+| v1.2    | 2026-09-11 | Product v1 lock: OQ-11 (OWN-12) and OQ-12 (OWN-05) confirmed. BR5/BR6 citations updated; no behaviour change | Product, 2026-09-11 |

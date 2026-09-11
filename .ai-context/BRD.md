@@ -92,7 +92,7 @@ anywhere. See OQ-08.
 |---|---|---|---|---|
 | OQ-01 | "Manager confirms the transfer" — *which* manager? The current line manager releasing the employee, the receiving manager accepting them, or both? In what order? | **Business** | HR Ops + Product | **Resolved 2026-08-26:** both, sequentially — current line manager first (release), then receiving manager (accept). Modelled as two stages. Out of scope for v1 spec; owned by `internal-transfer-approval-chain`. |
 | OQ-02 | Does HR validation run before or after manager confirmation, or in parallel? | **Business** | HR Ops | **Resolved 2026-08-26:** after both manager stages. HR validates last so it does not spend effort on transfers the managers will decline. |
-| OQ-03 | What exactly are the eligibility rules? Probation, minimum tenure in role, notice period, open disciplinary cases? | **Business** | HR Policy | **Partially resolved** — see Business Rules table. Disciplinary-case check deferred (OQ-04). |
+| OQ-03 | What exactly are the eligibility rules? Probation, minimum tenure in role, notice period, open disciplinary cases? | **Business** | HR Policy | **Resolved 2026-09-11 (Product, v1):** the v1 set is BR1–BR9. Disciplinary/PIP gating stays out of the portal (OQ-04). Continuity arithmetic is BR2 as refined by OQ-22. |
 | OQ-04 | Can the portal read disciplinary/PIP status to gate eligibility automatically? | Business + Technical | HR Policy + Security | **Deferred out of v1:** HR will not expose case data to the portal. HR validates this manually at the HR stage. The portal must not imply it has checked. |
 | OQ-05 | Is the effective date the employee provides a **request** or a **commitment**? Who can change it, and at which stage? | **Business** | HR Ops | **Resolved 2026-08-26:** it is a *requested* date. The *confirmed* date is set at HR validation. The portal must label it as requested until confirmed. |
 | OQ-06 | Can the employee withdraw after submitting? Until which stage? | **Business** | HR Ops | **Resolved 2026-08-27:** yes, until organisational data update begins. After that, cancellation is an HR action, not an employee action. |
@@ -100,8 +100,8 @@ anywhere. See OQ-08.
 | OQ-08 | Are Payroll / IT / Facilities always triggered, or conditionally? What determines it? | **Business** rule, technically implemented | HR Ops + Payroll + IT + Facilities | **Resolved 2026-08-27:** conditional — Payroll when cost centre or grade changes; IT when department changes; Facilities when location changes. Owned by `internal-transfer-downstream-orchestration`. v1 records stage applicability at submission. |
 | OQ-09 | Is the portal or the HRIS the system of record for the transfer request itself? | **Technical** | Architecture | **Resolved 2026-08-28:** portal owns the *request*; HRIS remains system of record for *employment and org data*. See [ADR-0002](decisions/ADR-0002-transfer-request-system-of-record.md). |
 | OQ-10 | Are downstream systems called synchronously, or event-driven with confirmation back? | **Technical** | Architecture | **Resolved 2026-08-28:** event-driven via a SQLite transactional outbox and HTTPS webhook relay. See [ADR-0001](decisions/ADR-0001-outbox-event-driven-transfer-orchestration.md). |
-| OQ-11 | In "pending with", does the employee see a named person or only a role? | **Business** (privacy) | HR Ops + Data Privacy | **Gate 1 reviewed 2026-09-09 (Abhijit Adhikary): Approved with comment — resolve or explicitly defer.** Proposed answer (spec v1.1 AC11): named person only where that person is the employee's own line manager; all other stages show role only. **Action required:** confirm this as the final business decision, or explicitly mark it deferred, before `internal-transfer-approval-chain` BR5/BR6 are treated as closed. |
-| OQ-12 | Who can read the free-text **reason**? It may name a manager or describe a grievance. | **Business** (privacy) | Data Privacy + HR | **Gate 1 reviewed 2026-09-09 (Abhijit Adhikary): Approved with comment — resolve or explicitly defer.** Proposed answer (spec v1.1 AC16): visible to HR Business Partner and the employee only, **not** visible to either manager; encrypted at rest, never logged, never in analytics extracts without aggregation. **Action required:** confirm this as the final business decision, or explicitly mark it deferred, before `internal-transfer-approval-chain` BR5/BR6 are treated as closed. |
+| OQ-11 | In "pending with", does the employee see a named person or only a role? | **Business** (privacy) | HR Ops + Data Privacy | **Resolved 2026-09-11 (Product, v1).** Named person only where that person is the owning employee's current line manager; every other stage shows the role only. Recorded as OWN-12. A later Data Privacy objection is a new increment, not a v1 blocker. Specs: request AC11/API04; approval-chain BR6. Notifications do not disclose names. |
+| OQ-12 | Who can read the free-text **reason**? It may name a manager or describe a grievance. | **Business** (privacy) | Data Privacy + HR | **Resolved 2026-09-11 (Product, v1).** Visible to the owning employee and the HR Business Partner only — **not** to either manager. Encrypted at rest, never logged, never in analytics extracts without aggregation, never in event or notification payloads (OWN-05, constitution Security Posture). |
 | OQ-13 | Can an employee hold more than one active transfer request? | **Business** | HR Ops | **Resolved 2026-08-26:** no. One non-terminal request per employee. |
 | OQ-14 | Where do department / location / role options come from, and who governs what an employee may select? | Business ownership, **Technical** delivery | HRIS Data Owner + Architecture | **Resolved 2026-08-27:** from HRIS org master and position management, read-only, cached. Only positions flagged open and internally fillable are selectable. |
 | OQ-15 | Is there an SLA per approval stage, with escalation? | **Business** | HR Ops | **Deferred out of v1.** Stage SLA fields are captured in the data model so escalation can be added without migration, but no escalation behaviour is built. |
@@ -109,6 +109,11 @@ anywhere. See OQ-08.
 | OQ-17 | Retention period for transfer requests, including declined ones and reason text? | **Business** (compliance) | Data Privacy | **Resolved 2026-08-28:** 7 years for the request record; reason text purged at 24 months. |
 | OQ-18 | Accessibility and localisation obligations? | **Business** | Product | **Resolved 2026-08-26:** WCAG 2.1 AA mandatory. Localisation deferred — English only for v1. |
 | OQ-19 | Mobile app, or web portal only? | **Business** | Product | **Resolved 2026-08-26:** responsive web only for v1. |
+| OQ-20 | When a downstream fulfilment stage fails and the completed stages are reversed, who records that the reversal actually happened, and does HR need a way to **resume** the transfer in the portal — or is an off-portal closeout acceptable for v1? | **Business** (scope) | HR Ops + downstream system owners (Payroll, IT Service Management, Facilities) | **Resolved 2026-09-11 (Product, v1) — portal resume deferred.** The consumer acknowledges its reversal through the stage-completion webhook; the request rests in `FULFILMENT` with a `FAILED` stage; **HR Operations** owns closing the transfer out off-portal; the portal offers no resume, retry or "mark complete" in v1 (OWN-08, downstream BR10/AC17). Adding a portal resume is a later spec. |
+| OQ-21 | When a downstream fulfilment stage fails and HR Operations is closing it out off-portal (OQ-20), is the **employee** told — or is the status page enough until the transfer either completes or is cancelled? | **Business** (employee communication) | Product, with HR Ops | **Resolved 2026-09-11 (Product, v1).** No employee notification on fulfilment failure. The status page (KD-05) is the progress view; a failure is an HR Operations workflow the employee cannot act on. Notifications spec AC15 / _Transition coverage_. |
+| OQ-22 | For BR2's "12 months continuous service in the current position", does an unpaid leave of absence break continuity — and if so, from what duration? | **Business** (HR policy) | HR Policy | **Resolved 2026-09-11 (Product, v1).** No deduction: service is whole completed calendar months from the current position's start date to the requested effective date, inclusive (request spec BR12/AC22). Leave-aware continuity is post-v1 if HR Policy later defines a break rule. |
+
+**Product v1 lock (2026-09-11).** Gate 1 asked these remaining items to be confirmed or explicitly deferred. Product is locking the proposed answers above as the v1 contract so the four specs are no longer blocked on an unanswered business question. A later objection from HR Policy or Data Privacy is a new increment under the re-review convention, not a reason to keep v1 open. Two related scope calls, not previously numbered: **no draft-discard endpoint in v1** (the employee updates the existing `DRAFT`; `DISCARDED` stays defined but unproduced); **request-level `CANCELLED` stays unreachable in v1** (OQ-06 — post-window cancellation remains an HR action outside the portal).
 
 ### Business rules (confirmed with HR Policy, 2026-08-27)
 
@@ -214,6 +219,8 @@ handled by the portal's existing sign-in, not by a transfer-specific credential 
 - Bulk transfers and organisational restructures
 - Return-for-edit after rejection (OQ-07)
 - Approval SLA escalation (OQ-15) and approver delegation (OQ-16)
+- Resuming, retrying or manually completing a transfer in the portal after a downstream
+  fulfilment stage has failed — HR Operations closes those out off-portal (OQ-20, proposed)
 - Automated disciplinary/performance gating (OQ-04, BR9)
 - Localisation beyond English (OQ-18); native mobile applications (OQ-19)
 - Login, registration, password reset, MFA enrolment, tenant provisioning, or any other
@@ -227,10 +234,10 @@ handled by the portal's existing sign-in, not by a transfer-specific credential 
 
 | Spec slug | Owns | Depends on | Status |
 |---|---|---|---|
-| `internal-transfer-request` | Employee-facing request: draft, validate, submit, withdraw, and the employee's view of status and pending actions. Owns the request aggregate and its stage plan. | — | **In Peer Review (Gate 1)** — Draft v1.2 |
-| `internal-transfer-approval-chain` | Line manager release, receiving manager acceptance, HR eligibility validation; decisions and terminal rejection. Transitions stages this spec creates. | `internal-transfer-request` | **In Peer Review (Gate 1)** — Draft v1.1 |
-| `internal-transfer-downstream-orchestration` | Conditional fan-out to HRIS org update, Payroll, IT and Facilities; completion tracking and compensation on failure. | `internal-transfer-approval-chain` | **In Peer Review (Gate 1)** — Draft v1.1; resume-after-failure still open |
-| `internal-transfer-notifications` | Notifications to employee and approvers on every state transition. | `internal-transfer-request` | **In Peer Review (Gate 1)** — Draft v1.1 |
+| `internal-transfer-request` | Employee-facing request: draft, validate, submit, withdraw, and the employee's view of status and pending actions. Owns the request aggregate and its stage plan, and is the owner of the authoritative state and transition contract (OWN-10). | — | **In Peer Review (Gate 1)** — Draft v1.4; OQ-11 and OQ-22 closed by Product 2026-09-11 |
+| `internal-transfer-approval-chain` | Line manager release, receiving manager acceptance, HR eligibility validation; decisions and terminal rejection. Transitions stages this spec creates. | `internal-transfer-request` | **In Peer Review (Gate 1)** — Draft v1.2; OQ-11 and OQ-12 closed by Product 2026-09-11 |
+| `internal-transfer-downstream-orchestration` | Conditional fan-out to HRIS org update, Payroll, IT and Facilities; completion tracking and compensation on failure. | `internal-transfer-approval-chain` | **In Peer Review (Gate 1)** — Draft v1.3; OQ-20 closed by Product 2026-09-11 (portal resume deferred) |
+| `internal-transfer-notifications` | Notifications to employee and approvers on every state transition. | `internal-transfer-request` | **In Peer Review (Gate 1)** — Draft v1.3; OQ-21 closed by Product 2026-09-11 (silent on fulfilment failure) |
 
 **Scoping note (recorded because a reviewer will ask):** status visibility is kept inside
 `internal-transfer-request` rather than split into its own spec, because it reads the same
@@ -244,10 +251,11 @@ what allows it to pass the Gate 1 dependency check.
 
 | Function | Decision covered |
 |---|---|
-| Product | Scope, KD-01…KD-08, v1 boundary |
-| HR Policy | BR1–BR13, OQ-03, OQ-05, OQ-06, OQ-07, OQ-13 |
-| Data Privacy | OQ-11, OQ-12, OQ-17 |
+| Product | Scope, KD-01…KD-08, v1 boundary; **v1 lock of OQ-11, OQ-12, OQ-20, OQ-21, OQ-22** (2026-09-11) |
+| HR Policy | BR1–BR13, OQ-03, OQ-05, OQ-06, OQ-07, OQ-13; OQ-22 (leave-aware continuity is post-v1) |
+| Data Privacy | OQ-11, OQ-12, OQ-17 — v1 answers locked by Product; a later objection is a new increment |
 | Architecture | OQ-09, OQ-10, OQ-14, AS-06 |
 | Security | OQ-04 deferral, reason-text handling, AuthN/AuthZ (KD-07, KD-08, BR10–BR14) |
+| HR Operations + downstream system owners | OQ-20 — confirmed as off-portal closeout for v1; portal resume deferred |
 
 **Artefact owner:** Alamgir Sarkar
