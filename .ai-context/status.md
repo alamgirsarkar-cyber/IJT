@@ -22,10 +22,10 @@ Task states are the checkbox state in the feature's `tasks.md`:
 
 | Spec ID                                      | Title                                          | Status                      | Owner          | Last Updated | Notes                                                                                                                                                             |
 | -------------------------------------------- | ---------------------------------------------- | --------------------------- | -------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `internal-transfer-request`                  | Employee Internal Transfer Request             | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-11   | Gate 1 **Changes Requested** 2026-09-09. **Draft v1.4** — Product locked OQ-11 (OWN-12) and OQ-22; discard endpoint deferred. Record: `reviews/internal-transfer-request.gate1.md` |
+| `internal-transfer-request`                  | Employee Internal Transfer Request             | **Changes Requested** | Alamgir Sarkar | 2026-09-11   | Gate 1 re-reviewed 2026-09-11 (v1.4): all 14 prior findings resolved, but 5 new Blocker + 5 Nit findings (G1-F15–G1-F24) — stage-status "at most one" invariant, `COMPLETED`/`EMPLOYEE_CONFIRMATION` terminology contradiction, unresolved-line-manager recovery, cross-spec BR13 CAS enforcement, failed-fulfilment employee UX, plus minor cleanup. Record: `reviews/internal-transfer-request.gate1.md` |
 | `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-11   | Draft v1.2 — Product locked OQ-11 and OQ-12. Record: `reviews/internal-transfer-approval-chain.gate1.md` |
-| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-11   | Gate 1 **Changes Requested** 2026-09-09. **Draft v1.3** — Product locked OQ-20 (off-portal closeout; portal resume deferred). Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
-| `internal-transfer-notifications`            | Employee and approver notifications            | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-11   | Gate 1 **Changes Requested** 2026-09-09. **Draft v1.3** — Product locked OQ-21 (silent on fulfilment failure). Record: `reviews/internal-transfer-notifications.gate1.md` |
+| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **Approved** | Alamgir Sarkar | 2026-09-11   | Gate 1 **Approved** 2026-09-11 (v1.3). Was Changes Requested 2026-09-09 (v1.0); all 5 Blocker/7 Should-fix findings addressed in v1.2, OQ-20 locked by Product. Outstanding risk: `internal-transfer-approval-chain`/`internal-transfer-request` not yet both Approved. Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
+| `internal-transfer-notifications`            | Employee and approver notifications            | **Approved** | Alamgir Sarkar | 2026-09-11   | Gate 1 **Approved** 2026-09-11 (v1.3). Was Changes Requested 2026-09-09 (v1.0); all 5 P0/5 P1 findings addressed in v1.2, OQ-21 locked by Product. Outstanding risk: `internal-transfer-request` not yet Approved. Record: `reviews/internal-transfer-notifications.gate1.md` |
 
 ## Released Specs
 
@@ -61,6 +61,42 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
 ## Daily Execution Log
 
 ### 2026-09-11
+
+- **`internal-transfer-request`**: Gate 1 re-review completed by Abhijit Adhikari against
+  v1.4. Outcome: **Changes Requested**. All 14 findings from the 2026-09-09 review are
+  confirmed resolved. Five new Blocker findings (G1-F15–G1-F19): the `IN_PROGRESS`
+  stage-status invariant must be "at most one," not "exactly one," to account for the
+  zero-pending state after a fulfilment failure/compensation; `COMPLETED`'s "confirmed by
+  the employee" wording contradicts `EMPLOYEE_CONFIRMATION` being portal-set per
+  `internal-transfer-downstream-orchestration` BR7; a null `lineManagerRef` leaves
+  approval-chain permanently stuck on `assignee-unresolved` with no recovery mechanism;
+  BR13/OWN-11's compare-and-swap enforcement is not defined for approval-chain's or
+  downstream's own mutating APIs; and failed-fulfilment employee-visible behaviour needs
+  its own definition given `pendingWith: null` and OQ-21 silence. Five Nit findings
+  (G1-F20–G1-F24, minor cleanup: API02 PUT semantics, BR2/BR12 month-calculation
+  algorithm, API01 "snapshot" terminology, API03 HRIS timeout behaviour, `DISCARDED`
+  reserved/unreachable labelling) are not blocking on their own. Sign-off: `## Gate 1
+  Review` in `.ai-context/specs/internal-transfer-request.spec.md`; worksheet:
+  `.ai-context/reviews/internal-transfer-request.gate1.md`.
+
+- **`internal-transfer-notifications`**: Gate 1 re-review completed by Abhijit Adhikari.
+  Outcome: **Approved** (v1.3, was Changes Requested on v1.0, 2026-09-09). All five P0 and
+  five P1 findings from the original review are addressed in v1.2, and BRD-001 OQ-21
+  (employee notification on fulfilment failure) is Resolved by Product's lock this same
+  day: silent to the employee for v1. Outstanding risk carried forward:
+  `internal-transfer-request` is not yet Approved. Sign-off: `## Gate 1 Review` in
+  `.ai-context/specs/internal-transfer-notifications.spec.md`; worksheet:
+  `.ai-context/reviews/internal-transfer-notifications.gate1.md`.
+
+- **`internal-transfer-downstream-orchestration`**: Gate 1 re-review completed by Abhijit
+  Adhikari. Outcome: **Approved** (v1.3, was Changes Requested on v1.0, 2026-09-09). All
+  five Blocker and seven Should-fix findings from the original review are addressed in
+  v1.2, and BRD-001 OQ-20 (resume-after-failure) is Resolved by Product's lock this same
+  day: off-portal closeout by HR Operations, no automatic or portal-driven resume in v1.
+  Outstanding risk carried forward: `internal-transfer-approval-chain` and
+  `internal-transfer-request` are not yet both Approved. Sign-off:
+  `## Gate 1 Review` in `.ai-context/specs/internal-transfer-downstream-orchestration.spec.md`;
+  worksheet: `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
 
 - **Product v1 lock of remaining BRD-001 open questions.** Acting as Product owner,
   confirmed or deferred every question Gate 1 had left with an action-required flag:

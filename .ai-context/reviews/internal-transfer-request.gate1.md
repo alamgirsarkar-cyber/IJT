@@ -20,7 +20,7 @@
 | **Reviewer (not the author)** | Abhijit Adhikari |
 | Security / Architecture (constitution check) | _Pending — name reviewer and date when obtained_ |
 | Submitted | 2026-09-07 (reconfirmed with full BRD-001 programme submission) |
-| Outcome | **Changes Requested** (2026-09-09) — 8 Blocker, 6 Should-fix findings |
+| Outcome | **Changes Requested** (2026-09-11, v1.4) — 5 Blocker, 5 Nit findings. Prior round: **Changes Requested** (2026-09-09, v1.1) — 8 Blocker, 6 Should-fix findings |
 
 Plan review (Gate 1 continued) is recorded separately in
 `.ai-context/reviews/internal-transfer-request.gate1-plan.md` after the spec is **Approved**.
@@ -48,6 +48,21 @@ section. Do not rewrite the spec in this file — record what must change._
 | G1-F12 | Should-fix | API07 reference-data caching (lines 406–441), AC6/AC7 submission-time checks (lines 474–492) | AC6/AC7 evaluate BR5/BR6/BR1/BR2/BR4 using data "read at submission time," which is good, but the spec never explicitly states that API07's cached (up to stale) reference-data listing is never itself the source of truth for those checks | Clarify explicitly that cached reference data (API07) is for browsing/selection only, and submission validation always reads authoritative, non-cached data |
 | G1-F13 | Should-fix | Unit Test Cases (lines 583–638) | All test cases are scoped to this spec in isolation; none exercise the handoff to `internal-transfer-approval-chain` (e.g., stage plan consumed correctly) or to `internal-transfer-notifications` (event consumed correctly) | Add cross-spec integration tests covering the request → approval-chain and request → notifications handoffs |
 | G1-F14 | Should-fix | Whole spec | BR/AC/Test rows do not consistently cite the BRD-001 open question or business rule they derive from in one place | Add a formal BRD → BR → AC → Test traceability matrix |
+
+### Re-review findings — v1.4, 2026-09-11
+
+| ID | Severity | Where | Finding | Required change |
+|---|---|---|---|---|
+| G1-F15 | Blocker | Stage status vocabulary (line 135: "Exactly one stage per request is `IN_PROGRESS` at a time"); Request transitions row for a reported `FAILED` (line 194) | The stage vocabulary asserts an "exactly one" invariant, but the failure/compensation transition row shows the failed stage becoming `FAILED`, earlier stages `COMPENSATION_REQUESTED`, and later stages `CANCELLED` — leaving **zero** stages `IN_PROGRESS`, which the stated invariant forbids | Change the invariant to "at most one" `IN_PROGRESS` stage, and explicitly define the zero-`IN_PROGRESS` state that exists while a request is `FULFILMENT` with a failed/compensating stage |
+| G1-F16 | Blocker | Request status vocabulary, `COMPLETED` row (line 113: "confirmed by the employee"); Stage Plan `EMPLOYEE_CONFIRMATION` row (line 230); `internal-transfer-downstream-orchestration` BR7 ("It is not an employee click") | This spec's own status vocabulary describes `COMPLETED` as "confirmed by the employee," and the Stage Plan lists `EMPLOYEE_CONFIRMATION` with assigned role "Employee," but `internal-transfer-downstream-orchestration` BR7 defines that stage as portal-set and explicitly not an employee action — two specs describing the same terminal state with contradictory semantics | Either introduce an actual employee confirmation action (if Product requires one), or correct this spec's terminology (`COMPLETED` row wording, `EMPLOYEE_CONFIRMATION`'s "Employee" role label) to reflect automatic completion/notification, consistent with downstream's BR7 |
+| G1-F17 | Blocker | `employee.transfer.requested.v1` payload, `lineManagerRef` (lines 774, 788); `internal-transfer-approval-chain` API03 exceptions (line 243) and AC10 (lines 312–313) | `lineManagerRef` may be `null` at submission (unresolved line manager). Approval-chain's API03 then has no actionable assignee for `MANAGER_RELEASE` and returns 409 `assignee-unresolved` — and AC10 says the stage "stays `IN_PROGRESS`" with no further mechanism defined, so the request is permanently stuck | Define a recovery mechanism for an unresolved line manager (e.g., an HR override, a re-resolution trigger), or prevent submission from entering `MANAGER_REVIEW` until the current line manager is resolved |
+| G1-F18 | Blocker | BR13 / OWN-11 (line 93); `internal-transfer-approval-chain` API02/API03 (no `version`/`If-Match`/optimistic-concurrency mechanics anywhere in that spec); `internal-transfer-downstream-orchestration` API01 (same absence) | BR13 declares one monotonic aggregate `version` with optimistic concurrency enforced by "every mutation from any spec," but only this spec's own APIs (API02, API06) actually specify `If-Match`/`version-conflict` mechanics. Neither `internal-transfer-approval-chain`'s decision endpoint (API03) nor `internal-transfer-downstream-orchestration`'s webhook (API01) states how it reads, checks or increments that shared version | Explicitly define the compare-and-swap/optimistic-concurrency enforcement mechanics for every sibling mutation against the shared aggregate version, not only this spec's own APIs |
+| G1-F19 | Blocker | Request status vocabulary `FULFILMENT` row (line 112, "Being actioned"); UT76 (line 1138, `pendingWith` null on a `FAILED` stage); `internal-transfer-notifications` OQ-21 (silent on fulfilment failure) | A failed fulfilment stage leaves the request `FULFILMENT` / "Being actioned" with `pendingWith: null`, and the employee is deliberately not notified (OQ-21) — so the status page shows an unchanging, generic "in progress" label with no pending party and no notification, for a state that could persist indefinitely | Define the exact employee-visible behaviour for a failed/compensating fulfilment state (e.g., a distinct status display, an explicit "delayed" indicator, or a defined SLA before escalation) so the status page does not become misleading |
+| G1-F20 | Nit | API02 (lines 346–370) | PUT semantics are not stated precisely — whether omitted fields in the payload clear the corresponding draft field or leave it unchanged is not specified | Clarify API02's PUT semantics: full replace vs. partial merge for omitted fields |
+| G1-F21 | Nit | BR12 (line 92) | BR12 defines service length as "whole completed calendar months ... inclusive," which is reasonably precise but leaves the day-of-month edge case (e.g., position start on the 31st, effective date in a shorter month) to interpretation | Make the BR2/BR12 month-calculation algorithm fully explicit, including day-of-month edge cases |
+| G1-F22 | Nit | API01 (lines 327–330, "it is not the snapshot, it is not frozen"); API01 503 exception (line 342, "the current-assignment snapshot cannot be resolved") | The same API01 section both denies that `currentAssignment` is a snapshot and then calls it "the current-assignment snapshot" two paragraphs later in the exception table | Replace remaining "snapshot" terminology for API01's draft-time read with "informational current-assignment read," consistently, including in the 503 exception condition |
+| G1-F23 | Nit | API03 exceptions (line 475, "503 HRIS unavailable") | The only HRIS-failure exception is "unavailable"; a slow HRIS response (timeout) is not distinguished from an outage, and no timeout threshold is stated | Clarify API03's HRIS timeout behaviour: whether a timeout is treated identically to "unavailable," and what threshold applies |
+| G1-F24 | Nit | States with no owner — `DISCARDED` (line 213) vs. `CANCELLED` (line 214) | `CANCELLED`'s disposition explicitly says "Confirmed unreachable in v1"; `DISCARDED`'s disposition says "Deferred out of v1 ... Status stays defined" without the same explicit "reserved/unreachable" label, despite being in the same no-producer category | Mark `DISCARDED` explicitly as a reserved/unreachable v1 state, using the same explicit language as `CANCELLED` |
 
 _Add rows as needed. Use stable IDs (G1-F01, G1-F02, …) so the spec revision history can
 reference them._
@@ -98,8 +113,8 @@ cross-spec integration tests; and a formal BRD → BR → AC → Test traceabili
 | Field | Value |
 |---|---|
 | **Outcome** | **Changes Requested** |
-| **Spec version after review** | v1.1 — Changes Requested. Author revision **v1.3** resubmitted 2026-09-11 |
-| **Date** | 2026-09-09 |
+| **Spec version after review** | v1.1 — Changes Requested (2026-09-09); v1.4 — **Changes Requested** (2026-09-11, new findings G1-F15–G1-F24) |
+| **Date** | 2026-09-09 (round 1); 2026-09-11 (round 2) |
 | **Next step if Approved** | Plan may proceed to Gate 1 (plan) review |
 | **Next step if Changes Requested** | Author revises spec, bumps version, resubmits |
 
@@ -108,28 +123,43 @@ _When complete: update `.ai-context/specs/internal-transfer-request.spec.md` sta
 
 ---
 
-## Re-review queue — v1.3 (not yet reviewed)
+## Re-review — v1.4, 2026-09-11: Changes Requested
 
-Author revision v1.3 (2026-09-11) responds to G1-F01–G1-F14; the disposition table is in
-the spec's own `## Gate 1 Review` section. **No Gate 1 outcome is recorded for v1.3** — it
-awaits this reviewer. Four things to weigh when it is picked up:
+Author revision v1.3 (2026-09-11) responded to G1-F01–G1-F14; v1.4 layered Product's
+2026-09-11 lock of OQ-11 and OQ-22 on top, with no behaviour change. All fourteen
+2026-09-09 findings are accepted as resolved — the disposition table in the spec's own
+`## Gate 1 Review` section is confirmed against v1.4, including the synchronous-submission
+decision (G1-F03) and OQ-11 now being Resolved rather than open (G1-F06).
 
-1. **G1-F03 was decided, not merely clarified, and it removes a published status.**
-   Submission is synchronous; `SUBMITTED` is now a history/audit event type, not a request
-   status. The asynchronous alternative is written out on the spec so the choice can be
-   reversed without rediscovery. Agreeing with this is agreeing to take `SUBMITTED` out of
-   the state machine.
-2. **G1-F06 is not closed and cannot be closed here.** OQ-11 remains a business decision
-   owned by HR Ops and Data Privacy. v1.3 stops treating it as settled and declares the
-   spec not Approvable until `BRD.md` confirms or explicitly defers it. Approval-chain has
-   the same dependency.
-3. **Two states have no producer.** Building the G1-F02 contract showed `DISCARDED` is
-   audited but has no endpoint, and `CANCELLED` is defined but no spec transitions a
-   request into it. Both are flagged for a scope call rather than filled in with invented
-   behaviour.
-4. **_Checks Performed_ above is the original v1.1 review** and is left as the reviewer
-   wrote it, including the Fail rows that v1.3 claims to address. Those rows are not
-   re-ticked here.
+This pass went deeper into the contract v1.3 introduced (the _Authoritative State and
+Transition Contract_, the shared-fact events, and the cross-spec handoffs it formalized)
+and surfaced ten new findings, G1-F15–G1-F24, none of which existed as open items before
+v1.3 made the contract explicit enough to check:
+
+1. **G1-F15 is the same category of gap as the original G1-F01/G1-F02** — a vocabulary
+   statement ("exactly one" `IN_PROGRESS`) that the spec's own transition table
+   contradicts. Building the full transition table is what surfaced it.
+2. **G1-F16 is a cross-spec terminology contradiction**, same shape as the original
+   `PENDING`/`IN_PROGRESS` finding: this spec and `internal-transfer-downstream-orchestration`
+   describe `EMPLOYEE_CONFIRMATION`/`COMPLETED` differently. Downstream's BR7 is correct;
+   this spec's own wording is not.
+3. **G1-F17 is new since v1.3 formalized OWN-09/notifications AC8's null-handling.**
+   Notifications already skips the manager notification gracefully on a null
+   `lineManagerRef` (per AC8, cited in this spec's own event field notes); approval-chain
+   does not have an equivalent graceful path — it 409s and stops. The inconsistency is
+   between the two consuming specs' handling of the same null case.
+4. **G1-F18 is scoped to enforcement, not the shared fact itself.** BR13/OWN-11 is correct
+   conceptually and this reviewer is not asking for it to be re-litigated — only for the
+   two sibling specs' own API contracts to state how they participate in it.
+5. **G1-F19 is adjacent to, but distinct from, the original G1-F02/OQ-20 work.** OQ-20
+   settled the *business* question (no resume, HR closes out off-portal); this finding is
+   about what the *employee* sees on the status page while that is happening.
+6. **G1-F20–G1-F24 are Nit-level cleanup**, not blocking on their own, bundled here because
+   the same re-review pass found them.
+
+**Verdict: Changes Requested.** Five Blocker findings (G1-F15–G1-F19) must be addressed
+before Gate 1 approval. Five Nit findings (G1-F20–G1-F24) are minor cleanup, recommended in
+the same revision but not blocking by themselves.
 
 **Product 2026-09-11:** OQ-11 and OQ-22 are now Resolved in `BRD.md`; draft-discard is
 deferred. Spec version for re-review is **v1.4**. Point 2 above is closed from the

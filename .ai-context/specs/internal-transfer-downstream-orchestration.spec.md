@@ -6,10 +6,11 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.3. Gate 1 **Changes Requested** (2026-09-09) was
-answered in v1.2; v1.3 records Product's 2026-09-11 lock of BRD-001 **OQ-20**: off-portal
-closeout by HR Operations is the v1 path; portal resume is deferred. Full state machine in
-`.ai-context/status.md`. Do not generate a plan or code until **Approved**.
+**Approved (Gate 1)** — Draft v1.3, Approved 2026-09-11 by Abhijit Adhikari. Gate 1
+**Changes Requested** (2026-09-09, against v1.0) was answered in v1.2; v1.3 records
+Product's 2026-09-11 lock of BRD-001 **OQ-20**: off-portal closeout by HR Operations is the
+v1 path; portal resume is deferred. Full state machine in `.ai-context/status.md`. Plan
+drafting may proceed per `governance.md` DoD.
 
 **Reviewer note:** v1.2 answered all five Blocker and seven Should-fix findings. OQ-20 is
 now **Resolved** — no automatic and no portal-driven resume in v1 (BR10, AC17, OWN-08).
@@ -24,7 +25,7 @@ Finding-by-finding disposition is in _Gate 1 Review_ at the end of this file.
 | Role                               | Name             | Date                           |
 | ---------------------------------- | ---------------- | ------------------------------ |
 | Author / owner                     | Alamgir Sarkar   | 2026-09-03                     |
-| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-09 — **Changes Requested** on v1.1; v1.3 not yet reviewed |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-11 — **Approved** on v1.3 (was Changes Requested on v1.0, 2026-09-09) |
 | Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
@@ -640,10 +641,17 @@ No part of this spec requires a plan to guess. Portal resume is deferred, not un
 
 ## Gate 1 Review
 
-> Reviewed by: Abhijit Adhikari, 2026-09-09, **Changes Requested** — five Blocker and seven
-> Should-fix findings. Recorded verdict: the spec "is not yet buildable without engineers
-> guessing at materially different failure-handling behaviour." Findings worksheet:
+> Reviewed by: Abhijit Adhikari, 2026-09-11, **Approved** (against v1.3) — "Approved." All
+> five Blocker and seven Should-fix findings from the 2026-09-09 review are addressed in
+> v1.2 (see Author response below), and BRD-001 OQ-20 (resume-after-failure business
+> question) is Resolved by Product's 2026-09-11 lock: off-portal closeout by HR Operations,
+> no portal-driven or automatic resume in v1. Findings worksheet:
 > `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
+
+> Reviewed by: Abhijit Adhikari, 2026-09-09, **Changes Requested** (against v1.0) — five
+> Blocker and seven Should-fix findings. Recorded verdict: the spec "is not yet buildable
+> without engineers guessing at materially different failure-handling behaviour." Findings
+> worksheet: `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
 
 ### Author response — v1.2, 2026-09-11 (Alamgir Sarkar)
 

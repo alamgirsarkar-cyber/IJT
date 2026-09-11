@@ -445,3 +445,19 @@ named BP per request, BR6 must change in a new increment.
 | v1.0    | 2026-09-03 | Initial draft | BRD-001 |
 | v1.1    | 2026-09-08 | Authentication and authorisation section; AC13 (401), AC14 (front-end session); cites BRD-001 BR12–BR13 | BRD-001 KD-07, KD-08 |
 | v1.2    | 2026-09-11 | Product v1 lock: OQ-11 (OWN-12) and OQ-12 (OWN-05) confirmed. BR5/BR6 citations updated; no behaviour change | Product, 2026-09-11 |
+
+## Gate 1 Review
+
+> Reviewed by: Abhijit Adhikari, 2026-09-09, **Approved** (against v1.0) — both Blocker
+> findings (OQ-11/OQ-12 dependency on BR5/BR6; stage-plan handoff contract) cleared; five
+> Should-fix findings (API02 historical-approver access, confirmed effective-date
+> constraint, event payload schemas, API-level test coverage, BRD→Spec→AC→Test
+> traceability) carried forward as non-blocking follow-ups. Approved ahead of
+> `internal-transfer-request` reaching Approved — noted as an outstanding programme-level
+> risk at the time. Findings worksheet:
+> `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`.
+
+**Superseded-by note:** this Approved verdict covers v1.0 only. v1.1 (AuthN/AuthZ section)
+and v1.2 (OQ-11/OQ-12 Product lock) were published afterward without a new Gate 1 pass, per
+the Re-review/supersede convention in `.agent/rules/governance.md`. v1.2 is **not yet
+reviewed** and plan drafting should not rely on this Approved line covering it.

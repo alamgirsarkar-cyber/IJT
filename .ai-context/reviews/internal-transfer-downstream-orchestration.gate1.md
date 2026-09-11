@@ -15,7 +15,7 @@
 | **Reviewer (not the author)**                | Abhijit Adhikari                                                       |
 | Security / Architecture (constitution check) | _Pending — name reviewer and date when obtained_                       |
 | Submitted                                    | 2026-09-07                                                             |
-| Outcome                                      | **Changes Requested** (2026-09-09) — 5 Blocker, 7 Should-fix findings   |
+| Outcome                                      | **Approved** (2026-09-11, v1.3) — was **Changes Requested** (2026-09-09, v1.0)   |
 
 ## Submission notes for the reviewer
 
@@ -56,18 +56,18 @@
 
 | Check                                                                                       | Result |
 | ------------------------------------------------------------------------------------------- | ------ |
-| **Reviewer ≠ author**                                                                       |        |
-| **Intent is one unambiguous paragraph**                                                     |        |
-| **Every AC given/when/then and individually IDed**                                          |        |
-| **API Contract complete — payload, success shape, exception table**                         |        |
-| **Out-of-scope items explicit**                                                             |        |
-| **Ambiguity — could two engineers build materially different things?**                      |        |
-| **Constitution compliance**                                                                 |        |
-| **Overlap with an existing spec**                                                           |        |
-| **Dependency check — Builds-on/Related specs in Approved or Released state**                |        |
-| **Open questions that a plan would have to guess — none remaining, or deferred with owner** |        |
-| **Security / Architecture sign-off obtained where required**                                |        |
-| **Status updated to Approved or Changes Requested — never left ambiguous**                  |        |
+| **Reviewer ≠ author**                                                                       | Pass — Abhijit Adhikari ≠ Alamgir Sarkar |
+| **Intent is one unambiguous paragraph**                                                     | Pass |
+| **Every AC given/when/then and individually IDed**                                          | Pass — AC1–AC19 |
+| **API Contract complete — payload, success shape, exception table**                         | Pass — G1-F07/F08/F09 addressed with envelope, idempotency-key-conflict and signature contract |
+| **Out-of-scope items explicit**                                                             | Pass |
+| **Ambiguity — could two engineers build materially different things?**                      | Pass — G1-F01–F05 closed by the Fulfilment Lifecycle section and transition matrices |
+| **Constitution compliance**                                                                 | Pass |
+| **Overlap with an existing spec**                                                           | Pass |
+| **Dependency check — Builds-on/Related specs in Approved or Released state**                | Fail — `internal-transfer-approval-chain` and `internal-transfer-request` not yet both Approved; noted as an outstanding programme-level risk, not a reason to withhold this spec's own approval |
+| **Open questions that a plan would have to guess — none remaining, or deferred with owner** | Pass — OQ-20 Resolved by Product, 2026-09-11 |
+| **Security / Architecture sign-off obtained where required**                                | Pending — not yet obtained |
+| **Status updated to Approved or Changes Requested — never left ambiguous**                  | Pass — set to Approved below |
 
 ---
 
@@ -90,26 +90,26 @@ matrix; formal BRD → BR → AC → Test traceability; and negative/out-of-orde
 
 | Field                              | Value                                                                                       |
 | ---------------------------------- | ------------------------------------------------------------------------------------------- |
-| **Outcome**                        | **Changes Requested**                                                                       |
-| **Spec version after review**      | v1.1 — Changes Requested. Author revision **v1.2** resubmitted 2026-09-11                   |
-| **Date**                           | 2026-09-09                                                                                  |
-| **Next step if Approved**          | Plan drafting only after approval-chain is Approved and the resume OQ is closed or deferred |
+| **Outcome**                        | **Approved**                                                                       |
+| **Spec version after review**      | v1.0 — Changes Requested (2026-09-09); v1.3 — **Approved** (2026-09-11)             |
+| **Date**                           | 2026-09-09 (Changes Requested); 2026-09-11 (Approved)                              |
+| **Next step if Approved**          | Plan drafting may proceed. Outstanding risk: `internal-transfer-approval-chain` and `internal-transfer-request` still not both Approved — track at programme level |
 | **Next step if Changes Requested** | Author revises spec, bumps version, resubmits                                               |
 
 _When complete: update the spec status and `.ai-context/status.md` the same day._
 
 ---
 
-## Re-review queue — v1.2 (not yet reviewed)
+## Re-review — v1.3, 2026-09-11: Approved
 
-Author revision v1.2 (2026-09-11) responds to G1-F01–G1-F12; the disposition table is in
-the spec's own `## Gate 1 Review` section. **No Gate 1 outcome is recorded for v1.2** — it
-awaits this reviewer. Two things to weigh when it is picked up:
+Author revision v1.2 (2026-09-11) responded to G1-F01–G1-F12; disposition table is in the
+spec's own `## Gate 1 Review` section. v1.3 layered Product's 2026-09-11 lock of BRD-001
+OQ-20 on top with no behaviour change.
 
-1. **G1-F02 is only half closed here by design.** v1.2 specifies v1 system behaviour (no
-   automatic and no portal-driven resume; HR Operations closes out off-portal). The business
-   question of whether that is acceptable for v1 was escalated to **BRD-001 OQ-20** rather
-   than answered in the spec, because it is HR Ops' decision to make. Approval still depends
-   on OQ-20 being confirmed or formally deferred.
-2. **_Checks Performed_ above is still blank.** Those rows are reviewer judgements and were
-   deliberately left unfilled rather than inferred from the closing note.
+1. **G1-F02 / OQ-20 — now fully closed.** Product confirmed on 2026-09-11 that off-portal
+   closeout by HR Operations is the accepted v1 business behaviour; portal resume stays
+   deferred, not undecided. Nothing further blocks approval on this point.
+2. **_Checks Performed_ above is now filled in** — see the Dependency check row for the one
+   remaining Fail, carried as a non-blocking programme-level risk rather than a spec defect.
+
+**Verdict: Approved.**

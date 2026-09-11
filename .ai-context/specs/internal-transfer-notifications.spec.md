@@ -6,10 +6,11 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.3. Gate 1 **Changes Requested** (2026-09-09) was
-answered in v1.2; v1.3 records Product's 2026-09-11 lock of BRD-001 **OQ-21** (no employee
-notification on fulfilment failure). Full state machine in `.ai-context/status.md`.
-Do not generate a plan or code until **Approved**.
+**Approved (Gate 1)** — Draft v1.3, Approved 2026-09-11 by Abhijit Adhikari. Gate 1
+**Changes Requested** (2026-09-09, against v1.0) was answered in v1.2; v1.3 records
+Product's 2026-09-11 lock of BRD-001 **OQ-21** (no employee notification on fulfilment
+failure). Full state machine in `.ai-context/status.md`. Plan drafting may proceed per
+`governance.md` DoD.
 
 **Reviewer note:** v1.2 answered all five P0 and five P1 findings. OQ-21 is now **Resolved**
 — silent to the employee; the status page is the progress view. Finding-by-finding
@@ -26,7 +27,7 @@ submit release.
 | Role                               | Name             | Date                           |
 | ---------------------------------- | ---------------- | ------------------------------ |
 | Author / owner                     | Alamgir Sarkar   | 2026-09-03                     |
-| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-09 — **Changes Requested** on v1.1; v1.3 not yet reviewed |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-11 — **Approved** on v1.3 (was Changes Requested on v1.0, 2026-09-09) |
 | Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-notifications.gate1.md`.
@@ -538,8 +539,14 @@ legal-sounding HR prose in code; it references the template id.
 
 ## Gate 1 Review
 
-> Reviewed by: Abhijit Adhikari, 2026-09-09, **Changes Requested** — five P0 and five P1
-> findings. Findings worksheet:
+> Reviewed by: Abhijit Adhikari, 2026-09-11, **Approved** (against v1.3) — "Approved." All
+> five P0 and five P1 findings from the 2026-09-09 review are addressed in v1.2 (see Author
+> response below), and BRD-001 OQ-21 (employee notification on fulfilment failure) is
+> Resolved by Product's 2026-09-11 lock: silent to the employee for v1. Findings worksheet:
+> `.ai-context/reviews/internal-transfer-notifications.gate1.md`.
+
+> Reviewed by: Abhijit Adhikari, 2026-09-09, **Changes Requested** (against v1.0) — five P0
+> and five P1 findings. Findings worksheet:
 > `.ai-context/reviews/internal-transfer-notifications.gate1.md`.
 
 ### Author response — v1.2, 2026-09-11 (Alamgir Sarkar)

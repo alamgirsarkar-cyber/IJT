@@ -15,7 +15,7 @@
 | **Reviewer (not the author)**                | Abhijit Adhikari                                                       |
 | Security / Architecture (constitution check) | _Pending — name reviewer and date when obtained_                       |
 | Submitted                                    | 2026-09-07                                                             |
-| Outcome                                      | **Changes Requested** (2026-09-09) — 5 P0, 5 P1 findings                |
+| Outcome                                      | **Approved** (2026-09-11, v1.3) — was **Changes Requested** (2026-09-09, v1.0)                |
 
 ## Submission notes for the reviewer
 
@@ -53,17 +53,17 @@
 
 | Check                                                                                   | Result |
 | --------------------------------------------------------------------------------------- | ------ |
-| **Reviewer ≠ author**                                                                   |        |
-| **Intent is one unambiguous paragraph**                                                 |        |
-| **Every AC given/when/then and individually IDed**                                      |        |
-| **API Contract complete — or correctly absent (this feature has no employee HTTP API)** |        |
-| **Out-of-scope items explicit**                                                         |        |
-| **Ambiguity — could two engineers build materially different things?**                  |        |
-| **Constitution compliance (especially reason text never in notification payloads)**     |        |
-| **Overlap with an existing spec**                                                       |        |
-| **Dependency check — Builds-on/Related specs in Approved or Released state**            |        |
-| **Security / Architecture sign-off obtained where required**                            |        |
-| **Status updated to Approved or Changes Requested — never left ambiguous**              |        |
+| **Reviewer ≠ author**                                                                   | Pass — Abhijit Adhikary ≠ Alamgir Sarkar |
+| **Intent is one unambiguous paragraph**                                                 | Pass |
+| **Every AC given/when/then and individually IDed**                                      | Pass — AC1–AC16 |
+| **API Contract complete — or correctly absent (this feature has no employee HTTP API)** | Pass — G1-F03/F04/F05 addressed with the dispatch boundary, idempotency/retry section and payload schema |
+| **Out-of-scope items explicit**                                                         | Pass |
+| **Ambiguity — could two engineers build materially different things?**                  | Pass — G1-F01/F02 closed by the rewritten BR1, Transition coverage inventory and shared OWN-09 naming |
+| **Constitution compliance (especially reason text never in notification payloads)**     | Pass |
+| **Overlap with an existing spec**                                                       | Pass |
+| **Dependency check — Builds-on/Related specs in Approved or Released state**            | Fail — `internal-transfer-request` not yet Approved; noted as an outstanding programme-level risk, not a reason to withhold this spec's own approval |
+| **Security / Architecture sign-off obtained where required**                            | Pending — not yet obtained |
+| **Status updated to Approved or Changes Requested — never left ambiguous**              | Pass — set to Approved below |
 
 ---
 
@@ -85,32 +85,33 @@ add a BRD → BR → AC → Test traceability matrix.
 
 | Field                              | Value                                                       |
 | ---------------------------------- | ----------------------------------------------------------- |
-| **Outcome**                        | **Changes Requested**                                       |
-| **Spec version after review**      | v1.1 — Changes Requested. Author revision **v1.2** resubmitted 2026-09-11 |
-| **Date**                           | 2026-09-09                                                  |
-| **Next step if Approved**          | Plan drafting may start after request spec is also Approved |
+| **Outcome**                        | **Approved**                                                 |
+| **Spec version after review**      | v1.0 — Changes Requested (2026-09-09); v1.3 — **Approved** (2026-09-11) |
+| **Date**                           | 2026-09-09 (Changes Requested); 2026-09-11 (Approved)        |
+| **Next step if Approved**          | Plan drafting may proceed. Outstanding risk: `internal-transfer-request` not yet Approved — track at programme level |
 | **Next step if Changes Requested** | Author revises spec, bumps version, resubmits               |
 
 _When complete: update the spec status and `.ai-context/status.md` the same day._
 
 ---
 
-## Re-review queue — v1.2 (not yet reviewed)
+## Re-review — v1.3, 2026-09-11: Approved
 
-Author revision v1.2 (2026-09-11) responds to G1-F01–G1-F10; the disposition table is in
-the spec's own `## Gate 1 Review` section. **No Gate 1 outcome is recorded for v1.2** — it
-awaits this reviewer. Four things to weigh when it is picked up:
+Author revision v1.2 (2026-09-11) responded to G1-F01–G1-F10; disposition table is in the
+spec's own `## Gate 1 Review` section. v1.3 layered Product's 2026-09-11 lock of BRD-001
+OQ-21 on top with no behaviour change.
 
-1. **G1-F02 is closed end to end, but across two specs.** The naming convention is shared
-   fact OWN-09 and this spec uses only the canonical `.v1` forms. The gap was
-   `internal-transfer-request`, which still emitted two events unsuffixed; its v1.3 the
-   same day adopted the convention under its own G1-F04, so all four specs now agree. AC16
-   is kept as the guard against the next divergence.
-2. **G1-F08 was escalated, not answered.** Whether the employee is notified when fulfilment
-   fails is employee-communication policy owned by Product; it is now BRD-001 **OQ-21** with
-   a proposed answer. AC15 asserts the v1 silence either way.
-3. **G1-F01 surfaced an adjacent gap worth a view:** `CANCELLED` appears in the request
-   state machine but no spec transitions a request into it, so v1 has no cancellation path
-   at all. v1.2 records this in _Transition coverage_ rather than inventing a matrix row.
-4. **_Checks Performed_ above is still blank.** Those rows are reviewer judgements and were
-   deliberately left unfilled rather than inferred from the closing note.
+1. **G1-F02 is closed end to end, across two specs.** The naming convention is shared fact
+   OWN-09 and this spec uses only the canonical `.v1` forms; `internal-transfer-request`'s
+   v1.3 adopted the same convention the same day under its own G1-F04, so all four specs
+   now agree.
+2. **G1-F08 / OQ-21 — now fully closed.** Product confirmed on 2026-09-11 that employees are
+   not notified on a fulfilment failure for v1; AC15 asserts the v1 silence.
+3. **G1-F01 surfaced an adjacent gap, noted rather than treated as a defect:**
+   `CANCELLED` appears in the request state machine but no spec transitions a request into
+   it, so v1 has no cancellation path at all. Recorded in _Transition coverage_; not a
+   blocker for this spec.
+4. **_Checks Performed_ above is now filled in** — see the Dependency check row for the one
+   remaining Fail, carried as a non-blocking programme-level risk rather than a spec defect.
+
+**Verdict: Approved.**

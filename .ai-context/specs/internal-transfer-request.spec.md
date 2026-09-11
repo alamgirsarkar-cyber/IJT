@@ -6,16 +6,20 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.4. Gate 1 **Changes Requested** (2026-09-09, Abhijit
-Adhikari, against v1.1) was answered in v1.3; v1.4 records Product's 2026-09-11 lock of
-BRD-001 OQ-11 and OQ-22, and defers a draft-discard endpoint. Full state machine in
-`.ai-context/status.md`. Implementation must not start until this spec is **Approved**.
+**In Peer Review (Gate 1)** — Draft v1.4. Gate 1 **Changes Requested** (2026-09-11, against
+v1.4) — 5 Blocker, 5 Nit findings; see _Gate 1 Review_ at the end of this file. Full state
+machine in `.ai-context/status.md`. Implementation must not start until this spec is
+**Approved**.
 
-**Reviewer note.** v1.3's three look-ats still stand (synchronous submit demoting
-`SUBMITTED`; `CANCELLED`/`DISCARDED` having no producer; G1-F03's alternative written out).
-The third is now closed from the business side: **OQ-11 is Resolved** (OWN-12) — named
-person only for the employee's own line manager. OQ-22 is Resolved — no leave deduction.
-Product deferred a discard endpoint; `DISCARDED` stays defined and unproduced.
+**Reviewer note.** New findings from the 2026-09-11 re-review: the stage-status invariant
+must be "at most one" `IN_PROGRESS`, not "exactly one" (the zero-pending state after a
+fulfilment failure/compensation is real and legitimate); `COMPLETED`'s "confirmed by the
+employee" wording contradicts `EMPLOYEE_CONFIRMATION` being portal-set; a null
+`lineManagerRef` leaves approval-chain permanently stuck on `assignee-unresolved` with no
+recovery mechanism; BR13/OWN-11's compare-and-swap is not defined for approval-chain's or
+downstream's own mutating APIs; and failed-fulfilment employee-visible behaviour needs its
+own definition given `pendingWith: null` and OQ-21 silence. Five further items are minor
+cleanup, not blocking.
 
 ## Linked BRD
 
@@ -26,7 +30,7 @@ Product deferred a discard endpoint; `DISCARDED` stays defined and unproduced.
 | Role                               | Name             | Date                           |
 | ---------------------------------- | ---------------- | ------------------------------ |
 | Author / owner                     | Alamgir Sarkar   | 2026-08-27                     |
-| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-09 — **Changes Requested** on v1.1; v1.4 not yet reviewed |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-11 — **Changes Requested** on v1.4 (was Changes Requested on v1.1, 2026-09-09) |
 | Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-request.gate1.md`.
@@ -1265,8 +1269,21 @@ Copy for status display labels is Product's to refine; the vocabulary table is t
 
 ## Gate 1 Review
 
-> Reviewed by: Abhijit Adhikari, 2026-09-09, **Changes Requested** — 8 Blocker, 6
-> Should-fix findings against v1.1. "This is the aggregate-owning spec three other specs
+> Reviewed by: Abhijit Adhikari, 2026-09-11, **Changes Requested** (against v1.4) — 5
+> Blocker, 5 Nit (minor cleanup) findings. State invariant must become "at most one"
+> `IN_PROGRESS` stage, not "exactly one," to account for the zero-pending state after a
+> fulfilment failure/compensation; `COMPLETED`'s "confirmed by the employee" wording
+> contradicts `EMPLOYEE_CONFIRMATION` being portal-set, not an employee action; a null
+> `lineManagerRef` at submission leaves approval-chain's `MANAGER_RELEASE` permanently
+> stuck on `assignee-unresolved` with no recovery path; BR13/OWN-11's compare-and-swap
+> enforcement is stated conceptually but not defined for approval-chain's or downstream's
+> own mutating APIs; and a failed fulfilment renders as `FULFILMENT` / "Being actioned"
+> with `pendingWith: null` and no employee notification (OQ-21), which needs its own
+> defined employee-visible behaviour so status isn't misleading. Findings worksheet:
+> `.ai-context/reviews/internal-transfer-request.gate1.md`.
+
+> Reviewed by: Abhijit Adhikari, 2026-09-09, **Changes Requested** (against v1.1) — 8
+> Blocker, 6 Should-fix findings. "This is the aggregate-owning spec three other specs
 > depend on, so ambiguity here propagates." Findings worksheet:
 > `.ai-context/reviews/internal-transfer-request.gate1.md`.
 
