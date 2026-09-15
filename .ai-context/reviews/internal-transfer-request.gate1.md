@@ -15,12 +15,12 @@
 | Field | Value |
 |---|---|
 | Spec under review | `.ai-context/specs/internal-transfer-request.spec.md` |
-| Version submitted | v1.1 |
+| Version submitted | v1.1; last reviewed v1.4; **author revision v1.5 submitted 2026-09-15** |
 | Author | Alamgir Sarkar |
 | **Reviewer (not the author)** | Abhijit Adhikari |
 | Security / Architecture (constitution check) | _Pending — name reviewer and date when obtained_ |
 | Submitted | 2026-09-07 (reconfirmed with full BRD-001 programme submission) |
-| Outcome | **Changes Requested** (2026-09-11, v1.4) — 5 Blocker, 5 Nit findings. Prior round: **Changes Requested** (2026-09-09, v1.1) — 8 Blocker, 6 Should-fix findings |
+| Outcome | **Changes Requested** (2026-09-11, v1.4) — 5 Blocker, 5 Nit findings G1-F15–G1-F24. Author disposition for those findings is in v1.5 (below); **re-review outstanding** — this is not a Gate 1 sign-off. Prior round: **Changes Requested** (2026-09-09, v1.1) — 8 Blocker, 6 Should-fix findings, accepted as resolved on 2026-09-11 |
 
 Plan review (Gate 1 continued) is recorded separately in
 `.ai-context/reviews/internal-transfer-request.gate1-plan.md` after the spec is **Approved**.
@@ -63,6 +63,25 @@ section. Do not rewrite the spec in this file — record what must change._
 | G1-F22 | Nit | API01 (lines 327–330, "it is not the snapshot, it is not frozen"); API01 503 exception (line 342, "the current-assignment snapshot cannot be resolved") | The same API01 section both denies that `currentAssignment` is a snapshot and then calls it "the current-assignment snapshot" two paragraphs later in the exception table | Replace remaining "snapshot" terminology for API01's draft-time read with "informational current-assignment read," consistently, including in the 503 exception condition |
 | G1-F23 | Nit | API03 exceptions (line 475, "503 HRIS unavailable") | The only HRIS-failure exception is "unavailable"; a slow HRIS response (timeout) is not distinguished from an outage, and no timeout threshold is stated | Clarify API03's HRIS timeout behaviour: whether a timeout is treated identically to "unavailable," and what threshold applies |
 | G1-F24 | Nit | States with no owner — `DISCARDED` (line 213) vs. `CANCELLED` (line 214) | `CANCELLED`'s disposition explicitly says "Confirmed unreachable in v1"; `DISCARDED`'s disposition says "Deferred out of v1 ... Status stays defined" without the same explicit "reserved/unreachable" label, despite being in the same no-producer category | Mark `DISCARDED` explicitly as a reserved/unreachable v1 state, using the same explicit language as `CANCELLED` |
+
+### Author disposition — v1.5, 2026-09-15 (Alamgir Sarkar)
+
+Not a Gate 1 verdict. The dated sign-off stays on the spec after Abhijit Adhikari re-reviews
+v1.5. Each G1-F15–G1-F24 required change is answered in
+`.ai-context/specs/internal-transfer-request.spec.md` as follows:
+
+| ID | Severity | Addressed in v1.5 by |
+|---|---|---|
+| G1-F15 | Blocker | Stage invariant is **at most one** `IN_PROGRESS`. Zero-pending rest shape is defined for `FULFILMENT` after `FAILED` / compensation. UT76 |
+| G1-F16 | Blocker | `COMPLETED` / `EMPLOYEE_CONFIRMATION` match downstream BR7 (portal-set, not an employee click). Stage Plan role is "Portal (automatic)" |
+| G1-F17 | Blocker | **Prevented at submit** (the option that does not invent an HR override). BR15 / AC29: unresolved current line manager or receiving manager → 422 `assignee-unresolved`, stays `DRAFT`. Successful `requested.v1` never emits a null `lineManagerRef` |
+| G1-F18 | Blocker | OWN-11 CAS: storage compare-and-swap on every mutation; `If-Match` on this spec's API02/API06 and approval-chain API03; in-transaction expected version on downstream API01. AC30, UT78 |
+| G1-F19 | Blocker | BR16: failed/compensating `FULFILMENT` shows "HR is completing this"; `pendingWith.role` `HR_OPERATIONS`, `partyName` null. OQ-21 silence unchanged. UT76 |
+| G1-F20 | Nit | API02 is a **full replace** of the five draft content fields; omitted key ≡ `null` (clears). AC2, UT03a |
+| G1-F21 | Nit | BR12 last-day-clamp algorithm with start-on-31st examples. AC22, UT62a, UT62b |
+| G1-F22 | Nit | API01 draft-time read is "informational current-assignment read", including the 503 row |
+| G1-F23 | Nit | HRIS timeout (2 seconds) ≡ unavailable: 503 `reference-data-unavailable`, draft unchanged. AC15, UT77 |
+| G1-F24 | Nit | `DISCARDED` labelled **reserved and unreachable in v1**, same explicit language as `CANCELLED` |
 
 _Add rows as needed. Use stable IDs (G1-F01, G1-F02, …) so the spec revision history can
 reference them._
@@ -112,11 +131,11 @@ cross-spec integration tests; and a formal BRD → BR → AC → Test traceabili
 
 | Field | Value |
 |---|---|
-| **Outcome** | **Changes Requested** |
-| **Spec version after review** | v1.1 — Changes Requested (2026-09-09); v1.4 — **Changes Requested** (2026-09-11, new findings G1-F15–G1-F24) |
-| **Date** | 2026-09-09 (round 1); 2026-09-11 (round 2) |
+| **Outcome** | **Changes Requested** (v1.4). Author revision **v1.5 submitted 2026-09-15** — re-review outstanding |
+| **Spec version after review** | v1.1 — Changes Requested (2026-09-09); v1.4 — **Changes Requested** (2026-09-11, new findings G1-F15–G1-F24); v1.5 — author disposition recorded, **not yet re-reviewed** |
+| **Date** | 2026-09-09 (round 1); 2026-09-11 (round 2); 2026-09-15 (author v1.5) |
 | **Next step if Approved** | Plan may proceed to Gate 1 (plan) review |
-| **Next step if Changes Requested** | Author revises spec, bumps version, resubmits |
+| **Next step if Changes Requested** | Author revises spec, bumps version, resubmits — **done for this round (v1.5)** |
 
 _When complete: update `.ai-context/specs/internal-transfer-request.spec.md` status,
 `.ai-context/status.md`, and any BRD open questions the review resolves._
@@ -164,3 +183,8 @@ the same revision but not blocking by themselves.
 **Product 2026-09-11:** OQ-11 and OQ-22 are now Resolved in `BRD.md`; draft-discard is
 deferred. Spec version for re-review is **v1.4**. Point 2 above is closed from the
 business side.
+
+### Author revision submitted — v1.5, 2026-09-15
+
+G1-F15–G1-F24 are answered in the spec (see _Author disposition_ above). This does **not**
+change the 2026-09-11 verdict. Re-review of v1.5 is outstanding (Abhijit Adhikari).

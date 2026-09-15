@@ -1,6 +1,6 @@
 # Project Status Board — One-Point Employee Portal
 
-_Last updated: 2026-09-11_
+_Last updated: 2026-09-15_
 
 > Updated by whoever last touched a spec, same day. Answers "what is in flight" without a
 > stand-up. Where a delivery tool exists, this file mirrors **spec-level** state and does not
@@ -22,9 +22,9 @@ Task states are the checkbox state in the feature's `tasks.md`:
 
 | Spec ID                                      | Title                                          | Status                      | Owner          | Last Updated | Notes                                                                                                                                                             |
 | -------------------------------------------- | ---------------------------------------------- | --------------------------- | -------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `internal-transfer-request`                  | Employee Internal Transfer Request             | **Changes Requested** | Alamgir Sarkar | 2026-09-11   | Gate 1 re-reviewed 2026-09-11 (v1.4): all 14 prior findings resolved, but 5 new Blocker + 5 Nit findings (G1-F15–G1-F24) — stage-status "at most one" invariant, `COMPLETED`/`EMPLOYEE_CONFIRMATION` terminology contradiction, unresolved-line-manager recovery, cross-spec BR13 CAS enforcement, failed-fulfilment employee UX, plus minor cleanup. Record: `reviews/internal-transfer-request.gate1.md` |
-| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-11   | Draft v1.2 — Product locked OQ-11 and OQ-12. Record: `reviews/internal-transfer-approval-chain.gate1.md` |
-| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **Approved** | Alamgir Sarkar | 2026-09-11   | Gate 1 **Approved** 2026-09-11 (v1.3). Was Changes Requested 2026-09-09 (v1.0); all 5 Blocker/7 Should-fix findings addressed in v1.2, OQ-20 locked by Product. Outstanding risk: `internal-transfer-approval-chain`/`internal-transfer-request` not yet both Approved. Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
+| `internal-transfer-request`                  | Employee Internal Transfer Request             | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-15   | Draft **v1.5** — author revision answering 2026-09-11 re-review (G1-F15–G1-F24). Awaiting Abhijit Adhikari re-review. Record: `reviews/internal-transfer-request.gate1.md` |
+| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-15   | Draft v1.3 — Product locked OQ-11 and OQ-12; v1.3 adds OWN-11 `If-Match` on API03 (request G1-F18). Record: `reviews/internal-transfer-approval-chain.gate1.md` |
+| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **Approved** (v1.3); **v1.4 pending re-review** | Alamgir Sarkar | 2026-09-15   | Gate 1 **Approved** 2026-09-11 (v1.3). v1.4 (2026-09-15) adds OWN-11 CAS on API01 — new Gate 1 pass required before v1.4 is treated as Approved. Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
 | `internal-transfer-notifications`            | Employee and approver notifications            | **Approved** | Alamgir Sarkar | 2026-09-11   | Gate 1 **Approved** 2026-09-11 (v1.3). Was Changes Requested 2026-09-09 (v1.0); all 5 P0/5 P1 findings addressed in v1.2, OQ-21 locked by Product. Outstanding risk: `internal-transfer-request` not yet Approved. Record: `reviews/internal-transfer-notifications.gate1.md` |
 
 ## Released Specs
@@ -59,6 +59,27 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
 | Localisation beyond English     | BRD-001 OQ-18 | Product              | Post-v1                                      |
 
 ## Daily Execution Log
+
+### 2026-09-15
+
+- **`internal-transfer-request` revised to v1.5** in response to Gate 1 **Changes
+  Requested** (Abhijit Adhikari, 2026-09-11 re-review of v1.4 — 5 Blocker, 5 Nit). All ten
+  findings answered in this spec: "at most one" `IN_PROGRESS` with an explicit zero-pending
+  `FULFILMENT` rest shape (G1-F15); `COMPLETED` / `EMPLOYEE_CONFIRMATION` aligned to
+  downstream BR7 (G1-F16); submit refuses an unresolved current line manager or receiving
+  manager rather than inventing an HR override (G1-F17); OWN-11 compare-and-swap mechanics
+  for every sibling mutation (G1-F18); failed/compensating `FULFILMENT` employee view
+  "HR is completing this" / `pendingWith.role` `HR_OPERATIONS` without changing OQ-21
+  silence (G1-F19); API02 full-replace PUT, BR12 last-day-clamp, API01 draft-time wording,
+  API03 2 s HRIS timeout ≡ unavailable, `DISCARDED` reserved/unreachable (G1-F20–G1-F24).
+  Sign-off still outstanding — v1.5 is resubmitted, not Approved. Disposition:
+  spec `## Gate 1 Review` author response; worksheet unchanged
+  (`reviews/internal-transfer-request.gate1.md`).
+
+- **Sibling citations for G1-F18.** `internal-transfer-approval-chain` v1.3: API03 requires
+  `If-Match` and compare-and-swap. `internal-transfer-downstream-orchestration` v1.4: API01
+  uses in-transaction CAS (no `If-Match`); v1.3 Approved line superseded for this increment
+  pending a new Gate 1 pass. OWN-10 and OWN-11 updated in `ownership_index.md`.
 
 ### 2026-09-11
 

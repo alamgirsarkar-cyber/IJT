@@ -6,15 +6,15 @@
 
 ## Status
 
-**Approved (Gate 1)** — Draft v1.3, Approved 2026-09-11 by Abhijit Adhikari. Gate 1
-**Changes Requested** (2026-09-09, against v1.0) was answered in v1.2; v1.3 records
-Product's 2026-09-11 lock of BRD-001 **OQ-20**: off-portal closeout by HR Operations is the
-v1 path; portal resume is deferred. Full state machine in `.ai-context/status.md`. Plan
-drafting may proceed per `governance.md` DoD.
+**Approved (Gate 1) — v1.3**, 2026-09-11 by Abhijit Adhikari. **v1.4 (2026-09-15)** adds
+OWN-11 compare-and-swap on API01 and **requires a new Gate 1 pass** (governance
+re-review/supersede). Do not treat v1.4 as Approved until re-reviewed. Full state machine
+in `.ai-context/status.md`.
 
 **Reviewer note:** v1.2 answered all five Blocker and seven Should-fix findings. OQ-20 is
 now **Resolved** — no automatic and no portal-driven resume in v1 (BR10, AC17, OWN-08).
-Finding-by-finding disposition is in _Gate 1 Review_ at the end of this file.
+v1.4 states how this spec participates in the shared aggregate `version` (request-spec
+G1-F18). Finding-by-finding disposition is in _Gate 1 Review_ at the end of this file.
 
 ## Linked BRD
 
@@ -71,7 +71,7 @@ into the HRIS, does not approve transfers, and does not send employee notificati
   notification loss must not change request status. Whether a fulfilment failure notifies
   the employee at all is that spec's decision, not this one's — this spec only guarantees
   the event exists and carries no PII.
-- Shared facts: `.ai-context/ownership_index.md` (OWN-06, OWN-07, OWN-08)
+- Shared facts: `.ai-context/ownership_index.md` (OWN-06, OWN-07, OWN-08, OWN-11)
 - API contract consumed: downstream webhook URLs configured per function; inbound
   completion webhook defined below. HRIS write is performed by the HRIS integration
   layer, not by this service
@@ -267,6 +267,16 @@ Facilities).
 second audit row, no second outbox row and no second stage transition. The same `eventId`
 with a different body is 409 `idempotency-key-conflict` — the same problem type
 `internal-transfer-request.API03` uses, so consumers meet one convention across the portal.
+Byte-identical replay is checked **before** the version compare-and-swap and does not
+increment `version`.
+
+**Concurrency (OWN-11):** this endpoint does **not** take `If-Match`. The caller is an
+HMAC-authenticated adapter; the idempotency key is `eventId`. The handler reads the
+aggregate `version` at the start of its transaction and compare-and-swaps
+`WHERE version = :read`. Zero rows → 409 `version-conflict` (the adapter retries). A
+successful report increments `version` by 1. Mechanics are owned by
+`internal-transfer-request` § _Compare-and-swap on the shared aggregate version_; this
+endpoint participates, it does not redefine the field.
 
 **Request payload:**
 
@@ -321,6 +331,7 @@ is `FAILED` — the response never implies a retry is available.
 | 409  | `reportType: FULFILMENT` and the stage is not `IN_PROGRESS` — already terminal, still `NOT_STARTED`, not yet signalled, or out of order | Problem, `type: invalid-state-transition`, `currentStageStatus` |
 | 409  | `reportType: COMPENSATION` and the stage is not `COMPENSATION_REQUESTED`                                                             | Problem, `type: invalid-state-transition`, `currentStageStatus` |
 | 409  | `eventId` reused with a different body (BR11)                                                                                        | Problem, `type: idempotency-key-conflict`                       |
+| 409  | Compare-and-swap lost the aggregate `version` (OWN-11) — not a byte-identical replay                                                 | Problem, `type: version-conflict`, with `currentVersion`        |
 | 422  | Unknown `stageCode`, `EMPLOYEE_CONFIRMATION` as `stageCode`, missing or unknown `reportType`, `outcome` not `SUCCESS`/`FAILED`, `applicable: false` stage, malformed `eventId`/`occurredAt`, `failureCode` failing its pattern | Problem, `type: validation-failed`                              |
 | 429  | Rate limit exceeded                                                                                                                  | Problem, `type: rate-limited`                                   |
 
@@ -493,6 +504,11 @@ This spec **consumes** `employee.transfer.approved.v1` from the approval-chain s
     returned, no stage changes and no event is emitted — an out-of-order report is
     refused, never queued or applied early.
 
+20. `internal-transfer-downstream-orchestration.AC20` — Given two API01 reports that both
+    read the same aggregate `version`, when they commit, then exactly one increments
+    `version` by 1 and the other is refused with 409 `version-conflict`; a byte-identical
+    `eventId` replay still returns 200 without incrementing `version` (OWN-11).
+
 ## Unit Test Cases (spec-derived)
 
 | Test ID                                           | Maps to AC | Scenario                                           | Expected                                                                                     |
@@ -527,6 +543,7 @@ This spec **consumes** `employee.transfer.approved.v1` from the approval-chain s
 | `internal-transfer-downstream-orchestration.UT28` | AC1–AC3    | **Integration**, contract double: `approved.v1` → org → payroll → completion | One stage `IN_PROGRESS` at a time, in sequence order; `completed.v1` emitted last |
 | `internal-transfer-downstream-orchestration.UT29` | AC4, AC12, AC13 | **Integration**, contract double: failure then compensation acknowledgement | Ends in the "failed, reversal acknowledged" resting shape, request `FULFILMENT` |
 | `internal-transfer-downstream-orchestration.UT30` | AC5, AC19  | **Integration**, contract double redelivers reports out of order and duplicated | Final portal state identical to the in-order, non-duplicated run            |
+| `internal-transfer-downstream-orchestration.UT31` | AC20       | Two reports computed from the same aggregate `version` | One 200 and `version` + 1; the other 409 `version-conflict`; no merge       |
 
 Integration rows use a contract double for the downstream consumer, never a hand-rolled
 stub (constitution — Testing Discipline). This module handles downstream orchestration, so
@@ -638,6 +655,7 @@ No part of this spec requires a plan to guess. Portal resume is deferred, not un
 | v1.1    | 2026-09-08 | Authentication and authorisation section; AC11 — employee OIDC must not authorise webhooks (BRD-001 BR14) | BRD-001 KD-07, BR14 |
 | v1.2    | 2026-09-11 | Gate 1 response. New _Fulfilment Lifecycle and State Transitions_ section (stage status vocabulary, four paths, stage and request transition matrices, resting shapes); BR8–BR11; _Webhook signature contract_; API01 `reportType`, `failureCode`, replay/rotation and `idempotency-key-conflict` exceptions; event envelope and the named `employee.transfer.fulfilment-failed.v1`; AC12–AC19; UT16–UT30 including three integration rows; traceability matrix; A5, A6; BRD-001 OQ-20 raised for the business half of resume-after-failure | Gate 1 G1-F01–G1-F12 (Abhijit Adhikari, 2026-09-09) |
 | v1.3    | 2026-09-11 | Product v1 lock: OQ-20 confirmed — off-portal closeout; portal resume deferred. Behaviour unchanged from v1.2 | Product, 2026-09-11 |
+| v1.4    | 2026-09-15 | OWN-11 participation: API01 reads aggregate `version` in-transaction and compare-and-swaps; 409 `version-conflict` on a lost race; byte-identical `eventId` replay still does not increment version | `internal-transfer-request` G1-F18 |
 
 ## Gate 1 Review
 
@@ -647,6 +665,8 @@ No part of this spec requires a plan to guess. Portal resume is deferred, not un
 > question) is Resolved by Product's 2026-09-11 lock: off-portal closeout by HR Operations,
 > no portal-driven or automatic resume in v1. Findings worksheet:
 > `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
+> **Superseded-by:** v1.4 (2026-09-15) — additive OWN-11 compare-and-swap on API01; new
+> Gate 1 pass required before v1.4 is treated as Approved.
 
 > Reviewed by: Abhijit Adhikari, 2026-09-09, **Changes Requested** (against v1.0) — five
 > Blocker and seven Should-fix findings. Recorded verdict: the spec "is not yet buildable

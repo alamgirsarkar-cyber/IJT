@@ -69,7 +69,7 @@ requirement is written down. Shared facts go in `.ai-context/ownership_index.md`
 | Plan | `.ai-context/plans/internal-transfer-request.plan.md` |
 | Tasks | `.ai-context/tasks/internal-transfer-request.tasks.md` |
 | Prompts | `.ai-context/prompts/internal-transfer-request.prompts.md` |
-| **Next prompt** | **Blocked — Gate 1 in progress** (Abhijit Adhikari). Review order: request → approval-chain → notifications / downstream |
+| **Next prompt** | **Blocked — Gate 1 re-review of v1.5 outstanding** (Abhijit Adhikari). Author answered G1-F15–G1-F24 2026-09-15. Review order: request → approval-chain → notifications / downstream |
 
 ## Standing constraints (append to every prompt)
 

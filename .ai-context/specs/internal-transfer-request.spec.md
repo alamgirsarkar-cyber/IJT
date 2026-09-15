@@ -6,20 +6,18 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.4. Gate 1 **Changes Requested** (2026-09-11, against
-v1.4) — 5 Blocker, 5 Nit findings; see _Gate 1 Review_ at the end of this file. Full state
-machine in `.ai-context/status.md`. Implementation must not start until this spec is
-**Approved**.
+**In Peer Review (Gate 1)** — Draft v1.5. Author revision of 2026-09-15 answers Gate 1
+**Changes Requested** (2026-09-11, against v1.4) — 5 Blocker, 5 Nit; see _Gate 1 Review_
+at the end of this file. Full state machine in `.ai-context/status.md`. Implementation
+must not start until this spec is **Approved**.
 
-**Reviewer note.** New findings from the 2026-09-11 re-review: the stage-status invariant
-must be "at most one" `IN_PROGRESS`, not "exactly one" (the zero-pending state after a
-fulfilment failure/compensation is real and legitimate); `COMPLETED`'s "confirmed by the
-employee" wording contradicts `EMPLOYEE_CONFIRMATION` being portal-set; a null
-`lineManagerRef` leaves approval-chain permanently stuck on `assignee-unresolved` with no
-recovery mechanism; BR13/OWN-11's compare-and-swap is not defined for approval-chain's or
-downstream's own mutating APIs; and failed-fulfilment employee-visible behaviour needs its
-own definition given `pendingWith: null` and OQ-21 silence. Five further items are minor
-cleanup, not blocking.
+**Reviewer note.** v1.5 addresses G1-F15–G1-F24. The stage-status invariant is now "at most
+one" `IN_PROGRESS`, with an explicit zero-pending rest shape after fulfilment failure;
+`COMPLETED` / `EMPLOYEE_CONFIRMATION` match downstream BR7 (portal-set, not an employee
+click); submit refuses an unresolved current line manager rather than entering
+`MANAGER_REVIEW` with no recovery; OWN-11 now states compare-and-swap mechanics for every
+sibling mutation; and a failed/compensating `FULFILMENT` has its own employee-visible
+label and `pendingWith` (OQ-21 silence unchanged). Five nits in the same revision.
 
 ## Linked BRD
 
@@ -30,7 +28,7 @@ cleanup, not blocking.
 | Role                               | Name             | Date                           |
 | ---------------------------------- | ---------------- | ------------------------------ |
 | Author / owner                     | Alamgir Sarkar   | 2026-08-27                     |
-| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-11 — **Changes Requested** on v1.4 (was Changes Requested on v1.1, 2026-09-09) |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-11 — **Changes Requested** on v1.4 (was Changes Requested on v1.1, 2026-09-09). v1.5 (2026-09-15) is the author revision awaiting re-review |
 | Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-request.gate1.md`.
@@ -55,10 +53,10 @@ simulate, any approval decision.
   _Authentication and Authorisation_, _Cross-Cutting Concerns_
 - Constitution: `.ai-context/constitution.md` — Security Posture, Architectural
   Constraints, Non-Functional Baselines all apply and are not restated here
-- Related specs (co-submitted to Gate 1 2026-09-07 — none Approved yet):
+- Related specs (co-submitted to Gate 1 2026-09-07):
   - `internal-transfer-approval-chain` — **In Peer Review** — consumes the stage plan this spec creates and performs every transition from `MANAGER_REVIEW` to `FULFILMENT` or `REJECTED`
-  - `internal-transfer-downstream-orchestration` — **In Peer Review (Draft v1.2)** — starts after HR approval, not from submit; owns stage transitions for sequences 4–7
-  - `internal-transfer-notifications` — **In Peer Review (Draft v1.2)** — consumes the events this spec emits
+  - `internal-transfer-downstream-orchestration` — **Approved** (v1.3) — starts after HR approval, not from submit; owns stage transitions for sequences 4–7. Downstream BR7 is the authority for `EMPLOYEE_CONFIRMATION` (G1-F16)
+  - `internal-transfer-notifications` — **Approved** (v1.3) — consumes the events this spec emits. OQ-21: silent to the employee on fulfilment failure
 - API contract consumed: HRIS read API — `docs/contracts/hris-read-api.md`
 - Design: portal design system; internal transfer wizard screens, Figma `OPP/ITR/v1`
 - Shared facts: `.ai-context/ownership_index.md` (OWN-01, OWN-02, OWN-05, OWN-07, OWN-09,
@@ -93,9 +91,63 @@ Gate 1 dependency check passes.
 | `internal-transfer-request.BR9` | Open disciplinary or performance cases block a transfer                                                | BRD-001 BR9 | Business | **No — validated manually by HR.** The portal must not imply it has checked (AC7) |
 | `internal-transfer-request.BR10` | Only an authenticated employee may call employee-facing transfer APIs or open the wizard/status routes | BRD-001 BR10, KD-07 | Technical | Yes — AC20, AC21 |
 | `internal-transfer-request.BR11` | The caller may create, update, submit, withdraw and view only requests whose `employee_id` equals the token subject | BRD-001 BR11 | Business | Yes — AC12, AC13 |
-| `internal-transfer-request.BR12` | **Service length for BR2** is whole completed calendar months from the current position's start date in HRIS to the requested effective date inclusive, using authoritative HRIS data read at submission time. Partial months do not count; exactly 12 passes. Unpaid leave of absence does **not** break continuity in v1 — service runs from the position start date regardless of leave (BRD-001 OQ-22, Product 2026-09-11) | BRD-001 BR2, OQ-22; Gate 1 G1-F10 | Business | Yes — AC7, AC22 |
-| `internal-transfer-request.BR13` | **The request aggregate has one monotonic `version`.** Every mutation from any spec — this one, approval-chain, downstream — increments it, and concurrency is optimistic on that single value. A mutation computed from a stale version is refused; it is never merged. Recorded as shared fact OWN-11 | Gate 1 G1-F08; architecture (portal owns the request aggregate, ADR-0002) | Technical | Yes — AC2, AC23 |
+| `internal-transfer-request.BR12` | **Service length for BR2** is whole completed calendar months from the current position's start date in HRIS to the requested effective date inclusive, using the last-day-clamp algorithm in _Service-length arithmetic_ below. Partial months do not count; exactly 12 passes. Unpaid leave of absence does **not** break continuity in v1 — service runs from the position start date regardless of leave (BRD-001 OQ-22, Product 2026-09-11) | BRD-001 BR2, OQ-22; Gate 1 G1-F10, G1-F21 | Business | Yes — AC7, AC22 |
+| `internal-transfer-request.BR13` | **The request aggregate has one monotonic `version`.** Every mutation from any spec — this one, approval-chain, downstream — increments it by exactly 1 using compare-and-swap on that value. A mutation computed from a stale version is refused with 409 `version-conflict`; it is never merged. Enforcement mechanics are in _Compare-and-swap on the shared aggregate version_ below and are recorded as shared fact OWN-11 | Gate 1 G1-F08, G1-F18; architecture (portal owns the request aggregate, ADR-0002) | Technical | Yes — AC2, AC23, AC30 |
 | `internal-transfer-request.BR14` | **Reference data served by API07 is for browsing and selection only and is never the source of truth for a validation decision.** Every rule evaluated at submission reads authoritative, uncached data; if that data cannot be read, the submission is refused rather than decided on cached values | Gate 1 G1-F12; constitution (degradation) | Technical | Yes — AC6, AC7, AC15, AC24 |
+| `internal-transfer-request.BR15` | **A request does not enter `MANAGER_REVIEW` unless `MANAGER_RELEASE.assigned_party_ref` and `MANAGER_ACCEPT.assigned_party_ref` are both non-null employee IDs snapshotted from the authoritative HRIS read inside the submit transaction.** An unresolved current line manager or receiving manager is 422 `assignee-unresolved`; the request stays `DRAFT`. v1 has no portal recovery, HR override, or re-resolution trigger (approver substitution is OQ-16, deferred). The employee resubmits once HRIS has the missing manager. `HR_VALIDATION` has no named assignee (OWN-04) | Gate 1 G1-F17; OWN-03 | Technical (closes a stuck state; does not invent a new recovery journey) | Yes — AC9, AC29 |
+| `internal-transfer-request.BR16` | **A `FULFILMENT` request with any stage in `FAILED`, `COMPENSATION_REQUESTED`, `COMPENSATED` or `COMPENSATION_FAILED` is shown to the employee as delayed and with HR Operations, not as generic in-progress.** Request `statusDisplay` is "HR is completing this"; `pendingWith.role` is `HR_OPERATIONS` with `partyName` null (OWN-12). The employee is not notified (BRD-001 OQ-21). No SLA and no portal resume (OQ-15, OQ-20 / OWN-08) | Gate 1 G1-F19; OWN-08; OQ-21 | Business (status-page contract only) | Yes — AC11 |
+
+### Service-length arithmetic — BR12 (G1-F21)
+
+Given `start` = current-position start date from HRIS and `end` = requested effective date,
+both as calendar dates in the HRIS timezone:
+
+1. `months = (end.year − start.year) × 12 + (end.month − start.month)`
+2. `anniversary = min(start.day, last calendar day of end's year-month)` — this is the
+   last-day clamp: a start on the 31st completes a month on the last day of a shorter month
+3. If `end.day < anniversary`, then `months = months − 1`
+4. BR2 passes when `months ≥ 12`. Partial months do not count. Unpaid leave does not
+   change `start` (OQ-22)
+
+Worked examples:
+
+| `start` | `end` | `months` | BR2 |
+| --- | --- | --- | --- |
+| 2025-10-01 | 2026-10-01 | 12 | Pass (AC22) |
+| 2025-10-01 | 2026-09-30 | 11 | Fail (AC22) |
+| 2025-01-31 | 2026-01-31 | 12 | Pass |
+| 2025-01-31 | 2026-02-28 (non-leap) | 12 | Pass — anniversary clamped to 28 |
+| 2025-01-31 | 2026-02-27 | 11 | Fail |
+| 2025-03-31 | 2025-04-30 | 1 | One whole month — anniversary clamped to 30 |
+
+### Compare-and-swap on the shared aggregate version — OWN-11 (G1-F18)
+
+BR13's optimistic concurrency is one compare-and-swap, not a per-spec convention. Every
+mutation of this aggregate participates:
+
+1. **Storage CAS (all mutations).** The write is
+   `UPDATE … SET version = version + 1, … WHERE id = :id AND version = :expected`.
+   Zero rows updated means a concurrent mutation won; the loser is refused with 409
+   `version-conflict` carrying `currentVersion` and **must not merge**. A successful
+   commit increments `version` by exactly 1; the value is never skipped, reset, or
+   incremented by a different spec's counter.
+
+2. **HTTP `If-Match` (human callers).** This spec's API02 and API06, and
+   `internal-transfer-approval-chain` API03, require `If-Match: "<version>"` equal to the
+   version the caller last read. Absent header → 400 `precondition-required`. Mismatch →
+   409 `version-conflict`. API06's already-`WITHDRAWN` idempotency is checked before this
+   precondition. Approval-chain API02 returns `version` so the decision UI can send it.
+
+3. **In-transaction expected version (machine callers).**
+   `internal-transfer-downstream-orchestration` API01 does **not** take `If-Match` — the
+   caller is an HMAC-authenticated adapter and the idempotency key is `eventId`
+   (downstream BR11). The handler reads `version` at the start of its transaction and uses
+   that value as `:expected`. A lost race is 409 `version-conflict` (the adapter retries).
+   A byte-identical `eventId` replay is 200 and does **not** increment `version` — that
+   check runs before CAS.
+
+Sibling specs state this on their mutating endpoints; they cite this section and OWN-11
+rather than redefining the field.
 
 ## Authoritative State and Transition Contract
 
@@ -113,8 +165,8 @@ omission is what let `PENDING`/`IN_PROGRESS` (G1-F01) and the submission-routing
 | `DRAFT` | No | Being prepared; visible only to the owning employee | "Draft" | This spec, API01 |
 | `MANAGER_REVIEW` | No | With the line manager or the receiving manager | "With your manager" | This spec, API03 (on submit) and approval-chain (stays here between stages 1 and 2) |
 | `HR_VALIDATION` | No | With the HR Business Partner | "With HR" | `internal-transfer-approval-chain` |
-| `FULFILMENT` | No | Approved; downstream systems are being updated | "Being actioned" | `internal-transfer-approval-chain` |
-| `COMPLETED` | **Yes** | Transfer done and confirmed by the employee | "Completed" | `internal-transfer-downstream-orchestration` |
+| `FULFILMENT` | No | Approved; downstream systems are being updated. **Healthy path** (a stage is `IN_PROGRESS`): display "Being actioned". **Failed/compensating rest** (any stage `FAILED` / `COMPENSATION_*`): display "HR is completing this" — see _Failed and compensating fulfilment — employee view_ | "Being actioned" or "HR is completing this" | `internal-transfer-approval-chain` |
+| `COMPLETED` | **Yes** | Transfer done. The portal completed `EMPLOYEE_CONFIRMATION` automatically when every applicable fulfilment work stage reached `COMPLETED` — **not** an employee click (`internal-transfer-downstream-orchestration` BR7) | "Completed" | `internal-transfer-downstream-orchestration` |
 | `REJECTED` | **Yes** | Declined by a manager or by HR | "Declined" | `internal-transfer-approval-chain` |
 | `WITHDRAWN` | **Yes** | Withdrawn by the owning employee | "Withdrawn" | This spec, API06 |
 | `DISCARDED` | **Yes** | Draft abandoned before submission | "Discarded" | **Nobody — see _States with no owner_** |
@@ -136,7 +188,7 @@ what every other part of the programme calls `NOT_STARTED`, which is the whole o
 | Stage status | Display label | Meaning | Set by |
 | --- | --- | --- | --- |
 | `NOT_STARTED` | "Not started" | Row exists from the stage plan; not yet reached | This spec at submit |
-| `IN_PROGRESS` | "Waiting" | **The stage is current and awaiting action.** Exactly one stage per request is `IN_PROGRESS` at a time | This spec (stage 1 at submit); approval-chain (2–3); downstream (4–7) |
+| `IN_PROGRESS` | "Waiting" | **The stage is current and awaiting action.** **At most one** stage per request is `IN_PROGRESS` at a time. Zero `IN_PROGRESS` stages is legal when the request is `FULFILMENT` and a fulfilment stage has failed or is compensating — there is then nothing for a portal actor to do (OWN-08) | This spec (stage 1 at submit); approval-chain (2–3); downstream (4–7) |
 | `COMPLETED` | "Done" | Decided or fulfilled. For an approval stage the decision outcome is a separate field — a declined approval is a `COMPLETED` stage on a `REJECTED` request, not a `REJECTED` stage | approval-chain; downstream |
 | `CANCELLED` | "Not needed" | Will never run, because the request ended or an earlier stage failed | This spec (AC14); approval-chain; downstream |
 | `FAILED` | "Could not complete" | A downstream consumer reported failure | downstream |
@@ -151,6 +203,38 @@ The last four statuses are additive from `internal-transfer-downstream-orchestra
 This spec owns the employee-facing labels (that spec's A6); it does not transition into
 them. API04 returns `statusDisplay` on every stage so the timeline is readable as text,
 not colour (AC19, AC11).
+
+**Zero-`IN_PROGRESS` rest shape (G1-F15).** After a fulfilment work stage reports `FAILED`,
+the failed stage is `FAILED`, earlier completed work stages are `COMPENSATION_REQUESTED`
+(then `COMPENSATED` or `COMPENSATION_FAILED`), later `NOT_STARTED` work stages are
+`CANCELLED`, and `EMPLOYEE_CONFIRMATION` stays `NOT_STARTED`. That combination has **zero**
+stages `IN_PROGRESS`. It is the defined rest shape while the request remains `FULFILMENT`
+and HR Operations closes the transfer out off-portal (OWN-08). It is not a contract
+violation. The healthy path still has exactly one `IN_PROGRESS` stage — "at most one"
+covers both.
+
+### Failed and compensating fulfilment — employee view (G1-F19)
+
+OQ-21 is silent to the employee; OQ-20 / OWN-08 puts closeout with HR Operations off-portal.
+The status page is still the employee's progress view (BRD-001 KD-05), so a generic
+"Being actioned" with `pendingWith: null` would be misleading for a state that can persist
+indefinitely. When request status is `FULFILMENT` **and** any stage is `FAILED`,
+`COMPENSATION_REQUESTED`, `COMPENSATED` or `COMPENSATION_FAILED`:
+
+| Field | Value |
+| --- | --- |
+| `status` | `FULFILMENT` (unchanged — OWN-08) |
+| `statusDisplay` | **"HR is completing this"** — not "Being actioned" |
+| `pendingWith.stageCode` | The `FAILED` stage if one exists, otherwise the first `COMPENSATION_*` stage in sequence |
+| `pendingWith.role` | `HR_OPERATIONS` |
+| `pendingWith.partyName` | `null` (OWN-12 — HR Operations is a role, not a named person) |
+| `availableActions` | `[]` (withdrawal window already closed) |
+| Stage `statusDisplay` | Unchanged — the vocabulary labels above |
+
+API05's list `statusDisplay` uses the same request-level label. No employee notification is
+sent (OQ-21, notifications AC15). No SLA timer starts (OQ-15). No portal resume exists
+(OQ-20). Copy is Product's to refine; the codes and the distinctness from "Being actioned"
+are closed.
 
 ### Submission is synchronous — G1-F03
 
@@ -187,7 +271,7 @@ request with `pendingWith: null` for an unbounded period.
 | --- | --- | --- | --- | --- |
 | — | API01 create | `DRAFT` | This spec | Current-assignment snapshot (informational, AC1), audit row |
 | `DRAFT` | API02 update | `DRAFT` | This spec | `version` + 1, audit row |
-| `DRAFT` | API03 submit | `MANAGER_REVIEW` | This spec | Frozen snapshot, 8-row stage plan, `MANAGER_RELEASE` → `IN_PROGRESS`, audit row (`SUBMITTED`), one `employee.transfer.requested.v1` outbox row — all atomic (AC9) |
+| `DRAFT` | API03 submit | `MANAGER_REVIEW` | This spec | Frozen snapshot, 8-row stage plan with non-null `MANAGER_RELEASE` and `MANAGER_ACCEPT` `assigned_party_ref` (BR15), `MANAGER_RELEASE` → `IN_PROGRESS`, audit row (`SUBMITTED`), one `employee.transfer.requested.v1` outbox row — all atomic (AC9). Unresolved manager: refused, stays `DRAFT` |
 | `MANAGER_REVIEW` | `MANAGER_RELEASE` approved | `MANAGER_REVIEW` | approval-chain | Stage 1 `COMPLETED`, stage 2 `IN_PROGRESS` |
 | `MANAGER_REVIEW` | `MANAGER_ACCEPT` approved | `HR_VALIDATION` | approval-chain | Stage 2 `COMPLETED`, stage 3 `IN_PROGRESS` |
 | `MANAGER_REVIEW` | Either manager declines | `REJECTED` | approval-chain | Stage `COMPLETED` with a declined outcome; later stages `CANCELLED` |
@@ -214,8 +298,8 @@ requirement is first written down.
 
 | State | Gap | Disposition |
 | --- | --- | --- |
-| `DISCARDED` | AC18 audits a "discarded" transition and the v1.1 diagram showed `DRAFT → DISCARDED`, but **no endpoint in API01–API07 performs it**. An employee cannot currently abandon a draft other than by leaving it | **Deferred out of v1 (Product 2026-09-11).** The employee updates the existing draft. Status stays defined |
-| `CANCELLED` | Defined as terminal, referenced by API06's 409 list, but **no spec transitions a request into it**. BRD-001 OQ-06 makes post-window cancellation an HR action outside the portal | **Confirmed unreachable in v1 (Product 2026-09-11).** Kept in the vocabulary so API06's refusal list stays total |
+| `DISCARDED` | AC18 audits a "discarded" transition and the v1.1 diagram showed `DRAFT → DISCARDED`, but **no endpoint in API01–API07 performs it**. An employee cannot currently abandon a draft other than by leaving it | **Reserved and unreachable in v1 (Product 2026-09-11 — discard deferred).** Same explicit label as `CANCELLED`: no producer. The employee updates the existing draft. Status stays defined so AC18's discarded audit type remains total |
+| `CANCELLED` | Defined as terminal, referenced by API06's 409 list, but **no spec transitions a request into it**. BRD-001 OQ-06 makes post-window cancellation an HR action outside the portal | **Reserved and unreachable in v1 (Product 2026-09-11).** Kept in the vocabulary so API06's refusal list stays total |
 
 ## Stage Plan
 
@@ -231,7 +315,7 @@ underneath them when reference data changes.
 | `PAYROLL_UPDATE`        | 5        | Payroll              | Only if target cost centre or grade differs from current |
 | `IT_ACCESS`             | 6        | IT service desk      | Only if target department differs from current           |
 | `FACILITIES`            | 7        | Facilities           | Only if target location differs from current             |
-| `EMPLOYEE_CONFIRMATION` | 8        | Employee             | Always                                                   |
+| `EMPLOYEE_CONFIRMATION` | 8        | Portal (automatic)   | Always — portal-set when every applicable fulfilment work stage is `COMPLETED`; **not** an employee action (`internal-transfer-downstream-orchestration` BR7). Notifications tell the employee; this spec does not collect a confirmation click |
 
 Non-applicable stages are persisted with `applicable: false` and rendered as _Not required_
 — they are shown, not hidden, so the employee can see the journey was considered rather
@@ -328,12 +412,13 @@ never re-implements the rule itself.
 }
 ```
 
-`currentAssignment` here is **informational only** (G1-F11). It is a convenience read so
-the wizard can show the employee what they are transferring from, and it carries no
-authority: it is not the snapshot, it is not frozen, and it may be stale by the time the
-employee submits. The authoritative snapshot is the one API03 freezes inside the submit
-transaction, and every eligibility rule is evaluated against data read at that moment
-(AC9, AC24). A front end must not cache this value and present it as the submitted record.
+`currentAssignment` here is **informational only** (G1-F11, G1-F22). It is a convenience
+read so the wizard can show the employee what they are transferring from, and it carries no
+authority: it is **not** the submission-time freeze, it is not frozen, and it may be stale
+by the time the employee submits. The authoritative freeze is the one API03 takes inside
+the submit transaction, and every eligibility rule is evaluated against data read at that
+moment (AC9, AC24). A front end must not cache this value and present it as the submitted
+record.
 
 **Exceptions:**
 
@@ -343,7 +428,7 @@ transaction, and every eligibility rule is evaluated against data read at that m
 | 409  | Employee already has a non-terminal request (BR3)                                                       | Problem, `type: active-request-exists`, `violations[0].ruleId = ...BR3`, plus `existingRequestId` and `existingReferenceNo` |
 | 422  | Payload present but malformed field types or `reason` over 2000 characters                              | Problem, `type: validation-failed`, `violations[].field` populated                                                          |
 | 429  | Rate limit exceeded                                                                                     | Problem, `type: rate-limited`, `Retry-After` header                                                                         |
-| 503  | HRIS unavailable and no cached employee assignment — the current-assignment snapshot cannot be resolved | Problem, `type: reference-data-unavailable`, `Retry-After` header                                                           |
+| 503  | HRIS unavailable, or the HRIS call does not complete within 2 seconds, and no cached employee assignment exists — the informational current-assignment read cannot be resolved | Problem, `type: reference-data-unavailable`, `Retry-After` header                                                           |
 
 ---
 
@@ -354,6 +439,12 @@ transaction, and every eligibility rule is evaluated against data read at that m
 **Rate limit:** 120 per hour per employee (supports autosave from the wizard).
 **Concurrency:** `If-Match: "<version>"` required. Mismatch is a 409 — last-write-wins is not
 acceptable on a form the employee may have open in two tabs.
+
+**PUT semantics (G1-F20):** this is a **full replace** of the five draft content fields, not
+a partial merge. The body is the complete draft the employee intends to store. A key
+omitted from the JSON is treated the same as an explicit `null` — the stored field is
+cleared. Fields this payload does not name (`status`, `version`, `currentAssignment`,
+stage rows) are not client-writable. There is no PATCH.
 
 **Request payload:**
 
@@ -475,8 +566,9 @@ here. `submittedAt` and the `SUBMITTED` history entry are unaffected.
 | 422  | Target identical to current assignment (BR5)                                     | Problem, `type: validation-failed`, `ruleId = ...BR5`                                                 |
 | 422  | Target position no longer open or internally fillable (BR6)                      | Problem, `type: validation-failed`, `ruleId = ...BR6`                                                 |
 | 422  | Eligibility rules failed (BR1, BR2, BR4)                                         | Problem, `type: eligibility-failed`, one `violations` entry per failed rule                           |
+| 422  | Current line manager or receiving manager cannot be resolved from the authoritative HRIS read (BR15) | Problem, `type: assignee-unresolved`, `violations[].field` = `lineManagerRef` or `receivingManagerRef`. **The request stays `DRAFT`.** |
 | 429  | Rate limit exceeded                                                              | Problem, `type: rate-limited`                                                                         |
-| 503  | HRIS unavailable, so eligibility cannot be evaluated                             | Problem, `type: reference-data-unavailable`, `Retry-After`. **The request stays `DRAFT`, unchanged.** |
+| 503  | HRIS unavailable, **or the HRIS call does not complete within 2 seconds** (timeout is treated identically to unavailability — G1-F23), so eligibility cannot be evaluated | Problem, `type: reference-data-unavailable`, `Retry-After`. **The request stays `DRAFT`, unchanged.** |
 
 ---
 
@@ -536,11 +628,13 @@ line manager. For every other stage it is `null` and the front end shows the rol
 `reason` is returned to the owning employee; it is never returned to any other principal by
 any endpoint in this spec.
 
-After submit, `currentAssignment` is the **frozen snapshot** taken inside API03 (AC9), not
+After submit, `currentAssignment` is the **frozen assignment** taken inside API03 (AC9), not
 the informational draft-time read from API01. Every stage carries `statusDisplay` from the
 vocabulary table above, including `FAILED` / `COMPENSATION_REQUESTED` / `COMPENSATED` /
 `COMPENSATION_FAILED` when downstream has written those statuses — this spec renders them;
-it does not produce them.
+it does not produce them. When those statuses are present, request `statusDisplay` and
+`pendingWith` follow _Failed and compensating fulfilment — employee view_ (BR16, G1-F19),
+not the healthy-path "Being actioned" / `pendingWith: null` combination.
 
 > **BRD-001 OQ-11 is Resolved 2026-09-11 (Product, v1) — OWN-12.** Named person only where
 > the assigned party is the employee's own line manager; every other stage shows the role.
@@ -592,7 +686,9 @@ sorted by `createdAt` descending.
 }
 ```
 
-`reason` is **not** included in list responses at all.
+`reason` is **not** included in list responses at all. `statusDisplay` on each list item
+follows the same request-level labels as API04, including "HR is completing this" for a
+failed or compensating `FULFILMENT` (BR16).
 
 **Exceptions:**
 
@@ -775,7 +871,7 @@ does **not** need it to begin work — submission already leaves `MANAGER_RELEAS
 {
   "referenceNo": "ITR-2026-000123",
   "employeeId": "string",
-  "lineManagerRef": "string | null",
+  "lineManagerRef": "string",
   "targetDepartmentId": "string",
   "targetLocationId": "string",
   "targetPositionId": "string",
@@ -789,7 +885,7 @@ does **not** need it to begin work — submission already leaves `MANAGER_RELEAS
 | --- | --- | --- | --- |
 | `referenceNo` | String | Yes | Human-readable reference; safe to display |
 | `employeeId` | String | Yes | Permitted — pseudonymous, not PII (constitution, Security Posture) |
-| `lineManagerRef` | String, nullable | Yes | `MANAGER_RELEASE.assigned_party_ref`. **Null when unresolved**, which notifications AC8 already handles by skipping the manager notification rather than guessing |
+| `lineManagerRef` | String | Yes | `MANAGER_RELEASE.assigned_party_ref`. **Always a non-null employee ID on a successfully emitted event** (BR15). Notifications AC8's null-skip remains a defensive dead path for poison data; this spec does not emit null |
 | `targetDepartmentId`, `targetLocationId`, `targetPositionId` | String | Yes | **IDs only, never names** — a position title or department name is not needed by any consumer and drifts from the frozen snapshot |
 | `requestedEffectiveDate` | Date | Yes | Requested, never confirmed; HR sets the confirmed date later (approval-chain BR3) |
 | `submittedAt` | RFC3339 | Yes | |
@@ -841,10 +937,11 @@ edit of the shape above.
 
 2. `internal-transfer-request.AC2` — Given a request in `DRAFT` owned by the caller, when
    they update it supplying an `If-Match` version that equals the stored version, then the
-   supplied fields are persisted, `version` is incremented by 1, and HTTP 200 is returned;
-   and when they supply an `If-Match` version that does not equal the stored version, then
-   no change is persisted and HTTP 409 `version-conflict` is returned carrying the current
-   version.
+   five draft content fields in the body **fully replace** the stored draft (an omitted key
+   is treated as `null` and clears that field — G1-F20), `version` is incremented by 1, and
+   HTTP 200 is returned; and when they supply an `If-Match` version that does not equal the
+   stored version, then no change is persisted and HTTP 409 `version-conflict` is returned
+   carrying the current version.
 
 3. `internal-transfer-request.AC3` — Given a request in `DRAFT` missing any of target
    department, target location, target position or requested effective date, when the
@@ -891,15 +988,20 @@ edit of the shape above.
    check alone, so it holds under real concurrency and across processes (G1-F09).
 
 9. `internal-transfer-request.AC9` — Given a request in `DRAFT` that passes every rule in
-   AC3–AC8, when the employee submits it, then in a **single database transaction**: status
-   becomes `MANAGER_REVIEW`, `submittedAt` is set, an audit and history entry of type
-   `SUBMITTED` is written, the current-assignment snapshot is frozen from data read during
-   this call, all eight stage rows are created with each `applicable` flag resolved by the
-   applicability rules, `MANAGER_RELEASE` is set to `IN_PROGRESS` and the other seven to
-   `NOT_STARTED`, and one `employee.transfer.requested.v1` event is written to the outbox —
-   and if any part of that fails, none of it is persisted and the request remains in
-   `DRAFT`; and at no point is a request observable through any API with status
-   `SUBMITTED`, nor with status `MANAGER_REVIEW` and no stage `IN_PROGRESS`.
+   AC3–AC8 **and** whose current line manager and receiving manager both resolve to
+   non-null employee IDs on the authoritative HRIS read (BR15), when the employee submits
+   it, then in a **single database transaction**: status becomes `MANAGER_REVIEW`,
+   `submittedAt` is set, an audit and history entry of type `SUBMITTED` is written, the
+   current-assignment freeze is taken from data read during this call, all eight stage
+   rows are created with each `applicable` flag resolved by the applicability rules,
+   `MANAGER_RELEASE.assigned_party_ref` and `MANAGER_ACCEPT.assigned_party_ref` are those
+   non-null IDs, `MANAGER_RELEASE` is set to `IN_PROGRESS` and the other seven to
+   `NOT_STARTED`, and one `employee.transfer.requested.v1` event is written to the outbox
+   with a non-null `lineManagerRef` — and if any part of that fails, none of it is
+   persisted and the request remains in `DRAFT`; and at no point is a request observable
+   through any API with status `SUBMITTED`, nor with status `MANAGER_REVIEW` and no stage
+   `IN_PROGRESS`. (Zero `IN_PROGRESS` is legal later, only on `FULFILMENT` after a failed
+   or compensating stage — G1-F15.)
 
 10. `internal-transfer-request.AC10` — Given a submit request carrying an
     `Idempotency-Key` that has already been used successfully by the same employee within
@@ -917,10 +1019,13 @@ edit of the shape above.
     and `COMPENSATION_FAILED` when those have been written by downstream), and `applicable`
     flag including non-applicable stages rendered as "Not required", the single
     `pendingWith` stage where one exists, and the transition history; `currentAssignment`
-    is the snapshot frozen at submission, not the draft-time read; and `assignedPartyName`
+    is the freeze taken at submission, not the draft-time read; `assignedPartyName`
     is populated only for a stage assigned
     to the caller's own line manager, and is `null` for every other stage (**OWN-12**;
-    BRD-001 OQ-11 Resolved 2026-09-11).
+    BRD-001 OQ-11 Resolved 2026-09-11); and given the request is `FULFILMENT` with any
+    stage in `FAILED`, `COMPENSATION_REQUESTED`, `COMPENSATED` or `COMPENSATION_FAILED`,
+    then request `statusDisplay` is "HR is completing this", `pendingWith.role` is
+    `HR_OPERATIONS` with `partyName` null, and `availableActions` is empty (BR16, G1-F19).
 
 12. `internal-transfer-request.AC12` — Given an employee with several requests, when they
     list their requests, then only their own requests are returned, sorted by creation date
@@ -949,9 +1054,10 @@ edit of the shape above.
     requests reference data and a cache entry exists within or beyond its TTL, then the
     cached data is returned with `stale` set accordingly; when no cache entry exists, then
     HTTP 503 `reference-data-unavailable` is returned with a `Retry-After` header; and when
-    the employee submits a request while the HRIS is unavailable, then the submission is
-    refused with HTTP 503, the request remains in `DRAFT` with no partial state written,
-    and no other portal journey is affected.
+    the employee submits a request while the HRIS is unavailable **or the HRIS call does
+    not complete within 2 seconds**, then the submission is refused with HTTP 503, the
+    request remains in `DRAFT` with no partial state written, and no other portal journey
+    is affected. Timeout and unavailability are the same 503 (G1-F23).
 
 16. `internal-transfer-request.AC16` — Given a request with a `reason` or
     `withdrawalReason`, then that text is encrypted at rest, is returned only to the owning
@@ -1008,12 +1114,15 @@ edit of the shape above.
 
 22. `internal-transfer-request.AC22` — Given a position start date and a requested
     effective date, when BR2 is evaluated, then service length is the count of **whole
-    completed calendar months** between them, inclusive of the effective date, so that a
-    start date of 2025-10-01 with an effective date of 2026-10-01 yields 12 and passes,
-    while 2026-09-30 yields 11 and fails; and the value is taken from authoritative HRIS
-    data at submission time, never from the draft-time `serviceInPositionMonths` shown by
-    API01. Unpaid leave of absence does not break continuity in v1 (BRD-001 OQ-22 Resolved
-    2026-09-11): service runs from the position start date regardless of leave.
+    completed calendar months** produced by the last-day-clamp algorithm in
+    _Service-length arithmetic_ (BR12, G1-F21), so that a start date of 2025-10-01 with an
+    effective date of 2026-10-01 yields 12 and passes, while 2026-09-30 yields 11 and
+    fails; a start of 2025-01-31 with an effective date of 2026-02-28 in a non-leap year
+    yields 12 and passes (anniversary clamped to 28), while 2026-02-27 yields 11 and fails;
+    and the dates are taken from authoritative HRIS data at submission time, never from the
+    draft-time `serviceInPositionMonths` shown by API01. Unpaid leave of absence does not
+    break continuity in v1 (BRD-001 OQ-22 Resolved 2026-09-11): service runs from the
+    position start date regardless of leave.
 
 23. `internal-transfer-request.AC23` — Given a withdrawal and an approval submitted
     concurrently against one request, when both are processed, then exactly one commits;
@@ -1058,7 +1167,22 @@ edit of the shape above.
     plan with resolved `applicable` flags — its AC1 precondition satisfied with no
     intermediate step; and when `internal-transfer-notifications` consumes the emitted
     `employee.transfer.requested.v1`, then the envelope and payload match the schema above
-    and `lineManagerRef` is present or explicitly `null`.
+    and `lineManagerRef` is present and non-null.
+
+29. `internal-transfer-request.AC29` — Given a request in `DRAFT` that otherwise passes
+    AC3–AC8, when the authoritative HRIS read at submit cannot resolve a current line
+    manager or a receiving manager, then HTTP 422 `assignee-unresolved` is returned, the
+    request remains `DRAFT`, no stage plan is created, and no `employee.transfer.requested.v1`
+    is written — the request never enters `MANAGER_REVIEW` with a null
+    `assigned_party_ref` (BR15, G1-F17).
+
+30. `internal-transfer-request.AC30` — Given any mutation of this aggregate from this spec,
+    from `internal-transfer-approval-chain`, or from
+    `internal-transfer-downstream-orchestration`, when it commits, then `version` is
+    incremented by exactly 1 using compare-and-swap on the stored value as defined in
+    _Compare-and-swap on the shared aggregate version_; a concurrent mutation that used
+    the same expected version is refused with 409 `version-conflict` and is not merged
+    (BR13, OWN-11, G1-F18).
 
 ## Unit Test Cases (spec-derived)
 
@@ -1067,6 +1191,7 @@ edit of the shape above.
 | `internal-transfer-request.UT01` | AC1        | Employee with no active request creates one                   | 201; status `DRAFT`, version 1, reference matches `ITR-\d{4}-\d{6}`                  |
 | `internal-transfer-request.UT02` | AC1        | Draft creation snapshots current assignment                   | Response `currentAssignment` matches HRIS values, `serviceInPositionMonths` computed |
 | `internal-transfer-request.UT03` | AC2        | Update draft with matching `If-Match`                         | 200; fields persisted, version incremented                                           |
+| `internal-transfer-request.UT03a` | AC2       | PUT omits `reason` while a reason is stored                   | Stored `reason` cleared (full replace, G1-F20); version incremented                  |
 | `internal-transfer-request.UT04` | AC2        | Update draft with stale `If-Match`                            | 409 `version-conflict`; stored record unchanged                                      |
 | `internal-transfer-request.UT05` | AC2        | Update draft with no `If-Match` header                        | 400 `precondition-required`                                                          |
 | `internal-transfer-request.UT06` | AC3        | Submit with target position missing                           | 422; one violation naming `targetPositionId`; status still `DRAFT`                   |
@@ -1126,6 +1251,8 @@ edit of the shape above.
 | `internal-transfer-request.UT60` | AC9        | Submit, then immediately GET the request                      | Never observable as `SUBMITTED`; `MANAGER_REVIEW` with exactly one stage `IN_PROGRESS` |
 | `internal-transfer-request.UT61` | AC22       | Position start 2025-10-01, effective date 2026-10-01          | 12 months; submit passes                                                             |
 | `internal-transfer-request.UT62` | AC22       | Position start 2025-10-01, effective date 2026-09-30          | 11 whole months; 422 citing `BR2`                                                    |
+| `internal-transfer-request.UT62a` | AC22      | Position start 2025-01-31, effective date 2026-02-28 non-leap | 12 months; submit passes (last-day clamp, G1-F21)                                    |
+| `internal-transfer-request.UT62b` | AC22      | Position start 2025-01-31, effective date 2026-02-27          | 11 whole months; 422 citing `BR2`                                                    |
 | `internal-transfer-request.UT63` | AC22       | Draft-time `serviceInPositionMonths` says 12, HRIS says 11 at submit | 422 citing `BR2` — the draft value is not consulted                           |
 | `internal-transfer-request.UT64` | AC23       | Withdraw and manager approval committed concurrently, withdrawal first | Request `WITHDRAWN`; approval refused; one audit row for the withdrawal     |
 | `internal-transfer-request.UT65` | AC23       | Approval commits first, request still `HR_VALIDATION`         | Withdraw gets 409 `version-conflict` with `currentVersion`                           |
@@ -1135,16 +1262,20 @@ edit of the shape above.
 | `internal-transfer-request.UT69` | AC25       | Two concurrent creates with the application BR3 check disabled | Database index rejects the second; exactly one row                                  |
 | `internal-transfer-request.UT70` | AC26       | Inspect the `requested.v1` outbox row after submit            | Full envelope; `eventType` ends `.v1`; payload keys exactly the allow-list           |
 | `internal-transfer-request.UT71` | AC26       | Submit and withdraw a request carrying reason text            | Neither payload contains `reason`, `withdrawalReason`, a name or contact detail      |
-| `internal-transfer-request.UT72` | AC26       | `MANAGER_RELEASE.assigned_party_ref` unresolved at submit     | `lineManagerRef` present and explicitly `null`, not omitted                          |
+| `internal-transfer-request.UT72` | AC29       | `MANAGER_RELEASE` current line manager unresolved at submit   | 422 `assignee-unresolved`; status still `DRAFT`; no stage plan; no outbox row        |
+| `internal-transfer-request.UT72a` | AC29      | Receiving manager unresolved at submit, line manager present  | 422 `assignee-unresolved`; status still `DRAFT`                                      |
 | `internal-transfer-request.UT73` | AC27       | Submit a `MANAGER_REVIEW` request; withdraw a `DRAFT`; update a `WITHDRAWN` | Each 409 `invalid-state-transition`; no audit row, no outbox row          |
-| `internal-transfer-request.UT74` | AC28       | **Integration**, approval-chain contract double: submit then read the aggregate as approval-chain | Its AC1 precondition holds with no intermediate step             |
-| `internal-transfer-request.UT75` | AC28       | **Integration**, notification-service contract double: submit then let notifications consume `requested.v1` | Employee and line-manager notifications enqueued from the envelope alone |
-| `internal-transfer-request.UT76` | AC11       | Retrieve a `FULFILMENT` request whose `PAYROLL_UPDATE` is `FAILED` and `ORG_DATA_UPDATE` is `COMPENSATED` | Each stage returns `statusDisplay` from the vocabulary ("Could not complete", "Reversed"); request `statusDisplay` remains "Being actioned"; `pendingWith` is null |
+| `internal-transfer-request.UT74` | AC28       | **Integration**, approval-chain contract double: submit then read the aggregate as approval-chain | Its AC1 precondition holds with no intermediate step; both manager `assigned_party_ref` non-null |
+| `internal-transfer-request.UT75` | AC28       | **Integration**, notification-service contract double: submit then let notifications consume `requested.v1` | Employee and line-manager notifications enqueued from the envelope alone; `lineManagerRef` non-null |
+| `internal-transfer-request.UT76` | AC11       | Retrieve a `FULFILMENT` request whose `PAYROLL_UPDATE` is `FAILED` and `ORG_DATA_UPDATE` is `COMPENSATED` | Each stage returns `statusDisplay` from the vocabulary ("Could not complete", "Reversed"); request `statusDisplay` is "HR is completing this"; `pendingWith.role` is `HR_OPERATIONS` with `partyName` null; zero stages `IN_PROGRESS` |
+| `internal-transfer-request.UT77` | AC15       | Submit, HRIS call exceeds 2 seconds                           | 503 `reference-data-unavailable`; status still `DRAFT` (timeout ≡ unavailable, G1-F23) |
+| `internal-transfer-request.UT78` | AC30       | Two mutations (withdraw and approval-chain decision) computed from the same `version` | Exactly one commits and increments `version` by 1; loser 409 `version-conflict`; no merge |
 
 UT74 and UT75 are the cross-spec handoff tests G1-F13 asked for, and use contract doubles
-rather than hand-rolled stubs (constitution — Testing Discipline). UT60, UT62–UT69 and UT73
-are negative or race paths; the 85% coverage floor applies to this module as one handling
-employee records, and coverage met without these paths would not satisfy it.
+rather than hand-rolled stubs (constitution — Testing Discipline). UT60, UT62–UT69, UT72,
+UT73 and UT77–UT78 are negative or race paths; the 85% coverage floor applies to this
+module as one handling employee records, and coverage met without these paths would not
+satisfy it.
 
 ## Traceability — BRD → rule → AC → test
 
@@ -1156,7 +1287,7 @@ still move.
 | Source of record | Spec rule | Acceptance criteria | Tests |
 | --- | --- | --- | --- |
 | BRD-001 BR1 | BR1 | AC7 | UT15, UT19 |
-| BRD-001 BR2; Gate 1 G1-F10; OQ-22 Resolved 2026-09-11 | BR2, BR12 | AC7, AC22 | UT16, UT17, UT61, UT62, UT63 |
+| BRD-001 BR2; Gate 1 G1-F10, G1-F21; OQ-22 Resolved 2026-09-11 | BR2, BR12 | AC7, AC22 | UT16, UT17, UT61, UT62, UT62a, UT62b, UT63 |
 | BRD-001 BR3; Gate 1 G1-F09 | BR3 | AC8, AC25 | UT21, UT22, UT23, UT69 |
 | BRD-001 BR4 | BR4 | AC7 | UT18, UT19 |
 | BRD-001 BR5 | BR5 | AC5 | UT12, UT13 |
@@ -1170,14 +1301,15 @@ still move.
 | BRD-001 OQ-11 Resolved 2026-09-11; OWN-12 | — | AC11 | UT30, UT31, UT32, UT33 |
 | BRD-001 OQ-12; OWN-05; constitution Security Posture | — | AC16 | UT46, UT47, UT48, UT71 |
 | BRD-001 OQ-17; constitution ("employee ID is not PII"); Gate 1 G1-F07 | — | AC18 | UT51, UT52 |
-| OWN-09; Gate 1 G1-F04, G1-F05 | — | AC26 | UT70, UT71, UT72 |
-| OWN-10; Gate 1 G1-F01, G1-F02, G1-F03 | — | AC9, AC27 | UT24, UT25, UT26, UT60, UT73 |
-| OWN-11; Gate 1 G1-F08 | BR13 | AC2, AC23 | UT03, UT04, UT05, UT64, UT65, UT66 |
-| Gate 1 G1-F11 | — | AC1, AC9 | UT01, UT02, UT63 |
-| Downstream v1.2 A6 (compensation status labels owned here) | — | AC11 | UT76 |
+| OWN-09; Gate 1 G1-F04, G1-F05 | — | AC26 | UT70, UT71 |
+| OWN-10; Gate 1 G1-F01, G1-F02, G1-F03, G1-F15 | — | AC9, AC27 | UT24, UT25, UT26, UT60, UT73, UT76 |
+| OWN-11; Gate 1 G1-F08, G1-F18 | BR13 | AC2, AC23, AC30 | UT03, UT03a, UT04, UT05, UT64, UT65, UT66, UT78 |
+| Gate 1 G1-F11, G1-F22 | — | AC1, AC9 | UT01, UT02, UT63 |
+| Downstream v1.2 A6; Gate 1 G1-F16, G1-F19; BR16 | — | AC11 | UT76 |
 | Gate 1 G1-F13 | — | AC28 | UT74, UT75 |
+| Gate 1 G1-F17; BR15 | BR15 | AC9, AC29 | UT72, UT72a |
 | Constitution — idempotency records | — | AC3, AC10 | UT06, UT07, UT27, UT28, UT29 |
-| Constitution — degradation; architecture _Integration Points_ | BR14 | AC15 | UT42, UT43, UT44, UT45 |
+| Constitution — degradation; architecture _Integration Points_; Gate 1 G1-F23 | BR14 | AC15 | UT42, UT43, UT44, UT45, UT77 |
 | Constitution — NFC rate limits | — | AC17 | UT49, UT50 |
 | Constitution — WCAG 2.1 AA | — | AC19 | UT53, UT54, UT55 |
 
@@ -1187,17 +1319,21 @@ still move.
 | --- | --- | --- | --- | --- |
 | 1   | In "pending with", does the employee see a named person or only a role? | Product (v1 lock); Data Privacy may reopen post-v1 | Closed | **Resolved 2026-09-11 — BRD-001 OQ-11 / OWN-12.** Named person only for the employee's own line manager; every other stage shows the role. AC11, API04, UT31, UT32. |
 | 2   | Does unpaid leave break BR2's 12-month continuous service? | Product (v1 lock); HR Policy may reopen post-v1 | Closed | **Resolved 2026-09-11 — BRD-001 OQ-22.** No deduction. BR12, AC22. |
-| 3   | Should v1 expose a draft-discard endpoint that produces `DISCARDED`? | Product | Closed — deferred | **Deferred out of v1 (Product 2026-09-11).** The employee updates the existing draft (BR3). `DISCARDED` stays defined and unproduced. |
+| 3   | Should v1 expose a draft-discard endpoint that produces `DISCARDED`? | Product | Closed — deferred | **Reserved and unreachable in v1 (Product 2026-09-11 — discard deferred).** Same explicit label as `CANCELLED` (G1-F24). The employee updates the existing draft (BR3). |
 
 Copy for status display labels is Product's to refine; the vocabulary table is the closed set of *codes*. A plan must not invent legal-sounding HR prose in code.
 
 ## Assumptions
 
-- A1 — The HRIS read API returns a current-position start date that BR12 can use. If false: AC22 cannot be implemented.
+- A1 — The HRIS read API returns a current-position start date that BR12 can use, and
+  returns the employee's current line manager and the receiving manager of the target
+  (OWN-03) so BR15 can snapshot both `assigned_party_ref` values. If either manager
+  identifier is absent from HRIS, submit is 422 (AC29), not a guessed assignee.
 - A2 — The constitution's "employee ID is not PII" carve-out (2026-08-28, pending this reviewer's Gate 1 on the constitution itself) holds. If it is reversed, AC18 must hash the actor the way AC17 already hashes the rate-limit key, and forensic value of the audit trail is lost.
 - A3 — Sibling specs consume the OWN-09 names this spec now emits. `internal-transfer-notifications` v1.2 recorded the unsuffixed forms as a release blocker; that blocker is closed from this side.
-- A4 — `internal-transfer-approval-chain` AC1's precondition (`MANAGER_REVIEW` with `MANAGER_RELEASE` `IN_PROGRESS`) is established by this spec's submit, so that spec needs no `requested.v1` handler. If G1-F03 is reversed to asynchronous, A4 is false and approval-chain gains that handler.
-- A5 — The employee-facing labels for `FAILED` / `COMPENSATION_*` in the stage-status table are acceptable copy for v1. If Product wants different wording, only `statusDisplay` strings change.
+- A4 — `internal-transfer-approval-chain` AC1's precondition (`MANAGER_REVIEW` with `MANAGER_RELEASE` `IN_PROGRESS`) is established by this spec's submit, so that spec needs no `requested.v1` handler. If G1-F03 is reversed to asynchronous, A4 is false and approval-chain gains that handler. Approval-chain AC10 (`assignee-unresolved`) remains a fail-closed guard; a successful submit never produces that row (BR15).
+- A5 — The employee-facing labels for `FAILED` / `COMPENSATION_*` in the stage-status table, and the request-level "HR is completing this" label (BR16), are acceptable copy for v1. If Product wants different wording, only `statusDisplay` strings change.
+- A6 — Approval-chain API03 and downstream API01 implement the OWN-11 compare-and-swap mechanics this spec defines. Those endpoints are stated on those specs; this spec owns the shared fact.
 
 ## Explicitly Out of Scope
 
@@ -1223,20 +1359,27 @@ Copy for status display labels is Product's to refine; the vocabulary table is t
   existing OIDC session (BRD-001 KD-07). This spec only consumes that session.
 - **Editing a request after submission.** A submitted request is immutable to the employee;
   the only employee action is withdrawal.
-- **A draft-discard endpoint.** `DISCARDED` stays defined and audited, but no API produces
-  it — **deferred out of v1 (Product 2026-09-11)**. The employee updates the existing draft.
-- **Any mechanism that reaches `CANCELLED`.** Unreachable in v1 by design (BRD-001 OQ-06;
+- **A draft-discard endpoint.** `DISCARDED` is reserved and unreachable in v1; no API produces
+  it — **Product 2026-09-11**. The employee updates the existing draft.
+- **Any mechanism that reaches `CANCELLED`.** Reserved and unreachable in v1 by design (BRD-001 OQ-06;
   Product confirmed 2026-09-11).
 - **Merging a concurrent withdrawal with a concurrent approval.** One aggregate, one
   version, first commit wins, loser refused (BR13, AC23). No three-way merge, no
   last-write-wins.
+- **An employee confirmation click.** `EMPLOYEE_CONFIRMATION` is portal-set (downstream BR7,
+  G1-F16). Notifications tell the employee; this spec does not collect a confirmation.
+- **Portal recovery, HR override, or re-resolution of an unresolved manager after submit.**
+  Submit is refused instead (BR15, G1-F17). Absence after a successful snapshot is OQ-16
+  (off-portal).
+- **Employee notification when fulfilment fails.** OQ-21; status page only (BR16).
 
 ## Non-Functional Constraints (from constitution.md)
 
 - p95 < 400 ms for API04, API05 and API07; p95 < 700 ms for API01, API02, API03 and API06 —
   measured at the gateway.
-- 99.9% availability for these endpoints; HRIS unavailability degrades this journey only and
-  must not affect any other portal journey (AC15).
+- 99.9% availability for these endpoints; HRIS unavailability **or a 2-second HRIS timeout**
+  degrades this journey only and must not affect any other portal journey (AC15, G1-F23).
+  Timeout and unavailability are the same 503.
 - WCAG 2.1 AA for every screen in this feature (AC19).
 - No PII in logs at any level; reason text is employee narrative under the Security Posture
   amendment of 2026-08-28 (AC16).
@@ -1251,9 +1394,10 @@ Copy for status display labels is Product's to refine; the vocabulary table is t
 - The submit transaction carries more work in v1.3 than in v1.1 — status, frozen snapshot,
   eight stage rows, stage-1 activation, audit row and outbox row — and still must meet
   p95 < 700 ms for API03. Synchronous routing is what buys the guarantee in AC9 that a
-  submitted request is never observable without a pending stage; if that budget is ever
-  at risk, the answer is to revisit G1-F03 explicitly at Gate 1, not to split the
-  transaction silently at implementation time.
+  submitted request is never observable as `MANAGER_REVIEW` without a pending stage; the
+  later zero-`IN_PROGRESS` rest shape on failed `FULFILMENT` is a different, defined state
+  (G1-F15). If that budget is ever at risk, the answer is to revisit G1-F03 explicitly at
+  Gate 1, not to split the transaction silently at implementation time.
 - Event payloads are additive-only within `.v1` (constitution — Versioning Rules). A
   consumer ignores unrecognised fields; a breaking change is a `.v2` event type.
 
@@ -1266,6 +1410,7 @@ Copy for status display labels is Product's to refine; the vocabulary table is t
 | v1.2    | 2026-09-08 | Authentication and authorisation section added (BR10, BR11, AC20, AC21); cites architecture AuthN/AuthZ; login remains out of scope | BRD-001 KD-07, KD-08, BR10, BR11 |
 | v1.3    | 2026-09-11 | Gate 1 response to all fourteen findings against v1.1. _Authoritative State and Transition Contract_ replaces the ASCII diagram (OWN-10); `PENDING` removed in favour of `IN_PROGRESS`; submission decided synchronous and `SUBMITTED` demoted from status to history event type; `DISCARDED` and `CANCELLED` recorded as states with no owner; OWN-09 event naming adopted and both event schemas defined with a shared envelope; OQ-11 re-marked open and Approval-blocking; employee-ID-in-audit classification settled from the constitution; withdraw given `If-Match` and a defined approval race (OWN-11); BR12–BR14 added; AC22–AC28 and UT60–UT76 added including two cross-spec integration rows and compensation-status rendering; traceability matrix; BRD-001 OQ-22 raised for leave-of-absence treatment in service length; stage `statusDisplay` labels owned here including `COMPENSATION_REQUESTED` | Gate 1 G1-F01–G1-F14 (Abhijit Adhikari, 2026-09-09) |
 | v1.4    | 2026-09-11 | Product v1 lock: OQ-11 confirmed as OWN-12; OQ-22 confirmed (no leave deduction); draft-discard endpoint deferred. No behaviour change from v1.3's proposed answers — they are now the contract | Product, 2026-09-11 |
+| v1.5    | 2026-09-15 | Gate 1 response to G1-F15–G1-F24 against v1.4. Stage invariant "at most one" `IN_PROGRESS` with an explicit zero-pending `FULFILMENT` rest shape; `COMPLETED` / `EMPLOYEE_CONFIRMATION` aligned to downstream BR7; submit refuses unresolved managers (BR15) rather than entering a stuck `MANAGER_REVIEW`; OWN-11 CAS mechanics for every sibling mutation; failed/compensating `FULFILMENT` employee view (BR16); API02 full-replace PUT; BR12 last-day-clamp; API01 "snapshot" wording removed from the draft-time read; API03 HRIS timeout ≡ unavailable at 2 s; `DISCARDED` reserved/unreachable. AC29, AC30, UT03a, UT62a/b, UT72/72a, UT77, UT78 | Gate 1 G1-F15–G1-F24 (Abhijit Adhikari, 2026-09-11) |
 
 ## Gate 1 Review
 
@@ -1321,3 +1466,20 @@ return is not a state — and it makes `internal-transfer-approval-chain`'s exis
 correct without a new handler. If the reviewer prefers the asynchronous handoff,
 `SUBMITTED` returns as a status, this spec's AC9 and the transition table change, and
 approval-chain gains a `requested.v1` consumer and an AC for it.
+
+### Author response — v1.5, 2026-09-15 (Alamgir Sarkar)
+
+| Finding | Severity | Addressed in v1.5 by |
+| --- | --- | --- |
+| G1-F15 — "exactly one" `IN_PROGRESS` forbids the failure rest shape | Blocker | Invariant is **at most one**. Zero-`IN_PROGRESS` rest shape defined under the stage vocabulary for `FULFILMENT` after `FAILED` / compensation. UT76 asserts zero `IN_PROGRESS` on that shape |
+| G1-F16 — `COMPLETED` / `EMPLOYEE_CONFIRMATION` contradict downstream BR7 | Blocker | Terminology corrected to match downstream BR7 (reviewer: that spec is the authority). `COMPLETED` means portal-set completion, not an employee click. Stage Plan assigned role is "Portal (automatic)". No confirmation action is introduced |
+| G1-F17 — null `lineManagerRef` leaves approval-chain stuck | Blocker | **Prevented at submit** (the option that does not invent an HR override API). BR15 / AC29: unresolved current line manager or receiving manager is 422 `assignee-unresolved`, request stays `DRAFT`. Successful `requested.v1` always has a non-null `lineManagerRef`. Approval-chain AC10 remains a fail-closed guard |
+| G1-F18 — OWN-11 CAS not stated on sibling mutations | Blocker | _Compare-and-swap on the shared aggregate version_: storage CAS for every mutation; HTTP `If-Match` on this spec's API02/API06 and approval-chain API03; in-transaction expected version on downstream API01 (no `If-Match`; `eventId` idempotency first). OWN-11 updated. AC30, UT78. Sibling API contracts cite the same section |
+| G1-F19 — failed fulfilment looks like generic in-progress | Blocker | BR16 / _Failed and compensating fulfilment — employee view_: request `statusDisplay` "HR is completing this"; `pendingWith.role` `HR_OPERATIONS`, `partyName` null. OQ-21 silence, OQ-20 no resume, OQ-15 no SLA — unchanged. UT76 |
+| G1-F20 — API02 PUT omitted-field semantics | Nit | Full replace of the five draft content fields; omitted key ≡ `null` (clears). AC2, UT03a |
+| G1-F21 — BR12 day-of-month edge | Nit | Last-day-clamp algorithm with worked examples including start-on-31st. AC22, UT62a, UT62b |
+| G1-F22 — API01 still says "snapshot" for the draft-time read | Nit | Draft-time read is "informational current-assignment read" throughout API01, including the 503 row |
+| G1-F23 — API03 HRIS timeout vs unavailable | Nit | Timeout (2 seconds) is treated identically to unavailability: 503 `reference-data-unavailable`, draft unchanged. AC15, UT77. Threshold matches the existing plan / security assessment so the spec does not pick a different number |
+| G1-F24 — `DISCARDED` not labelled reserved/unreachable | Nit | Same explicit "Reserved and unreachable in v1" label as `CANCELLED` |
+
+**Choice flagged for the reviewer on G1-F17.** The finding offered recovery (HR override / re-resolution) **or** refuse submit. Recovery would be a new requirement this spec is not allowed to invent (OQ-16 already defers substitution). Refusing submit keeps the employee in `DRAFT` with a retryable 422, and never creates the stuck `MANAGER_REVIEW` row. Notifications AC8's null-skip remains a defensive dead path on an Approved spec; this spec no longer emits null.

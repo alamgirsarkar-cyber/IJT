@@ -6,9 +6,11 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.2. AuthN/AuthZ was v1.1; v1.2 records Product's
-2026-09-11 lock of BRD-001 **OQ-11** (OWN-12) and **OQ-12** (OWN-05). Full state machine in
-`.ai-context/status.md`. Do not generate a plan or code until **Approved**.
+**In Peer Review (Gate 1)** — Draft v1.3. AuthN/AuthZ was v1.1; v1.2 records Product's
+2026-09-11 lock of BRD-001 **OQ-11** (OWN-12) and **OQ-12** (OWN-05). v1.3 states OWN-11
+compare-and-swap on API03 (`If-Match`) so this spec participates in the shared aggregate
+version. Full state machine in `.ai-context/status.md`. Do not generate a plan or code
+until **Approved**.
 
 **Reviewer note:** this spec consumes the request aggregate and stage plan.
 `internal-transfer-request` is still In Peer Review. OQ-11 and OQ-12 are no longer open.
@@ -51,7 +53,7 @@ send notifications.
   when this spec sets status `FULFILMENT`.
 - Related: `internal-transfer-notifications` — **In Peer Review**. Consumes
   transitions this spec records.
-- Shared facts: `.ai-context/ownership_index.md` (OWN-01 … OWN-05, OWN-07)
+- Shared facts: `.ai-context/ownership_index.md` (OWN-01 … OWN-05, OWN-07, OWN-11)
 - API contract consumed: none beyond the request aggregate. HRIS is not called on a
   decision path (assignees were snapshotted at submit).
 - Design: portal design system; manager inbox / decision and HR inbox / validation
@@ -164,6 +166,7 @@ receives 404, not 403 (same enumeration rule as request-spec AC13).
   "requestId": "uuid",
   "referenceNo": "ITR-2026-000123",
   "status": "MANAGER_REVIEW",
+  "version": 4,
   "currentAssignment": {
     "departmentName": "string",
     "locationName": "string",
@@ -211,9 +214,15 @@ returned on this endpoint.
 **Purpose:** record `APPROVE` or `REJECT` on one approval stage.
 **Auth:** BR6 for that `stageCode`.
 **Rate limit:** 30 per hour per principal.
+**Concurrency:** `If-Match: "<version>"` **required** (OWN-11). The value is the `version`
+returned by API02. The write is compare-and-swap on the shared request aggregate:
+`UPDATE … SET version = version + 1 … WHERE version = :ifMatch`. Zero rows → 409
+`version-conflict`; the decision is not merged. Mechanics are owned by
+`internal-transfer-request` § _Compare-and-swap on the shared aggregate version_; this
+endpoint participates, it does not redefine the field.
 **Idempotency:** `Idempotency-Key` header **required**. Replay within 24 hours of a
 successful decision on the same request, stage and key returns the original 200 and
-writes nothing.
+writes nothing. Idempotent replay is checked before the version precondition.
 
 **Request payload:**
 
@@ -236,11 +245,13 @@ writes nothing.
 | Code | Condition                                                                                                                                                                                                              | Response body                                                      |
 | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | 400  | `Idempotency-Key` absent                                                                                                                                                                                               | Problem, `type: idempotency-key-required`                          |
+| 400  | `If-Match` header absent                                                                                                                                                                                               | Problem, `type: precondition-required`                             |
 | 401  | No or invalid token                                                                                                                                                                                                    | Problem, `type: unauthenticated`                                   |
 | 404  | Request does not exist, **or** caller is not the assignee / HR for this stage                                                                                                                                          | Problem, `type: request-not-found`                                 |
 | 409  | Request is `WITHDRAWN`, `REJECTED`, `FULFILMENT`, `COMPLETED`, `CANCELLED` or `DRAFT` / `DISCARDED`                                                                                                                    | Problem, `type: invalid-state-transition`, with `currentStatus`    |
 | 409  | `stageCode` is not the current waiting approval stage (out of order, already decided, or `NOT_STARTED`)                                                                                                                | Problem, `type: invalid-state-transition`, with `currentStageCode` |
-| 409  | Stage `assigned_party_ref` is null on a manager stage (assignee never snapshotted)                                                                                                                                     | Problem, `type: assignee-unresolved`                               |
+| 409  | Stage `assigned_party_ref` is null on a manager stage (assignee never snapshotted) — fail-closed guard; a successful submit in `internal-transfer-request` v1.5 never produces this row (that spec's BR15)               | Problem, `type: assignee-unresolved`                               |
+| 409  | `If-Match` does not match the current aggregate `version` (OWN-11)                                                                                                                                                     | Problem, `type: version-conflict`, with `currentVersion`           |
 | 409  | Employee withdrawal committed in the same moment (lost the aggregate lock)                                                                                                                                             | Problem, `type: invalid-state-transition`, with `currentStatus`    |
 | 409  | `Idempotency-Key` reused against a different request, stage or body                                                                                                                                                    | Problem, `type: idempotency-key-conflict`                          |
 | 422  | `decision` missing or not `APPROVE`/`REJECT`; `stageCode` not one of the three approval codes; HR approve without `confirmedEffectiveDate`; confirmed date supplied on a manager decision or on reject; malformed date | Problem, `type: validation-failed`, `violations[].field` populated |
@@ -337,6 +348,13 @@ writes nothing.
     screens, then API calls send the session bearer token and do not send a caller-chosen
     employee id for authorisation.
 
+15. `internal-transfer-approval-chain.AC15` — Given a caller who is authorised for the
+    waiting stage, when they POST API03 with `If-Match` equal to the aggregate `version`
+    last returned by API02, then the decision commits and `version` increments by 1; when
+    `If-Match` is absent, then HTTP 400 `precondition-required` and the stage is unchanged;
+    when `If-Match` does not match the stored `version`, then HTTP 409 `version-conflict`
+    carrying `currentVersion` and the decision is not merged (OWN-11).
+
 ## Unit Test Cases (spec-derived)
 
 | Test ID                                 | Maps to AC | Scenario                                                  | Expected                                                                                                                                    |
@@ -370,6 +388,9 @@ writes nothing.
 | `internal-transfer-approval-chain.UT27` | AC12       | 422 announced to screen reader                            | Error associated with its field                                                                                                             |
 | `internal-transfer-approval-chain.UT28` | AC13       | API03 with no `Authorization` header                      | 401; stage still `IN_PROGRESS`                                                                                                              |
 | `internal-transfer-approval-chain.UT29` | AC14       | Unauthenticated visit to manager inbox                    | Portal existing sign-in; inbox does not list another employee's stages                                                                      |
+| `internal-transfer-approval-chain.UT30` | AC15       | API03 with matching `If-Match`                            | 200; aggregate `version` incremented by 1                                                                                                   |
+| `internal-transfer-approval-chain.UT31` | AC15       | API03 with no `If-Match`                                  | 400 `precondition-required`; stage still `IN_PROGRESS`                                                                                      |
+| `internal-transfer-approval-chain.UT32` | AC15       | API03 with stale `If-Match`                               | 409 `version-conflict` with `currentVersion`; stage unchanged                                                                               |
 
 ## Surfaces
 
@@ -413,10 +434,9 @@ named BP per request, BR6 must change in a new increment.
 
 ## Assumptions
 
-- A1 — `internal-transfer-request` has created the eight-row stage plan and snapshotted
-  manager `assigned_party_ref` values at submit. If those refs are missing, AC10 applies;
-  this spec does not look up managers live. If false: assignee resolution must be added
-  here and Gate 1 reopened.
+- A1 — `internal-transfer-request` v1.5 has created the eight-row stage plan and snapshotted
+  non-null manager `assigned_party_ref` values at submit (that spec's BR15). AC10 remains a
+  fail-closed guard if a row is somehow null; this spec does not look up managers live.
 - A2 — Token roles include `HR_BUSINESS_PARTNER` from the IdP. If false: HR auth cannot
   be implemented as specified.
 - A3 — Any principal with that role may complete any `HR_VALIDATION` that is
@@ -445,6 +465,7 @@ named BP per request, BR6 must change in a new increment.
 | v1.0    | 2026-09-03 | Initial draft | BRD-001 |
 | v1.1    | 2026-09-08 | Authentication and authorisation section; AC13 (401), AC14 (front-end session); cites BRD-001 BR12–BR13 | BRD-001 KD-07, KD-08 |
 | v1.2    | 2026-09-11 | Product v1 lock: OQ-11 (OWN-12) and OQ-12 (OWN-05) confirmed. BR5/BR6 citations updated; no behaviour change | Product, 2026-09-11 |
+| v1.3    | 2026-09-15 | OWN-11 participation: API02 returns `version`; API03 requires `If-Match` and compare-and-swap; 409 `version-conflict`. AC15, UT30–UT32. AC10 retained as fail-closed guard now that request-spec BR15 refuses unresolved managers at submit | `internal-transfer-request` G1-F18, G1-F17 |
 
 ## Gate 1 Review
 
@@ -459,5 +480,6 @@ named BP per request, BR6 must change in a new increment.
 
 **Superseded-by note:** this Approved verdict covers v1.0 only. v1.1 (AuthN/AuthZ section)
 and v1.2 (OQ-11/OQ-12 Product lock) were published afterward without a new Gate 1 pass, per
-the Re-review/supersede convention in `.agent/rules/governance.md`. v1.2 is **not yet
-reviewed** and plan drafting should not rely on this Approved line covering it.
+the Re-review/supersede convention in `.agent/rules/governance.md`. v1.3 (OWN-11 `If-Match`
+on API03) is a further unpublished increment. **v1.3 is not yet reviewed** and plan
+drafting should not rely on this Approved line covering it.
