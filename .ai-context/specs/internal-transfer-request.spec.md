@@ -6,10 +6,8 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.5. Author revision of 2026-09-15 answers Gate 1
-**Changes Requested** (2026-09-11, against v1.4) — 5 Blocker, 5 Nit; see _Gate 1 Review_
-at the end of this file. Full state machine in `.ai-context/status.md`. Implementation
-must not start until this spec is **Approved**.
+**Approved** — v1.5, Gate 1 sign-off 2026-09-15 (Abhijit Adhikari). See _Gate 1 Review_
+at the end of this file. Full state machine in `.ai-context/status.md`.
 
 **Reviewer note.** v1.5 addresses G1-F15–G1-F24. The stage-status invariant is now "at most
 one" `IN_PROGRESS`, with an explicit zero-pending rest shape after fulfilment failure;
@@ -28,7 +26,7 @@ label and `pendingWith` (OQ-21 silence unchanged). Five nits in the same revisio
 | Role                               | Name             | Date                           |
 | ---------------------------------- | ---------------- | ------------------------------ |
 | Author / owner                     | Alamgir Sarkar   | 2026-08-27                     |
-| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-11 — **Changes Requested** on v1.4 (was Changes Requested on v1.1, 2026-09-09). v1.5 (2026-09-15) is the author revision awaiting re-review |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-15 — **Approved** on v1.5 (was Changes Requested on v1.4, 2026-09-11; Changes Requested on v1.1, 2026-09-09) |
 | Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-request.gate1.md`.
@@ -1413,6 +1411,11 @@ Copy for status display labels is Product's to refine; the vocabulary table is t
 | v1.5    | 2026-09-15 | Gate 1 response to G1-F15–G1-F24 against v1.4. Stage invariant "at most one" `IN_PROGRESS` with an explicit zero-pending `FULFILMENT` rest shape; `COMPLETED` / `EMPLOYEE_CONFIRMATION` aligned to downstream BR7; submit refuses unresolved managers (BR15) rather than entering a stuck `MANAGER_REVIEW`; OWN-11 CAS mechanics for every sibling mutation; failed/compensating `FULFILMENT` employee view (BR16); API02 full-replace PUT; BR12 last-day-clamp; API01 "snapshot" wording removed from the draft-time read; API03 HRIS timeout ≡ unavailable at 2 s; `DISCARDED` reserved/unreachable. AC29, AC30, UT03a, UT62a/b, UT72/72a, UT77, UT78 | Gate 1 G1-F15–G1-F24 (Abhijit Adhikari, 2026-09-11) |
 
 ## Gate 1 Review
+
+> Reviewed by: Abhijit Adhikari, 2026-09-15, **Approved** (v1.5) — re-review confirms
+> G1-F15–G1-F24 (5 Blocker, 5 Nit, from the 2026-09-11 pass against v1.4) are resolved as
+> disposed in the _Author response — v1.5_ table above. Findings worksheet:
+> `.ai-context/reviews/internal-transfer-request.gate1.md`.
 
 > Reviewed by: Abhijit Adhikari, 2026-09-11, **Changes Requested** (against v1.4) — 5
 > Blocker, 5 Nit (minor cleanup) findings. State invariant must become "at most one"

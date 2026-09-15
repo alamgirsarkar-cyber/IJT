@@ -22,7 +22,7 @@ Task states are the checkbox state in the feature's `tasks.md`:
 
 | Spec ID                                      | Title                                          | Status                      | Owner          | Last Updated | Notes                                                                                                                                                             |
 | -------------------------------------------- | ---------------------------------------------- | --------------------------- | -------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `internal-transfer-request`                  | Employee Internal Transfer Request             | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-15   | Draft **v1.5** — author revision answering 2026-09-11 re-review (G1-F15–G1-F24). Awaiting Abhijit Adhikari re-review. Record: `reviews/internal-transfer-request.gate1.md` |
+| `internal-transfer-request`                  | Employee Internal Transfer Request             | **Approved** | Alamgir Sarkar | 2026-09-15   | Gate 1 **Approved** 2026-09-15 (v1.5) — Abhijit Adhikari confirmed G1-F15–G1-F24 resolved. Was Changes Requested 2026-09-11 (v1.4). Record: `reviews/internal-transfer-request.gate1.md` |
 | `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-15   | Draft v1.3 — Product locked OQ-11 and OQ-12; v1.3 adds OWN-11 `If-Match` on API03 (request G1-F18). Record: `reviews/internal-transfer-approval-chain.gate1.md` |
 | `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **Approved** (v1.3); **v1.4 pending re-review** | Alamgir Sarkar | 2026-09-15   | Gate 1 **Approved** 2026-09-11 (v1.3). v1.4 (2026-09-15) adds OWN-11 CAS on API01 — new Gate 1 pass required before v1.4 is treated as Approved. Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
 | `internal-transfer-notifications`            | Employee and approver notifications            | **Approved** | Alamgir Sarkar | 2026-09-11   | Gate 1 **Approved** 2026-09-11 (v1.3). Was Changes Requested 2026-09-09 (v1.0); all 5 P0/5 P1 findings addressed in v1.2, OQ-21 locked by Product. Outstanding risk: `internal-transfer-request` not yet Approved. Record: `reviews/internal-transfer-notifications.gate1.md` |
@@ -37,7 +37,7 @@ Task states are the checkbox state in the feature's `tasks.md`:
 
 | Spec ID | Blocked on | Owner of the decision | Raised | Expected |
 | ------- | ---------- | --------------------- | ------ | -------- |
-| —       | _None._ BRD-001 OQ-11, OQ-12, OQ-20, OQ-21 and OQ-22 were locked by Product on 2026-09-11. Gate 1 re-review of the four specs is still outstanding (Abhijit Adhikari) — that is a review queue, not a business blocker | — | — | — |
+| —       | _None._ BRD-001 OQ-11, OQ-12, OQ-20, OQ-21 and OQ-22 were locked by Product on 2026-09-11. Gate 1 re-review of `internal-transfer-approval-chain` is still outstanding (Abhijit Adhikari) — that is a review queue, not a business blocker. `internal-transfer-request` Gate 1 Approved 2026-09-15 (v1.5) | — | — | — |
 
 ## Deferred, Tracked
 
@@ -61,6 +61,16 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
 ## Daily Execution Log
 
 ### 2026-09-15
+
+- **`internal-transfer-request`: Gate 1 re-review completed by Abhijit Adhikari against
+  v1.5.** Reviewed manually (chat verdict, not the Artifact dashboard). Outcome:
+  **Approved.** All ten G1-F15–G1-F24 findings from the 2026-09-11 re-review (5 Blocker,
+  5 Nit) confirmed resolved as disposed in the spec's own _Author response — v1.5_ table;
+  no new findings raised. Sign-off: `## Gate 1 Review` in
+  `.ai-context/specs/internal-transfer-request.spec.md`; worksheet:
+  `.ai-context/reviews/internal-transfer-request.gate1.md`. This spec may now proceed to
+  Gate 1 plan review. Remaining outstanding in the review order (request → approval-chain
+  → notifications / downstream): `internal-transfer-approval-chain`.
 
 - **`internal-transfer-request` revised to v1.5** in response to Gate 1 **Changes
   Requested** (Abhijit Adhikari, 2026-09-11 re-review of v1.4 — 5 Blocker, 5 Nit). All ten

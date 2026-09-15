@@ -131,11 +131,11 @@ cross-spec integration tests; and a formal BRD → BR → AC → Test traceabili
 
 | Field | Value |
 |---|---|
-| **Outcome** | **Changes Requested** (v1.4). Author revision **v1.5 submitted 2026-09-15** — re-review outstanding |
-| **Spec version after review** | v1.1 — Changes Requested (2026-09-09); v1.4 — **Changes Requested** (2026-09-11, new findings G1-F15–G1-F24); v1.5 — author disposition recorded, **not yet re-reviewed** |
-| **Date** | 2026-09-09 (round 1); 2026-09-11 (round 2); 2026-09-15 (author v1.5) |
-| **Next step if Approved** | Plan may proceed to Gate 1 (plan) review |
-| **Next step if Changes Requested** | Author revises spec, bumps version, resubmits — **done for this round (v1.5)** |
+| **Outcome** | **Approved** (v1.5, 2026-09-15) |
+| **Spec version after review** | v1.1 — Changes Requested (2026-09-09); v1.4 — Changes Requested (2026-09-11, findings G1-F15–G1-F24); v1.5 — **Approved** (2026-09-15) |
+| **Date** | 2026-09-09 (round 1); 2026-09-11 (round 2); 2026-09-15 (round 3, v1.5 — Approved) |
+| **Next step if Approved** | Plan may proceed to Gate 1 (plan) review — **applies now** |
+| **Next step if Changes Requested** | Author revises spec, bumps version, resubmits — not applicable to this outcome |
 
 _When complete: update `.ai-context/specs/internal-transfer-request.spec.md` status,
 `.ai-context/status.md`, and any BRD open questions the review resolves._
@@ -188,3 +188,10 @@ business side.
 
 G1-F15–G1-F24 are answered in the spec (see _Author disposition_ above). This does **not**
 change the 2026-09-11 verdict. Re-review of v1.5 is outstanding (Abhijit Adhikari).
+
+## Re-review — v1.5, 2026-09-15: Approved
+
+Abhijit Adhikari reviewed manually (chat, not the Artifact dashboard) and confirmed
+G1-F15–G1-F24 are resolved as disposed in the spec's _Author response — v1.5_ table.
+**Verdict: Approved.** No new findings raised. Sign-off recorded on the spec's own
+`## Gate 1 Review` section per governance.
