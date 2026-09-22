@@ -2,9 +2,11 @@
 
 ## Derived From
 
-`.ai-context/plans/internal-transfer-request.plan.md` (Plan Drafted — plan review pending)
+`.ai-context/plans/internal-transfer-request.plan.md` (Plan Drafted against spec v1.5 — plan review pending)
 
-Generated from the plan's Sequencing section and reviewed by the engineer on 2026-09-01.
+Generated from the plan's Sequencing section. T01–T10 reviewed by the engineer on 2026-09-01.
+T11 added 2026-09-22 when the plan was realigned to the Approved v1.5 spec. T03–T09 acceptance
+lists were extended the same day for AC22–AC30; task IDs were not renumbered.
 
 ## Task States
 
@@ -45,7 +47,8 @@ any implementation prompt runs. Prompts are in
 
 - [ ] `internal-transfer-request.T03` — Draft creation and update
       — Acceptance: `API01`, `API02`, `AC1`, `AC2` (optimistic concurrency), `AC8` (create
-        side), `AC13` (ownership and 404-not-403), `AC20` (401 unauthenticated)
+        side), `AC13` (ownership and 404-not-403), `AC20` (401 unauthenticated), `AC30`
+        (`If-Match` on API02)
       — Tests first: `UT01`, `UT02`, `UT03`, `UT04`, `UT05`, `UT21`, `UT22`, `UT23`, `UT36`,
         `UT37`, `UT56`
       — Touches: `internal-transfer/api/`, `internal-transfer/domain/request.ts`,
@@ -56,7 +59,8 @@ any implementation prompt runs. Prompts are in
 
 - [ ] `internal-transfer-request.T04` — Business rule set
       — Acceptance: `AC3`, `AC4` (BR7 window and BR8 advisory), `AC5` (BR5), `AC6` (BR6),
-        `AC7` (BR1, BR2, BR4, and the mandatory BR9 advisory)
+        `AC7` (BR1, BR2, BR4, and the mandatory BR9 advisory), `AC22` (BR12 last-day clamp;
+        draft-time month count is not an input)
       — Tests first: `UT06` … `UT20`
       — Touches: `internal-transfer/rules/`
       — Depends on: `T02`
@@ -65,8 +69,11 @@ any implementation prompt runs. Prompts are in
         Both date boundaries are inclusive and both are tested
 
 - [ ] `internal-transfer-request.T05` — Submit transaction
-      — Acceptance: `API03`, `AC9` (single transaction: status, snapshot freeze, stage plan,
-        audit, outbox), `AC10` (idempotency), `AC15` (503 leaves the draft untouched)
+      — Acceptance: `API03`, `AC9` (single transaction commits `MANAGER_REVIEW` with
+        `MANAGER_RELEASE` `IN_PROGRESS`; `SUBMITTED` is a history event type, not a status),
+        `AC10` (idempotency), `AC15` (503 leaves the draft untouched), `AC24` (submit does
+        not decide from the reference-data cache), `AC28` (eight-row plan, non-null
+        `lineManagerRef`), `AC29` (422 `assignee-unresolved` stays `DRAFT`)
       — Tests first: `UT24`, `UT25`, `UT26`, `UT27`, `UT28`, `UT29`, `UT45`
       — Touches: `internal-transfer/api/`, `internal-transfer/domain/`, `internal-transfer/outbox/`
       — Depends on: `T03`, `T04`
@@ -74,7 +81,8 @@ any implementation prompt runs. Prompts are in
         than three — splitting it would let each part pass while the guarantee fails
 
 - [ ] `internal-transfer-request.T06` — Outbox relay and event publication
-      — Acceptance: `AC9` (the event is delivered to the downstream webhook), `ADR-0001`
+      — Acceptance: `AC9` (the event is delivered to the downstream webhook), `AC26`
+        (OWN-09 envelope and allow-listed payload), `ADR-0001`
         (at-least-once, allow-list payload, unpublished-age alert)
       — Tests first: `UT46` (no reason text in the emitted payload), plus relay tests for
         backoff, crash-resume and duplicate publication
@@ -85,7 +93,9 @@ any implementation prompt runs. Prompts are in
 
 - [ ] `internal-transfer-request.T07` — Status detail and list read model
       — Acceptance: `API04`, `API05`, `AC11` (stage rendering, `pendingWith`, the naming
-        rule), `AC12` (own requests only, pagination, no reason in lists), `AC13`
+        rule, failed-fulfilment `statusDisplay` "HR is completing this" /
+        `pendingWith.role` `HR_OPERATIONS`), `AC12` (own requests only, pagination, no
+        reason in lists), `AC13`
       — Tests first: `UT30`, `UT31`, `UT32`, `UT33`, `UT34`, `UT35`, `UT48`
       — Touches: `internal-transfer/api/`, `internal-transfer/readmodel/`
       — Depends on: `T05`
@@ -94,14 +104,18 @@ any implementation prompt runs. Prompts are in
 
 - [ ] `internal-transfer-request.T08` — Withdrawal
       — Acceptance: `API06`, `AC14` (state guard, stage cancellation, repeat withdrawal,
-        draft case), `AC16` (withdrawal reason handled as narrative)
+        draft case), `AC16` (withdrawal reason handled as narrative), `AC23` and `AC30`
+        (`If-Match`; `version-conflict` inside the window, `withdrawal-window-closed` once
+        `FULFILMENT`)
       — Tests first: `UT38`, `UT39`, `UT40`, `UT41`
       — Touches: `internal-transfer/api/`, `internal-transfer/domain/`
       — Depends on: `T05`
 
 - [ ] `internal-transfer-request.T09` — Cross-cutting hardening
       — Acceptance: `AC16` (field-level encryption, log absence), `AC17` (rate limits, hashed
-        counter keys), `AC18` (correlation ID on every audit record), `AC20` on API03–API07
+        counter keys), `AC18` (correlation ID on every audit record), `AC20` on API03–API07,
+        `AC25` (partial unique index is the BR3 backstop), `AC27` (unlisted transition is
+        409 with no audit row and no event)
       — Tests first: `UT47` (log capture across the whole submit path), `UT49`, `UT50`, `UT51`,
         `UT57`
       — Touches: `internal-transfer/security/`, `internal-transfer/observability/`,
@@ -121,6 +135,20 @@ any implementation prompt runs. Prompts are in
       — Note: accessibility is an acceptance condition of this task. Automated axe checks plus
         a manual keyboard and screen-reader pass; the stage timeline must not convey status by
         colour alone. Auth is the portal session, not a feature-local credential form.
+        Standards: `.agent/rules/int-standards.react.md` — RTK Query, design system, copy
+        externalised, reason text not stored in a slice or `localStorage`, MSW against the
+        spec's error shapes, queries by accessible role
+
+- [ ] `internal-transfer-request.T11` — Front end: failed-fulfilment status labels
+      — Acceptance: `AC11` (employee view when `FULFILMENT` has a `FAILED` or
+        `COMPENSATION_*` stage), `AC19` (those labels are text, not colour)
+      — Tests first: component tests for "HR is completing this" versus "Being actioned",
+        `pendingWith` role text `HR_OPERATIONS` with no party name, and the absence of a
+        resume or confirmation control. `EMPLOYEE_CONFIRMATION` is not a button
+      — Touches: `employee-portal-web/src/features/internal-transfer/`
+      — Depends on: `T07`, `T10`
+      — Note: no new route. The status and list screens already in T10 render the labels
+        T07 returns. Stack rules as T10
 
 ## Traceability
 
@@ -150,12 +178,21 @@ before generation.
 | `AC16` — employee narrative handling | T06, T07, T08, T09 | UT46, UT47, UT48 | Not Started |
 | `AC17` — rate limiting | T09 | UT49, UT50 | Not Started |
 | `AC18` — immutable audit trail | T01, T09 | UT51, UT52 | Not Started |
-| `AC19` — accessibility | T10 | UT53, UT54, UT55 | Not Started |
+| `AC19` — accessibility | T10, T11 | UT53, UT54, UT55 | Not Started |
+| `AC22` — BR12 last-day clamp | T04 | spec UT for the worked examples | Not Started |
+| `AC23` — withdraw versus approval race | T08 | — | Not Started |
+| `AC24` — cache is not a submit input | T05 | — | Not Started |
+| `AC25` — partial unique index is the BR3 backstop | T01, T09 | UT23 | Not Started |
+| `AC26` — OWN-09 event envelope | T06 | — | Not Started |
+| `AC27` — unlisted transition fails closed | T09 | — | Not Started |
+| `AC28` — submit satisfies approval-chain's precondition | T05 | — | Not Started |
+| `AC29` — unresolved manager stays `DRAFT` | T05 | — | Not Started |
+| `AC30` — compare-and-swap on `version` | T03, T08 | — | Not Started |
 
-**Reverse check — every task serves an AC:** T01 → AC1/AC8/AC18 · T02 → AC6/AC15 ·
-T03 → AC1/AC2/AC8/AC13/AC20 · T04 → AC3–AC7 · T05 → AC9/AC10/AC15 · T06 → AC9 ·
-T07 → AC11/AC12/AC13/AC16 · T08 → AC14/AC16 · T09 → AC16/AC17/AC18/AC20 ·
-T10 → AC19/AC21/AC11/AC12/AC14.
+**Reverse check — every task serves an AC:** T01 → AC1/AC8/AC18/AC25 · T02 → AC6/AC15 ·
+T03 → AC1/AC2/AC8/AC13/AC20/AC30 · T04 → AC3–AC7/AC22 · T05 → AC9/AC10/AC15/AC24/AC28/AC29 ·
+T06 → AC9/AC26 · T07 → AC11/AC12/AC13/AC16 · T08 → AC14/AC16/AC23/AC30 ·
+T09 → AC16/AC17/AC18/AC20/AC25/AC27 · T10 → AC19/AC21/AC11/AC12/AC14 · T11 → AC11/AC19.
 No orphans in either direction.
 
 ## Deferred — must NOT appear in any of these tasks
@@ -186,3 +223,4 @@ check the implementation did not creep into them:
 | `T08` | `feature/internal-transfer-request` | — | — | — | — | — |
 | `T09` | `feature/internal-transfer-request` | — | — | — | — | — |
 | `T10` | `feature/internal-transfer-request` | — | — | — | — | — |
+| `T11` | `feature/internal-transfer-request` | — | — | — | — | — |

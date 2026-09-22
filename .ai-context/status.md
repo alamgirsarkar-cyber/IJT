@@ -1,6 +1,6 @@
 # Project Status Board — One-Point Employee Portal
 
-_Last updated: 2026-09-15_
+_Last updated: 2026-09-22_
 
 > Updated by whoever last touched a spec, same day. Answers "what is in flight" without a
 > stand-up. Where a delivery tool exists, this file mirrors **spec-level** state and does not
@@ -22,10 +22,10 @@ Task states are the checkbox state in the feature's `tasks.md`:
 
 | Spec ID                                      | Title                                          | Status                      | Owner          | Last Updated | Notes                                                                                                                                                             |
 | -------------------------------------------- | ---------------------------------------------- | --------------------------- | -------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `internal-transfer-request`                  | Employee Internal Transfer Request             | **Approved** | Alamgir Sarkar | 2026-09-15   | Gate 1 **Approved** 2026-09-15 (v1.5) — Abhijit Adhikari confirmed G1-F15–G1-F24 resolved. Was Changes Requested 2026-09-11 (v1.4). Record: `reviews/internal-transfer-request.gate1.md` |
-| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-15   | Draft v1.3 — Product locked OQ-11 and OQ-12; v1.3 adds OWN-11 `If-Match` on API03 (request G1-F18). Record: `reviews/internal-transfer-approval-chain.gate1.md` |
-| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **Approved** (v1.3); **v1.4 pending re-review** | Alamgir Sarkar | 2026-09-15   | Gate 1 **Approved** 2026-09-11 (v1.3). v1.4 (2026-09-15) adds OWN-11 CAS on API01 — new Gate 1 pass required before v1.4 is treated as Approved. Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
-| `internal-transfer-notifications`            | Employee and approver notifications            | **Approved** | Alamgir Sarkar | 2026-09-11   | Gate 1 **Approved** 2026-09-11 (v1.3). Was Changes Requested 2026-09-09 (v1.0); all 5 P0/5 P1 findings addressed in v1.2, OQ-21 locked by Product. Outstanding risk: `internal-transfer-request` not yet Approved. Record: `reviews/internal-transfer-notifications.gate1.md` |
+| `internal-transfer-request`                  | Employee Internal Transfer Request             | **Plan Drafted** | Alamgir Sarkar | 2026-09-22   | Spec Gate 1 **Approved** 2026-09-15 (v1.5). Plan realigned to v1.5; tasks T01–T11. Plan review pending Abhijit Adhikari. Record: `reviews/internal-transfer-request.gate1.md` |
+| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **Plan Drafted** | Alamgir Sarkar | 2026-09-22   | Spec Gate 1 **Approved** 2026-09-09 against v1.0. Spec header and superseded note still say v1.3 is not covered. Plan and tasks T01–T08 drafted 2026-09-22 on instruction that the spec is approved. T05 (AC15) does not start until the Gate 1 block names v1.3. Plan review pending. |
+| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **Plan Drafted** (v1.3); **v1.4 pending re-review** | Alamgir Sarkar | 2026-09-22   | Gate 1 **Approved** 2026-09-11 (v1.3). Plan and tasks T01–T06 drafted. T07 (AC20) blocked until v1.4 is re-reviewed. No frontend task — spec has no screen. |
+| `internal-transfer-notifications`            | Employee and approver notifications            | **Plan Drafted** | Alamgir Sarkar | 2026-09-22   | Spec Gate 1 **Approved** 2026-09-11 (v1.3). Plan and tasks T01–T08 drafted. No frontend task — spec has no screen. Plan review pending. |
 
 ## Released Specs
 
@@ -59,6 +59,19 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
 | Localisation beyond English     | BRD-001 OQ-18 | Product              | Post-v1                                      |
 
 ## Daily Execution Log
+
+### 2026-09-22
+
+- **Plans and tasks drafted for the four transfer specs**, both surfaces the specs
+  actually define. `internal-transfer-request` plan realigned from v1.2 to Approved v1.5;
+  tasks T03–T09 extended for AC22–AC30; T11 added for the failed-fulfilment status screen.
+  `internal-transfer-approval-chain` plan and tasks T01–T06 (backend) and T07–T08
+  (manager and HR screens). `internal-transfer-downstream-orchestration` plan and tasks
+  T01–T06 (backend only); T07 held for the unapproved v1.4 compare-and-swap. 
+  `internal-transfer-notifications` plan and tasks T01–T08 (backend only). Stack rules
+  cited: `.agent/rules/int-standards.node.md` and `.agent/rules/int-standards.react.md`.
+  No implementation. Plan review still pending Abhijit Adhikari. Approval-chain v1.3
+  remains uncovered by the 2026-09-09 Gate 1 line until that block is updated.
 
 ### 2026-09-15
 

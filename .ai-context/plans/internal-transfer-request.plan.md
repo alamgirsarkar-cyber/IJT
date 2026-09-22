@@ -2,12 +2,13 @@
 
 ## Derived From
 
-`.ai-context/specs/internal-transfer-request.spec.md` (v1.2, In Peer Review — not yet Approved)
+`.ai-context/specs/internal-transfer-request.spec.md` (v1.5, Approved 2026-09-15, Abhijit Adhikari)
+
+Realigned 2026-09-22 to that approved spec. The 2026-08-31 draft described v1.2.
 
 ## Status
 
-**Plan Drafted** — awaiting spec **Approved** at Gate 1, then plan review by Abhijit Adhikari
-**Author:** Alamgir Sarkar · **Gate 1 reviewer:** Abhijit Adhikari (_plan review pending_)
+**Plan Drafted** · **Author:** Alamgir Sarkar · **Reviewer:** Abhijit Adhikari (_plan review pending_)
 Review record: `.ai-context/reviews/internal-transfer-request.gate1-plan.md`
 
 ## Architecture Approach
@@ -40,12 +41,23 @@ Review record: `.ai-context/reviews/internal-transfer-request.gate1-plan.md`
   test to code is greppable.
 - **Reference number generation** uses a SQLite sequence table per year plus formatting, not
   application-side counting, so concurrent submissions cannot collide.
-- **Front end** is a new route in `employee-portal-web` using the portal design system: a
-  four-step wizard (target → date → reason → review) plus a status timeline, with Redux
-  Toolkit for state and RTK Query for the API layer, per the constitution's single-state-library
-  rule. The wizard **reuses the portal OIDC session**; RTK Query attaches the bearer token.
-  There is no transfer login page. Unauthenticated users hit the portal's existing sign-in
-  (AC21).
+- **Front end** is a new feature route in `employee-portal-web`, not a new app.
+  `.agent/rules/int-standards.react.md` fixes the shape: `src/features/internal-transfer/`
+  with `components/`, `hooks/`, `api/`, `model/`; function components; server state only
+  through RTK Query; no second state library; copy in resource files; tests query by
+  accessible role (React Testing Library) and journeys in Playwright, with MSW at the
+  network boundary using this spec's problem+json shapes. Screens: a four-step wizard
+  (target → date → reason → review) and a status timeline, both on the portal design
+  system. Reason text is submitted and not kept in a slice, `localStorage`, the URL or
+  analytics. The wizard **reuses the portal OIDC session**; RTK Query attaches the bearer
+  token. There is no transfer login page. Unauthenticated users hit the portal's existing
+  sign-in (AC21). WCAG 2.1 AA is part of the frontend task, including `axe` and a keyboard
+  and screen-reader pass.
+- **Backend layout** follows `.agent/rules/int-standards.node.md` inside the existing
+  `employee-services` module: `src/internal-transfer/{api,domain,rules,persistence,integration,readmodel}`.
+  Boundary validation is `class-validator` (`whitelist`, `forbidNonWhitelisted`). Persistence
+  tests use a real SQLite file. No new npm dependency: encryption is the platform crypto
+  module, auth is the existing OIDC middleware.
 - **Authentication and authorisation** reuse the platform: gateway validates OIDC;
   Express middleware `requireAuthenticatedEmployee` reads the token subject as
   `employee_id` and never a body field. Ownership checks run in the service (AC13, AC20).
@@ -77,10 +89,15 @@ the migration is rolling-deploy safe.
 | `version`                                                             | int                | Optimistic concurrency (AC2)                                                               |
 | `submitted_at`, `created_at`, `updated_at`                            | timestamptz        |                                                                                            |
 
+Column types above are logical. The engine is SQLite (constitution). Timestamps and JSON
+are `TEXT`, ciphertext is `BLOB`, counters are `INTEGER`. There is no `bytea`,
+`timestamptz` or `jsonb` type to migrate to.
+
 **Partial unique index** `uniq_active_request_per_employee` on `employee_id`
-`WHERE status IN ('DRAFT','SUBMITTED','MANAGER_REVIEW','HR_VALIDATION','FULFILMENT')`.
-BR3 is enforced by the database, not only by a read-then-write check — that is what makes
-AC8's concurrent case pass deterministically rather than usually.
+`WHERE status IN ('DRAFT','MANAGER_REVIEW','HR_VALIDATION','FULFILMENT')`.
+`SUBMITTED` is not a request status (v1.5). BR3 is enforced by the database, not only by
+a read-then-write check — that is what makes AC8 and AC25 pass if the application check
+is absent.
 
 **`transfer_request_stage`** — `id`, `transfer_request_id` FK, `stage_code`, `sequence_no`,
 `status`, `assigned_role`, `assigned_party_ref` (opaque employee ID, never a name),
@@ -140,7 +157,10 @@ dropping them would lose submitted requests.
 | Submit succeeds, outbox insert fails                                   | Whole transaction rolls back; request stays `DRAFT`                                                                                                 | AC9        |
 | Outbox row committed, downstream webhook unreachable                   | Relay retries with backoff; the request is `SUBMITTED` and correct, the event is merely late; alert fires at 15 minutes                             | AC9        |
 | Relay publishes twice after a crash between publish and mark-published | At-least-once by design; consumers must be idempotent, and the event carries `requestId` as the natural dedupe key. Stated in the event contract    | ADR-0001   |
-| Withdrawal races a stage transition into `FULFILMENT`                  | Row-level lock on the aggregate for the status check and the write; the loser gets 409 `withdrawal-window-closed`                                   | AC14       |
+| Withdrawal races a stage transition into `FULFILMENT`                  | Compare-and-swap on `version`. Still inside the window: 409 `version-conflict`. Already `FULFILMENT`: 409 `withdrawal-window-closed`                 | AC14, AC23 |
+| Authoritative HRIS cannot resolve either manager at submit             | 422 `assignee-unresolved`; row stays `DRAFT`; no stage plan and no outbox row                                                                       | AC29       |
+| `(status, operation)` absent from the transition table                  | 409 `invalid-state-transition` with `currentStatus`; no audit row and no event                                                                      | AC27       |
+| API02 or API06 without `If-Match`, or with a stale version              | 400 `precondition-required`, or 409 `version-conflict` with `currentVersion`; no merge                                                               | AC2, AC30  |
 | SQLite unavailable                                                     | All transfer endpoints return 503; no partial writes                                                                                                | AC1, AC15  |
 | Clock skew across instances for date-window checks                     | All date arithmetic in UTC against the database clock, not the application clock                                                                    | AC4        |
 | Employee's line manager changes between submit and view                | `assigned_party_ref` is snapshotted at submit; the view resolves the name at read time and shows the role alone if the reference no longer resolves | AC11       |
@@ -185,9 +205,10 @@ dropping them would lose submitted requests.
 
 ## Explicitly Deferred
 
-- **Approval decisioning** — every stage transition after `SUBMITTED`. Deferred to
-  `internal-transfer-approval-chain`. This plan creates the stage rows and nothing else acts
-  on them. _Gate 2 must verify that no approval logic appeared in the implementation._
+- **Approval decisioning** — every stage transition after submit has committed
+  `MANAGER_REVIEW`. Deferred to `internal-transfer-approval-chain`. This plan creates the
+  stage rows and nothing else acts on them. _Gate 2 must verify that no approval logic
+  appeared in the implementation._
 - **Downstream fulfilment consumers** — Payroll, ITSM, Facilities. Deferred to
   `internal-transfer-downstream-orchestration`. v1 emits an event with no consumer, knowingly.
 - **Notifications** — deferred to `internal-transfer-notifications`. No email, no push, no
@@ -206,26 +227,70 @@ dropping them would lose submitted requests.
   second session timeout, or an auth-adjacent package. Authentication is the existing
   portal OIDC session (BRD-001 KD-07). _Gate 2 must verify no transfer login form appeared._
 
+## v1.5 alignment
+
+Behaviour the v1.2 draft did not yet fix. These do not add screens or endpoints.
+
+- **Submit is synchronous.** API03 commits `MANAGER_REVIEW` with `MANAGER_RELEASE` already
+  `IN_PROGRESS` and the other seven stages `NOT_STARTED`. `SUBMITTED` is an audit/history
+  event type only. At most one stage is `IN_PROGRESS`. Zero `IN_PROGRESS` stages is legal
+  only on the failed-fulfilment rest shape, which this spec displays and does not cause.
+- **Unresolved managers fail closed (AC29).** If the uncached HRIS read cannot resolve the
+  current line manager or the receiving manager, submit returns 422 `assignee-unresolved`,
+  the row stays `DRAFT`, and no stage plan or `requested.v1` row is written.
+- **BR12 (AC22).** Service length is whole calendar months with the last-day clamp in the
+  spec. The draft-time `serviceInPositionMonths` on API01 is display only and is not an
+  input to the rule.
+- **Cache is not a decision source (AC24).** API07 may serve stale reference data. Submit
+  re-reads authoritative HRIS data. A closed position is 422 BR6. An unreachable
+  authoritative source is 503 and the draft is unchanged.
+- **Compare-and-swap (AC23, AC30, OWN-11).** API02 and API06 require `If-Match: "<version>"`.
+  Absent header is 400 `precondition-required`. Mismatch is 409 `version-conflict` with
+  `currentVersion`. The write is `UPDATE … WHERE version = :expected`. Already-`WITHDRAWN`
+  replay on API06 is checked before the precondition. A withdrawal that loses to an
+  approval still inside the window is `version-conflict`; a withdrawal after `FULFILMENT`
+  is `withdrawal-window-closed`.
+- **Unlisted pairs fail closed (AC27).** Any `(status, operation)` absent from the request
+  transition table is 409 `invalid-state-transition` with `currentStatus`, and writes no
+  audit row and no event. `DISCARDED` and `CANCELLED` have no producer.
+- **Event envelope (AC26, AC28).** `employee.transfer.requested.v1` and
+  `withdrawn.v1` use the OWN-09 envelope (`eventId`, `eventType` with `.v1`,
+  `eventVersion`, `occurredAt`, `correlationId`, `requestId`, allow-listed `payload`).
+  `lineManagerRef` on `requested.v1` is non-null because AC29 already refused a null manager.
+- **Employee view of failed fulfilment.** API04 and API05 return `statusDisplay`
+  "HR is completing this" when status is `FULFILMENT` and any stage is `FAILED` or
+  `COMPENSATION_*`, with `pendingWith.role` `HR_OPERATIONS` and `partyName` null. Healthy
+  fulfilment stays "Being actioned". The status screen renders those strings; it does not
+  add a resume control. `EMPLOYEE_CONFIRMATION` is not a button.
+
 ## Sequencing
 
-Each step is independently generatable, reviewable and mergeable.
+Each step is independently generatable, reviewable and mergeable. Steps 1–10 keep the
+task IDs already issued. Step 11 is the only new task: the failed-fulfilment screen. The
+v1.5 backend behaviour is folded into steps 3–9 so those tasks stay the owners of the
+endpoints they already name.
 
 1. **Schema, migrations and the audit guarantee** — tables, indexes, the partial unique
-   index, revoked audit privileges.
+   index (no `SUBMITTED`), revoked audit privileges. SQLite affinities only.
 2. **Reference-data provider** — HRIS client, SQLite cache, staleness handling, the API07
-   endpoint.
-3. **Draft lifecycle** — create and update, optimistic concurrency, OIDC middleware and
-   ownership checks (API01, API02, AC13, AC20).
-4. **Rule set** — one function per business rule, returning violations carrying rule IDs.
-5. **Submit transaction** — validation, stage-plan construction, audit, outbox, idempotency
-   (API03).
-6. **Outbox relay** — webhook publisher, backoff, at-least-once semantics, unpublished-age alert.
-7. **Read model** — status detail and list, `pendingWith` derivation and the naming rule
-   (API04, API05).
-8. **Withdrawal** — state guard, stage cancellation, event (API06).
+   endpoint. Cache is never an input to a submit rule.
+3. **Draft lifecycle** — create and update, `If-Match` on API02, OIDC middleware and
+   ownership checks (API01, API02, AC13, AC20, AC30).
+4. **Rule set** — one function per business rule, including BR12's last-day clamp (AC22).
+5. **Submit transaction** — validation, unresolved-manager refusal, stage-plan construction
+   straight to `MANAGER_REVIEW`, audit, outbox, idempotency (API03, AC28, AC29).
+6. **Outbox relay** — webhook publisher, backoff, at-least-once semantics, unpublished-age
+   alert, OWN-09 envelope (AC26).
+7. **Read model** — status detail and list, `pendingWith` naming, failed-fulfilment
+   `statusDisplay` (API04, API05).
+8. **Withdrawal** — state guard, `If-Match`, stage cancellation, event, race against
+   approval (API06, AC23).
 9. **Cross-cutting hardening** — rate limiting, log redaction and its test, field-level
-   encryption, correlation-ID propagation.
-10. **Front end** — wizard, status timeline, accessibility, existing portal session (AC21).
+   encryption, correlation-ID propagation, unlisted-transition refusal (AC27).
+10. **Front end — wizard and status timeline** — `employee-portal-web` feature folder,
+    accessibility, existing portal session (AC19, AC21).
+11. **Front end — failed-fulfilment labels** — status and list screens render
+    "HR is completing this" and the stage vocabulary as text, with no resume action.
 
 ## Documentation Impact
 

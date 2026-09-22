@@ -69,7 +69,7 @@ requirement is written down. Shared facts go in `.ai-context/ownership_index.md`
 | Plan | `.ai-context/plans/internal-transfer-request.plan.md` |
 | Tasks | `.ai-context/tasks/internal-transfer-request.tasks.md` |
 | Prompts | `.ai-context/prompts/internal-transfer-request.prompts.md` |
-| **Next prompt** | `internal-transfer-request` Gate 1 **Approved** 2026-09-15 (v1.5, Abhijit Adhikari). **Blocked — Gate 1 review of `internal-transfer-approval-chain` outstanding** (Abhijit Adhikari), next in review order: request → approval-chain → notifications / downstream |
+| **Next prompt** | Plans drafted 2026-09-22 for all four transfer specs. **Plan review pending** Abhijit Adhikari. Do not implement. Approval-chain Gate 1 line on the spec is still the 2026-09-09 v1.0 approval; v1.3 (`If-Match`) is not covered until that block is updated. Downstream T07 (v1.4 CAS) is blocked on re-review |
 
 ## Standing constraints (append to every prompt)
 
