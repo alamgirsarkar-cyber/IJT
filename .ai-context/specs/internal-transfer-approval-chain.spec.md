@@ -6,14 +6,19 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — Draft v1.3. AuthN/AuthZ was v1.1; v1.2 records Product's
+**Changes Requested** (2026-09-23, against v1.3) — 2 Blocker findings G1-F01–G1-F02; see
+_Gate 1 Review_ at the end of this file. AuthN/AuthZ was v1.1; v1.2 records Product's
 2026-09-11 lock of BRD-001 **OQ-11** (OWN-12) and **OQ-12** (OWN-05). v1.3 states OWN-11
 compare-and-swap on API03 (`If-Match`) so this spec participates in the shared aggregate
 version. Full state machine in `.ai-context/status.md`. Do not generate a plan or code
 until **Approved**.
 
 **Reviewer note:** this spec consumes the request aggregate and stage plan.
-`internal-transfer-request` is still In Peer Review. OQ-11 and OQ-12 are no longer open.
+`internal-transfer-request` is now Gate 1 **Approved** (v1.5, 2026-09-15). OQ-11 and OQ-12
+are no longer open. Outstanding: whether BR7's date window binds the HR-confirmed effective
+date (A4), and whether "any `HR_BUSINESS_PARTNER` may complete any `HR_VALIDATION`" is the
+intended authorisation model (A3/BR6) — both must be explicit product/security decisions,
+not assumptions, before Approval.
 
 ## Linked BRD
 
@@ -24,7 +29,7 @@ until **Approved**.
 | Role | Name | Date |
 |---|---|---|
 | Author / owner | Alamgir Sarkar | 2026-09-03 |
-| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-09 — v1.2 not yet reviewed |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-23 — **Changes Requested** on v1.3 (was Approved on v1.0, 2026-09-09; v1.1–v1.2 never separately reviewed) |
 | Gate 2 reviewer | Tapas Dutta | — |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`.
@@ -469,6 +474,16 @@ named BP per request, BR6 must change in a new increment.
 
 ## Gate 1 Review
 
+> Reviewed by: Abhijit Adhikari, 2026-09-23, **Changes Requested** (against v1.3) — 2
+> Blocker findings. **A4 / confirmed-effective-date rule (G1-F01):** the spec assumes,
+> without a recorded business decision, that BR7's 14–180 day window does not apply to the
+> HR-confirmed effective date — obtain and record that decision explicitly, and add
+> validation/AC coverage if the answer requires it. **BR6 / HR authorisation model
+> (G1-F02):** BR6 lets any principal with role `HR_BUSINESS_PARTNER` complete any request's
+> `HR_VALIDATION`, currently stated only as Assumption A3 — confirm this is the intended
+> authorisation model as an explicit product/security decision, not an assumption. Findings
+> worksheet: `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`.
+
 > Reviewed by: Abhijit Adhikari, 2026-09-09, **Approved** (against v1.0) — both Blocker
 > findings (OQ-11/OQ-12 dependency on BR5/BR6; stage-plan handoff contract) cleared; five
 > Should-fix findings (API02 historical-approver access, confirmed effective-date
@@ -478,8 +493,8 @@ named BP per request, BR6 must change in a new increment.
 > risk at the time. Findings worksheet:
 > `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`.
 
-**Superseded-by note:** this Approved verdict covers v1.0 only. v1.1 (AuthN/AuthZ section)
-and v1.2 (OQ-11/OQ-12 Product lock) were published afterward without a new Gate 1 pass, per
-the Re-review/supersede convention in `.agent/rules/governance.md`. v1.3 (OWN-11 `If-Match`
-on API03) is a further unpublished increment. **v1.3 is not yet reviewed** and plan
-drafting should not rely on this Approved line covering it.
+**Superseded-by note:** this Approved verdict covered v1.0 only. v1.1 (AuthN/AuthZ section)
+and v1.2 (OQ-11/OQ-12 Product lock) were published without a new Gate 1 pass, per the
+Re-review/supersede convention in `.agent/rules/governance.md`. **Superseded by the
+2026-09-23 Changes Requested verdict above**, which reviews v1.1–v1.3 together (including
+OWN-11 `If-Match` on API03).

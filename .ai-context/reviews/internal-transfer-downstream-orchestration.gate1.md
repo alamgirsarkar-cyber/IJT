@@ -14,8 +14,8 @@
 | Author                                       | Alamgir Sarkar                                                         |
 | **Reviewer (not the author)**                | Abhijit Adhikari                                                       |
 | Security / Architecture (constitution check) | _Pending — name reviewer and date when obtained_                       |
-| Submitted                                    | 2026-09-07                                                             |
-| Outcome                                      | **Approved** (2026-09-11, v1.3) — was **Changes Requested** (2026-09-09, v1.0)   |
+| Submitted                                    | 2026-09-07; **v1.4 (OWN-11 CAS on API01) submitted 2026-09-15**       |
+| Outcome                                      | **Approved** (2026-09-11, v1.3) — was **Changes Requested** (2026-09-09, v1.0). **v1.4 re-reviewed 2026-09-23 — Changes Requested** |
 
 ## Submission notes for the reviewer
 
@@ -49,6 +49,15 @@
 | G1-F10 | Should-fix | Whole spec | Stage and request status transitions are spread across BR2, BR6, BR7, AC1–AC4 and the API01 exception table with no single matrix to check an implementation against | Add a state-transition matrix |
 | G1-F11 | Should-fix | Business Rules; Acceptance Criteria; Unit Test Cases | Rules, ACs and tests do not consistently cite the BRD-001 item, ADR or constitution line they derive from | Add formal BRD → BR → AC → Test traceability |
 | G1-F12 | Should-fix | Unit Test Cases (UT01–UT15) | Tests cover the happy path and single-fault cases; there is no out-of-order report, no duplicate-with-different-payload, no compensation-failure and no integration coverage against a consumer double | Add negative and out-of-order integration tests |
+
+### Re-review findings — v1.4, 2026-09-23
+
+| ID | Severity | Where | Finding | Required change |
+|---|---|---|---|---|
+| G1-F13 | Blocker | BR6 (line 94, "in reverse sequence"); Fulfilment Lifecycle path 3 — Compensation (lines 148–156); event catalogue row `employee.transfer.compensate.v1` (line 381, "reverse sequence order"); AC4 | "Reverse sequence order" is stated for compensate events, but the outbox/relay is at-least-once delivery (ADR-0001, BR5) with no ordering guarantee across separate consumer deliveries — the spec never says whether "reverse sequence" binds only the order events are *created*/written to the outbox, or is a *processing*-order requirement the consumers themselves must honour | Explicitly define whether reverse ordering is creation order only (each compensate event targets a different consumer and is independently applied) or a cross-consumer processing-order requirement — and if the latter, define the mechanism (e.g., a sequence field in the payload) |
+| G1-F14 | Blocker | "Where a request can come to rest" table (lines 197–198, `FULFILMENT` / "HR Operations, off-portal"); Context (lines 58–64, request spec owns stage display labels); Surfaces (lines 577–579, "no new employee-facing screen") | The request stays `FULFILMENT` while HR Operations recovers off-portal, but this spec does not say — or cite — how `internal-transfer-request` API04 is expected to present that resting state, so nothing here guards against the employee-facing status page reading as ordinary in-progress fulfilment | Cross-reference `internal-transfer-request` BR16 / _Failed and compensating fulfilment — employee view_ directly (its "HR is completing this" / `pendingWith.role: HR_OPERATIONS` contract) and confirm this spec's failure/compensation stage statuses are exactly BR16's trigger condition |
+| G1-F15 | Blocker | API01 request payload, `outcome` field (lines 289, 301); BR5 (line 93); state transition matrix (line 178) | `outcome: SUCCESS` drives a stage to `COMPLETED` and advances the workflow (eventually `EMPLOYEE_CONFIRMATION` and the employee-visible "Completed" status), but the spec never defines what a consumer is certifying when it reports `SUCCESS` — actual completion of the downstream business operation, versus mere acceptance, ticket creation or job queuing | State explicitly, alongside BR5, that `outcome: SUCCESS` means the downstream business operation itself has completed — an asynchronous consumer (e.g. ITSM ticketing) must not report `SUCCESS` until its own ticket/work is resolved, not on intake |
+| G1-F16 | Blocker | Context (lines 79–83, "Architecture already records that Payroll, ITSM and Facilities consumers are not built... that is visible, not silent"); "Where a request can come to rest," "Consumer not built" row (line 199) | The spec already flags unbuilt consumers as accepted architecture debt, but does not clearly separate "this SDD contract is complete and ready to build against" from "the transfer journey works end-to-end" — a real risk given plans/tasks were already drafted (2026-09-22) treating this spec as ready without that distinction | Add an explicit statement (Context, or a new callout) that Gate 1 approval certifies the contract only; end-to-end fulfilment remains blocked on Payroll/ITSM/Facilities implementing their consumers, and that is a separate readiness question from this spec's own Definition of Done |
 
 ---
 
@@ -113,3 +122,31 @@ OQ-20 on top with no behaviour change.
    remaining Fail, carried as a non-blocking programme-level risk rather than a spec defect.
 
 **Verdict: Approved.**
+
+## Re-review — v1.4, 2026-09-23: Changes Requested
+
+Abhijit Adhikari reviewed manually (chat, not the Artifact dashboard). The 2026-09-11
+Approved verdict covered v1.3; v1.4's only change (OWN-11 compare-and-swap on API01) had
+not yet been reviewed. This pass covers v1.4 and raises four new Blocker findings,
+G1-F13–G1-F16 — none a re-litigation of G1-F01–G1-F12, all closing gaps the earlier
+lifecycle/matrix work did not reach: whether "reverse sequence" compensation ordering binds
+consumer processing or only event creation; how a failed/compensating `FULFILMENT` request
+is presented to the employee (this spec is silent; `internal-transfer-request` BR16 already
+answers it but is not cited here); what a consumer's `SUCCESS` report actually certifies;
+and distinguishing this spec's contract-readiness from the programme's end-to-end
+readiness, which matters now that plans/tasks have already been drafted against this spec.
+
+**Verdict: Changes Requested.** All four Blocker findings must be resolved before Gate 1
+re-approval.
+
+---
+
+## Outcome (v1.4 re-review)
+
+| Field | Value |
+|---|---|
+| **Outcome** | **Changes Requested** (2026-09-23, v1.4) |
+| **Spec version after review** | v1.0 — Changes Requested (2026-09-09); v1.3 — Approved (2026-09-11); v1.4 — **Changes Requested** (2026-09-23, findings G1-F13–G1-F16) |
+| **Date** | 2026-09-09; 2026-09-11; 2026-09-23 |
+| **Next step if Approved** | N/A for this round |
+| **Next step if Changes Requested** | Author revises spec, bumps version, resubmits — **applies now** |

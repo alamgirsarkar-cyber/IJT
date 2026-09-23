@@ -69,7 +69,7 @@ requirement is written down. Shared facts go in `.ai-context/ownership_index.md`
 | Plan | `.ai-context/plans/internal-transfer-request.plan.md` |
 | Tasks | `.ai-context/tasks/internal-transfer-request.tasks.md` |
 | Prompts | `.ai-context/prompts/internal-transfer-request.prompts.md` |
-| **Next prompt** | Plans drafted 2026-09-22 for all four transfer specs. **Plan review pending** Abhijit Adhikari. Do not implement. Approval-chain Gate 1 line on the spec is still the 2026-09-09 v1.0 approval; v1.3 (`If-Match`) is not covered until that block is updated. Downstream T07 (v1.4 CAS) is blocked on re-review |
+| **Next prompt** | Blocked — both remaining specs in the review order came back **Changes Requested** from Abhijit Adhikari on 2026-09-23: `internal-transfer-approval-chain` v1.3 (G1-F01–G1-F02: BR7/confirmed-date applicability, BR6 HR authorisation model — both need an explicit Product/Security decision, not an assumption) and `internal-transfer-downstream-orchestration` v1.4 (G1-F13–G1-F16: compensation ordering, failed-fulfilment employee visibility, `SUCCESS` semantics, contract-vs-E2E readiness). Their 2026-09-22 plans/tasks are **not valid** until each is resolved and re-reviewed — do not implement, do not continue plan review for either spec. All four transfer specs now have a spec-level state: request Approved (v1.5); notifications Approved (v1.3); approval-chain and downstream both Changes Requested |
 
 ## Standing constraints (append to every prompt)
 

@@ -6,15 +6,16 @@
 
 ## Status
 
-**Approved (Gate 1) — v1.3**, 2026-09-11 by Abhijit Adhikari. **v1.4 (2026-09-15)** adds
-OWN-11 compare-and-swap on API01 and **requires a new Gate 1 pass** (governance
-re-review/supersede). Do not treat v1.4 as Approved until re-reviewed. Full state machine
-in `.ai-context/status.md`.
+**Changes Requested** (2026-09-23, against v1.4) — 4 Blocker findings G1-F13–G1-F16; see
+_Gate 1 Review_ at the end of this file. Full state machine in `.ai-context/status.md`.
 
-**Reviewer note:** v1.2 answered all five Blocker and seven Should-fix findings. OQ-20 is
-now **Resolved** — no automatic and no portal-driven resume in v1 (BR10, AC17, OWN-08).
-v1.4 states how this spec participates in the shared aggregate `version` (request-spec
-G1-F18). Finding-by-finding disposition is in _Gate 1 Review_ at the end of this file.
+**Reviewer note:** v1.2 answered all five Blocker and seven Should-fix findings from the
+2026-09-09 review; v1.3 closed OQ-20 (no automatic and no portal-driven resume in v1 —
+BR10, AC17, OWN-08); v1.4 stated how this spec participates in the shared aggregate
+`version` (request-spec G1-F18). The 2026-09-23 pass is the first review of v1.4 and raises
+four new Blockers: compensation ordering guarantees, failed-fulfilment employee visibility,
+`SUCCESS` semantics, and distinguishing contract-readiness from end-to-end readiness.
+Finding-by-finding disposition is in _Gate 1 Review_ at the end of this file.
 
 ## Linked BRD
 
@@ -25,7 +26,7 @@ G1-F18). Finding-by-finding disposition is in _Gate 1 Review_ at the end of this
 | Role                               | Name             | Date                           |
 | ---------------------------------- | ---------------- | ------------------------------ |
 | Author / owner                     | Alamgir Sarkar   | 2026-09-03                     |
-| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-11 — **Approved** on v1.3 (was Changes Requested on v1.0, 2026-09-09) |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-23 — **Changes Requested** on v1.4 (was Approved on v1.3, 2026-09-11; Changes Requested on v1.0, 2026-09-09) |
 | Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
@@ -659,14 +660,30 @@ No part of this spec requires a plan to guess. Portal resume is deferred, not un
 
 ## Gate 1 Review
 
+> Reviewed by: Abhijit Adhikari, 2026-09-23, **Changes Requested** (against v1.4) — 4
+> Blocker findings. **Compensation ordering (G1-F13):** BR6 and the compensate event
+> catalogue row state "reverse sequence order," but the outbox/relay does not inherently
+> guarantee delivery or processing order — state explicitly whether reverse ordering is
+> only event *creation* order or a *processing* requirement on consumers. **Failed
+> fulfilment employee visibility (G1-F14):** the request stays `FULFILMENT` while HR
+> Operations recovers off-portal, but this spec does not say how `internal-transfer-request`
+> API04 is expected to present that resting state so the employee does not read it as normal
+> ongoing fulfilment. **`SUCCESS` semantics (G1-F15):** define `outcome: SUCCESS` as the
+> downstream *business operation* actually completing, not mere acceptance, ticket creation
+> or job queuing. **Contract vs. E2E readiness (G1-F16):** distinguish explicitly that this
+> spec's contract is ready to build against while Payroll/ITSM/Facilities consumers are not
+> yet implemented — this spec being Gate 1 Approved must not be read as the transfer journey
+> working end-to-end. Findings worksheet:
+> `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
+
 > Reviewed by: Abhijit Adhikari, 2026-09-11, **Approved** (against v1.3) — "Approved." All
 > five Blocker and seven Should-fix findings from the 2026-09-09 review are addressed in
 > v1.2 (see Author response below), and BRD-001 OQ-20 (resume-after-failure business
 > question) is Resolved by Product's 2026-09-11 lock: off-portal closeout by HR Operations,
 > no portal-driven or automatic resume in v1. Findings worksheet:
 > `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
-> **Superseded-by:** v1.4 (2026-09-15) — additive OWN-11 compare-and-swap on API01; new
-> Gate 1 pass required before v1.4 is treated as Approved.
+> **Superseded-by:** the 2026-09-23 Changes Requested verdict above, covering v1.4
+> (additive OWN-11 compare-and-swap on API01) together with the four new findings.
 
 > Reviewed by: Abhijit Adhikari, 2026-09-09, **Changes Requested** (against v1.0) — five
 > Blocker and seven Should-fix findings. Recorded verdict: the spec "is not yet buildable

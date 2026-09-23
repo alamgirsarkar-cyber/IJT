@@ -23,8 +23,8 @@ Task states are the checkbox state in the feature's `tasks.md`:
 | Spec ID                                      | Title                                          | Status                      | Owner          | Last Updated | Notes                                                                                                                                                             |
 | -------------------------------------------- | ---------------------------------------------- | --------------------------- | -------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `internal-transfer-request`                  | Employee Internal Transfer Request             | **Plan Drafted** | Alamgir Sarkar | 2026-09-22   | Spec Gate 1 **Approved** 2026-09-15 (v1.5). Plan realigned to v1.5; tasks T01–T11. Plan review pending Abhijit Adhikari. Record: `reviews/internal-transfer-request.gate1.md` |
-| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **Plan Drafted** | Alamgir Sarkar | 2026-09-22   | Spec Gate 1 **Approved** 2026-09-09 against v1.0. Spec header and superseded note still say v1.3 is not covered. Plan and tasks T01–T08 drafted 2026-09-22 on instruction that the spec is approved. T05 (AC15) does not start until the Gate 1 block names v1.3. Plan review pending. |
-| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **Plan Drafted** (v1.3); **v1.4 pending re-review** | Alamgir Sarkar | 2026-09-22   | Gate 1 **Approved** 2026-09-11 (v1.3). Plan and tasks T01–T06 drafted. T07 (AC20) blocked until v1.4 is re-reviewed. No frontend task — spec has no screen. |
+| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **Changes Requested** | Alamgir Sarkar | 2026-09-23   | Gate 1 re-review of v1.3 completed 2026-09-23 (Abhijit Adhikari): **Changes Requested** — 2 Blocker findings G1-F01–G1-F02 (A4 confirmed-date/BR7 applicability; BR6 HR authorisation model — both were only prose assumptions A3/A4, need an explicit product/security decision). Was Approved on v1.0 only (2026-09-09); v1.1–v1.2 never separately reviewed. **Plan and tasks T01–T08 were drafted 2026-09-22 against this not-yet-Approved spec** — that plan is not valid until the two Blockers are resolved and v1.3 (or later) is re-reviewed. Record: `reviews/internal-transfer-approval-chain.gate1.md` |
+| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **Changes Requested** | Alamgir Sarkar | 2026-09-23   | Gate 1 re-review of v1.4 completed 2026-09-23 (Abhijit Adhikari): **Changes Requested** — 4 Blocker findings G1-F13–G1-F16 (compensation ordering guarantees; failed-fulfilment employee visibility not cross-referenced to request-spec BR16; `SUCCESS` semantics undefined; contract-readiness vs. end-to-end readiness not distinguished). Was Approved on v1.3 only (2026-09-11). Plan and tasks T01–T06 drafted 2026-09-22 against this spec are **not valid** until resolved and re-reviewed; T07 (AC20) was already separately blocked. Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
 | `internal-transfer-notifications`            | Employee and approver notifications            | **Plan Drafted** | Alamgir Sarkar | 2026-09-22   | Spec Gate 1 **Approved** 2026-09-11 (v1.3). Plan and tasks T01–T08 drafted. No frontend task — spec has no screen. Plan review pending. |
 
 ## Released Specs
@@ -37,7 +37,8 @@ Task states are the checkbox state in the feature's `tasks.md`:
 
 | Spec ID | Blocked on | Owner of the decision | Raised | Expected |
 | ------- | ---------- | --------------------- | ------ | -------- |
-| —       | _None._ BRD-001 OQ-11, OQ-12, OQ-20, OQ-21 and OQ-22 were locked by Product on 2026-09-11. Gate 1 re-review of `internal-transfer-approval-chain` is still outstanding (Abhijit Adhikari) — that is a review queue, not a business blocker. `internal-transfer-request` Gate 1 Approved 2026-09-15 (v1.5) | — | — | — |
+| `internal-transfer-approval-chain` | Two Gate 1 Blocker findings (G1-F01, G1-F02) need an explicit Product/Security decision, not an assumption: whether BR7's date window binds `confirmedEffectiveDate` (A4), and whether any `HR_BUSINESS_PARTNER` may complete any `HR_VALIDATION` with no per-case assignment (A3/BR6) | Product / Security | 2026-09-23 | Before this spec can be Gate 1 Approved and before the 2026-09-22 plan/tasks drafted against it can be treated as valid |
+| `internal-transfer-downstream-orchestration` | Four Gate 1 Blocker findings (G1-F13–G1-F16): compensation-ordering guarantee (creation order vs. consumer processing order); failed-fulfilment employee visibility not cross-referenced to `internal-transfer-request` BR16; `outcome: SUCCESS` semantics undefined; contract-readiness vs. end-to-end readiness not distinguished | Author (spec revision); Product/Architecture where a business decision is needed | 2026-09-23 | Before this spec can be Gate 1 re-Approved and before the 2026-09-22 plan/tasks T01–T06 drafted against it can be treated as valid |
 
 ## Deferred, Tracked
 
@@ -59,6 +60,50 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
 | Localisation beyond English     | BRD-001 OQ-18 | Product              | Post-v1                                      |
 
 ## Daily Execution Log
+
+### 2026-09-23
+
+- **`internal-transfer-downstream-orchestration`: Gate 1 review completed by Abhijit
+  Adhikari against v1.4.** Reviewed manually (chat verdict, not the Artifact dashboard) —
+  the first pass to cover v1.4's OWN-11 compare-and-swap addition (the 2026-09-11 Approved
+  verdict covered v1.3). Outcome: **Changes Requested.** Four Blocker findings, none a
+  re-litigation of the 2026-09-09/2026-09-11 rounds: **G1-F13** compensation events are
+  emitted "in reverse sequence," but the outbox/relay does not guarantee delivery or
+  processing order — creation order vs. a consumer processing requirement is undefined;
+  **G1-F14** this spec doesn't say (or cite) how a failed/compensating `FULFILMENT` request
+  is shown to the employee — `internal-transfer-request` BR16 already answers this but
+  isn't cross-referenced here; **G1-F15** `outcome: SUCCESS` is never defined as the
+  downstream business operation actually completing, versus mere acceptance/ticket
+  creation/job queuing; **G1-F16** the spec doesn't clearly separate "this contract is
+  ready to build against" from "the transfer journey works end-to-end" (Payroll/ITSM/
+  Facilities consumers don't exist yet) — a real gap given plans/tasks were already drafted
+  against it. Sign-off: `## Gate 1 Review` in
+  `.ai-context/specs/internal-transfer-downstream-orchestration.spec.md`; worksheet:
+  `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
+
+- **Process note.** As with `internal-transfer-approval-chain` today, the plan and tasks
+  T01–T06 drafted 2026-09-22 for this spec now rest on a spec with four unresolved
+  Blockers. Do not proceed with any downstream task until G1-F13–G1-F16 are resolved and
+  the spec is re-reviewed.
+
+- **`internal-transfer-approval-chain`: Gate 1 review completed by Abhijit Adhikari against
+  v1.3.** Reviewed manually (chat verdict, not the Artifact dashboard) — the first Gate 1
+  pass to cover v1.1's AuthN/AuthZ section, v1.2's OQ-11/OQ-12 lock and v1.3's OWN-11
+  `If-Match` addition together (the 2026-09-09 Approved verdict covered v1.0 only). Outcome:
+  **Changes Requested.** Two Blocker findings, both the same shape — a business/security
+  decision the spec carries only as a prose Assumption rather than a confirmed rule:
+  **G1-F01** whether BR7's 14–180 day window binds the HR-confirmed effective date, not
+  just the employee-requested one (Assumption A4); **G1-F02** whether "any
+  `HR_BUSINESS_PARTNER` may complete any `HR_VALIDATION`," with no per-case assignment, is
+  the intended authorisation model (Assumption A3 / BR6). Sign-off: `## Gate 1 Review` in
+  `.ai-context/specs/internal-transfer-approval-chain.spec.md`; worksheet:
+  `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`.
+
+- **Process note.** The plan and tasks T01–T08 drafted 2026-09-22 for this spec were built
+  against a spec that was not validly Gate 1 Approved for v1.1–v1.3 (only v1.0 had a
+  sign-off) — that plan is now confirmed to rest on a spec with two unresolved Blockers.
+  Do not proceed with T05 or any other task until Product/Security answer G1-F01/G1-F02,
+  the spec is revised, and it is Approved by a new Gate 1 pass.
 
 ### 2026-09-22
 

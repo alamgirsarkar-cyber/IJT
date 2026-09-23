@@ -14,8 +14,8 @@
 | Author                                       | Alamgir Sarkar                                                         |
 | **Reviewer (not the author)**                | Abhijit Adhikari                                                       |
 | Security / Architecture (constitution check) | _Pending — name reviewer and date when obtained_                       |
-| Submitted                                    | 2026-09-07                                                             |
-| Outcome                                      | _**Approved** or **Changes Requested** — fill when review is complete_ |
+| Submitted                                    | 2026-09-07; **v1.3 (OWN-11 `If-Match` on API03) submitted 2026-09-15** |
+| Outcome                                      | **Approved** (2026-09-09, v1.0). **v1.1–v1.3 published without a new Gate 1 pass** (spec's own Superseded-by note); v1.3 re-reviewed 2026-09-23 — **Changes Requested** |
 
 ## Submission notes for the reviewer
 
@@ -31,6 +31,13 @@
 | ------ | -------- | ----- | ------- | --------------- |
 | G1-F01 |          |       |         |                 |
 |        |          |       |         |                 |
+
+### Re-review findings — v1.3, 2026-09-23
+
+| ID | Severity | Where | Finding | Required change |
+|---|---|---|---|---|
+| G1-F01 | Blocker | Assumption A4 (line 444); AC3 (lines 277–284); API03 request payload note "This spec does not apply BR7 to the confirmed date" (line 238) | Whether BR7's 14–180 day window applies to the HR-confirmed effective date (as opposed to only the employee's requested date) is left as an unconfirmed Assumption (A4), not an explicit business decision | Product obtains and records an explicit decision on whether BR7 applies to `confirmedEffectiveDate`. If it does, AC3 gains a validation rule and API03 gains a 422 exception row; if not, A4 is promoted from assumption to a stated, sourced business rule |
+| G1-F02 | Blocker | BR6 (line 76); Assumption A3 (lines 442–443); Open Questions note "BR6's ... remains Assumption A3" (lines 431–433) | BR6 authorises **any** principal holding role `HR_BUSINESS_PARTNER` to complete **any** request's `HR_VALIDATION`, with no per-case assignment or ownership check. This authorisation model is stated only as an unconfirmed Assumption (A3), not a deliberate product/security decision | Product/Security explicitly confirm the "any HR Business Partner may act on any case" model is intended (as opposed to a named/assigned HR BP per request). Record the decision and cite it from BR6 directly; remove the "remains Assumption A3" hedge once confirmed |
 
 ---
 
@@ -67,16 +74,36 @@ not Approved, so this spec's stated dependency-approval preference is not met. T
 approved ahead of that dependency resolving — track it as a programme-level risk before plan
 drafting begins.
 
+## Re-review — v1.3, 2026-09-23: Changes Requested
+
+Abhijit Adhikari reviewed manually (chat, not the Artifact dashboard). The 2026-09-09
+Approved verdict covered v1.0 only; v1.1–v1.3 were published without a new Gate 1 pass (per
+the spec's own Superseded-by note), so this is the first review of v1.1's AuthN/AuthZ
+section, v1.2's OQ-11/OQ-12 lock, and v1.3's OWN-11 `If-Match` addition together.
+
+Two Blocker findings raised, both the same shape: a business/security decision that the
+spec currently carries only as a prose **Assumption** (A3, A4) rather than something
+confirmed and recorded as a rule. G1-F01 — whether BR7's date window binds the HR-confirmed
+effective date, not just the employee-requested one. G1-F02 — whether "any
+`HR_BUSINESS_PARTNER` may complete any `HR_VALIDATION`" (no per-case assignment) is the
+intended authorisation model, given `internal-transfer-request` BR15 now takes the opposite
+approach for managers (an unresolved assignee blocks the request rather than being
+authorised broadly).
+
+**Verdict: Changes Requested.** Both findings must be resolved — as an explicit,
+sourced product/security decision, with spec and AC changes if the answer requires them —
+before Gate 1 approval.
+
 ---
 
 ## Outcome
 
 | Field                              | Value                                                       |
 | ---------------------------------- | ----------------------------------------------------------- |
-| **Outcome**                        | _**Approved** / **Changes Requested**_                      |
-| **Spec version after review**      |                                                             |
-| **Date**                           |                                                             |
+| **Outcome**                        | **Approved** (2026-09-09, v1.0); **Changes Requested** (2026-09-23, v1.3) |
+| **Spec version after review**      | v1.0 — Approved (2026-09-09); v1.3 — **Changes Requested** (2026-09-23, findings G1-F01–G1-F02) |
+| **Date**                           | 2026-09-09 (v1.0); 2026-09-23 (v1.3)                        |
 | **Next step if Approved**          | Plan drafting may start after request spec is also Approved |
-| **Next step if Changes Requested** | Author revises spec, bumps version, resubmits               |
+| **Next step if Changes Requested** | Author revises spec, bumps version, resubmits — **applies now** |
 
 _When complete: update the spec status and `.ai-context/status.md` the same day._
