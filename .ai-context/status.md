@@ -1,6 +1,6 @@
 # Project Status Board — One-Point Employee Portal
 
-_Last updated: 2026-09-22_
+_Last updated: 2026-09-24_
 
 > Updated by whoever last touched a spec, same day. Answers "what is in flight" without a
 > stand-up. Where a delivery tool exists, this file mirrors **spec-level** state and does not
@@ -23,8 +23,8 @@ Task states are the checkbox state in the feature's `tasks.md`:
 | Spec ID                                      | Title                                          | Status                      | Owner          | Last Updated | Notes                                                                                                                                                             |
 | -------------------------------------------- | ---------------------------------------------- | --------------------------- | -------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `internal-transfer-request`                  | Employee Internal Transfer Request             | **Plan Drafted** | Alamgir Sarkar | 2026-09-22   | Spec Gate 1 **Approved** 2026-09-15 (v1.5). Plan realigned to v1.5; tasks T01–T11. Plan review pending Abhijit Adhikari. Record: `reviews/internal-transfer-request.gate1.md` |
-| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **Changes Requested** | Alamgir Sarkar | 2026-09-23   | Gate 1 re-review of v1.3 completed 2026-09-23 (Abhijit Adhikari): **Changes Requested** — 2 Blocker findings G1-F01–G1-F02 (A4 confirmed-date/BR7 applicability; BR6 HR authorisation model — both were only prose assumptions A3/A4, need an explicit product/security decision). Was Approved on v1.0 only (2026-09-09); v1.1–v1.2 never separately reviewed. **Plan and tasks T01–T08 were drafted 2026-09-22 against this not-yet-Approved spec** — that plan is not valid until the two Blockers are resolved and v1.3 (or later) is re-reviewed. Record: `reviews/internal-transfer-approval-chain.gate1.md` |
-| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **Changes Requested** | Alamgir Sarkar | 2026-09-23   | Gate 1 re-review of v1.4 completed 2026-09-23 (Abhijit Adhikari): **Changes Requested** — 4 Blocker findings G1-F13–G1-F16 (compensation ordering guarantees; failed-fulfilment employee visibility not cross-referenced to request-spec BR16; `SUCCESS` semantics undefined; contract-readiness vs. end-to-end readiness not distinguished). Was Approved on v1.3 only (2026-09-11). Plan and tasks T01–T06 drafted 2026-09-22 against this spec are **not valid** until resolved and re-reviewed; T07 (AC20) was already separately blocked. Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
+| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-24   | v1.4 resubmitted. G1-F01 closed as BR9 (BRD-001 BR7 binds the requested date only). G1-F02 closed as BR6 citing BRD-001 BR13 (any `HR_BUSINESS_PARTNER`). Re-review outstanding. Plan drafted 2026-09-22 is not valid until this version is Approved. |
+| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-24   | v1.5 resubmitted. G1-F13–G1-F16 answered: compensate reverse order is creation order only; failed fulfilment cites request BR16; `SUCCESS` is the completed business operation; Gate 1 approval is the contract, not end-to-end readiness. Re-review outstanding. v1.3 remains the last Approved version. |
 | `internal-transfer-notifications`            | Employee and approver notifications            | **Plan Drafted** | Alamgir Sarkar | 2026-09-22   | Spec Gate 1 **Approved** 2026-09-11 (v1.3). Plan and tasks T01–T08 drafted. No frontend task — spec has no screen. Plan review pending. |
 
 ## Released Specs
@@ -37,8 +37,7 @@ Task states are the checkbox state in the feature's `tasks.md`:
 
 | Spec ID | Blocked on | Owner of the decision | Raised | Expected |
 | ------- | ---------- | --------------------- | ------ | -------- |
-| `internal-transfer-approval-chain` | Two Gate 1 Blocker findings (G1-F01, G1-F02) need an explicit Product/Security decision, not an assumption: whether BR7's date window binds `confirmedEffectiveDate` (A4), and whether any `HR_BUSINESS_PARTNER` may complete any `HR_VALIDATION` with no per-case assignment (A3/BR6) | Product / Security | 2026-09-23 | Before this spec can be Gate 1 Approved and before the 2026-09-22 plan/tasks drafted against it can be treated as valid |
-| `internal-transfer-downstream-orchestration` | Four Gate 1 Blocker findings (G1-F13–G1-F16): compensation-ordering guarantee (creation order vs. consumer processing order); failed-fulfilment employee visibility not cross-referenced to `internal-transfer-request` BR16; `outcome: SUCCESS` semantics undefined; contract-readiness vs. end-to-end readiness not distinguished | Author (spec revision); Product/Architecture where a business decision is needed | 2026-09-23 | Before this spec can be Gate 1 re-Approved and before the 2026-09-22 plan/tasks T01–T06 drafted against it can be treated as valid |
+| — | _None._ Approval-chain G1-F01/G1-F02 and downstream G1-F13–G1-F16 were answered in the specs on 2026-09-24 and resubmitted. Re-review is a review queue, not an open business question. | — | — | — |
 
 ## Deferred, Tracked
 
@@ -60,6 +59,20 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
 | Localisation beyond English     | BRD-001 OQ-18 | Product              | Post-v1                                      |
 
 ## Daily Execution Log
+
+### 2026-09-24
+
+- **`internal-transfer-approval-chain` revised to v1.4** in response to Gate 1
+  **Changes Requested** (Abhijit Adhikari, 2026-09-23, G1-F01 and G1-F02). BR9 records
+  that BRD-001 BR7's window binds the requested effective date only. BR6 cites BRD-001
+  BR13: any `HR_BUSINESS_PARTNER` may complete any in-progress `HR_VALIDATION`. A3 and
+  A4 are closed. Resubmitted. Not Approved.
+- **`internal-transfer-downstream-orchestration` revised to v1.5** in response to Gate 1
+  **Changes Requested** (Abhijit Adhikari, 2026-09-23, G1-F13–G1-F16). Reverse-sequence
+  compensation is outbox creation order only. `outcome: SUCCESS` means the business
+  operation completed. Failed fulfilment cites `internal-transfer-request` BR16. Gate 1
+  approval is the contract, not end-to-end readiness while consumers are unbuilt.
+  Resubmitted. Not Approved. Last Approved version remains v1.3.
 
 ### 2026-09-23
 

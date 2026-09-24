@@ -6,19 +6,14 @@
 
 ## Status
 
-**Changes Requested** (2026-09-23, against v1.3) — 2 Blocker findings G1-F01–G1-F02; see
-_Gate 1 Review_ at the end of this file. AuthN/AuthZ was v1.1; v1.2 records Product's
-2026-09-11 lock of BRD-001 **OQ-11** (OWN-12) and **OQ-12** (OWN-05). v1.3 states OWN-11
-compare-and-swap on API03 (`If-Match`) so this spec participates in the shared aggregate
-version. Full state machine in `.ai-context/status.md`. Do not generate a plan or code
-until **Approved**.
+**In Peer Review (Gate 1)** — v1.4, resubmitted 2026-09-24. v1.4 answers the 2026-09-23
+**Changes Requested** verdict on v1.3 (G1-F01, G1-F02). Not Approved until Abhijit Adhikari
+re-reviews. Do not implement until **Approved**.
 
 **Reviewer note:** this spec consumes the request aggregate and stage plan.
-`internal-transfer-request` is now Gate 1 **Approved** (v1.5, 2026-09-15). OQ-11 and OQ-12
-are no longer open. Outstanding: whether BR7's date window binds the HR-confirmed effective
-date (A4), and whether "any `HR_BUSINESS_PARTNER` may complete any `HR_VALIDATION`" is the
-intended authorisation model (A3/BR6) — both must be explicit product/security decisions,
-not assumptions, before Approval.
+`internal-transfer-request` is Gate 1 **Approved** (v1.5, 2026-09-15). OQ-11 and OQ-12
+are closed. v1.4 closes G1-F01 as BR9 and G1-F02 as BR6 citing BRD-001 BR13. Re-review
+of v1.4 is outstanding.
 
 ## Linked BRD
 
@@ -29,7 +24,7 @@ not assumptions, before Approval.
 | Role | Name | Date |
 |---|---|---|
 | Author / owner | Alamgir Sarkar | 2026-09-03 |
-| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-23 — **Changes Requested** on v1.3 (was Approved on v1.0, 2026-09-09; v1.1–v1.2 never separately reviewed) |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-23 — **Changes Requested** on v1.3. v1.4 resubmitted 2026-09-24; re-review outstanding |
 | Gate 2 reviewer | Tapas Dutta | — |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`.
@@ -78,9 +73,10 @@ are the units of work.
 | `internal-transfer-approval-chain.BR3` | HR sets the confirmed effective date when approving `HR_VALIDATION`. Until then the date remains requested.                                                                                                                                                                                     | BRD-001 OQ-05                                                                 | Business                                                       |
 | `internal-transfer-approval-chain.BR4` | Open disciplinary or performance cases are validated **by HR as a person**, not by the portal. Completing `HR_VALIDATION` with `APPROVE` records that HR has finished those checks. The portal must not call a disciplinary API and must not present manager approval as eligibility clearance. | BRD-001 BR9, OQ-04                                                            | Business                                                       |
 | `internal-transfer-approval-chain.BR5` | Transfer reason text is visible to the HR Business Partner and the owning employee only. It is not returned to either manager.                                                                                                                                                                  | BRD-001 OQ-12 (**Resolved 2026-09-11, Product v1**); OWN-05                    | Business                                                       |
-| `internal-transfer-approval-chain.BR6` | Line-manager and receiving-manager decisions are authorised only when the token subject equals that stage's `assigned_party_ref`. HR validation is authorised for any principal whose token has role `HR_BUSINESS_PARTNER`.                                                                     | BRD-001 BR12, BR13; OWN-04; OWN-12 (OQ-11 Resolved 2026-09-11) | Technical (enforcement of a business assignment)               |
+| `internal-transfer-approval-chain.BR6` | Line-manager and receiving-manager decisions are authorised only when the token subject equals that stage's `assigned_party_ref`. **HR validation is authorised for any principal whose token has role `HR_BUSINESS_PARTNER`, on any `HR_VALIDATION` that is `IN_PROGRESS`.** There is no named HR assignee per request in v1. This is BRD-001 BR13 and OWN-04, not an assumption. A later named-BP model is a new increment. | BRD-001 BR12, BR13; OWN-04; OWN-12 (OQ-11 Resolved 2026-09-11); Gate 1 G1-F02 (2026-09-23) | Business (BRD-001 BR13); technical enforcement |
 | `internal-transfer-approval-chain.BR7` | Approver delegation is not supported. An assigned manager who is absent is handled outside the portal.                                                                                                                                                                                          | BRD-001 OQ-16                                                                 | Business — deferred; this spec must not implement a substitute |
 | `internal-transfer-approval-chain.BR8` | No SLA timer, reminder or escalation is evaluated.                                                                                                                                                                                                                                              | BRD-001 OQ-15                                                                 | Business — deferred                                            |
+| `internal-transfer-approval-chain.BR9` | BRD-001 BR7's 14-to-180-day window binds the **employee's requested** effective date only, evaluated at submit by `internal-transfer-request`. It does **not** bind `confirmedEffectiveDate`. HR may confirm a date outside that window. The portal does not return 422 for the confirmed date on that rule. | BRD-001 BR7 (wording: requested effective date); `internal-transfer-request` BR7; Gate 1 G1-F01 (2026-09-23) | Business |
 
 ## Authentication and Authorisation
 
@@ -240,7 +236,7 @@ writes nothing. Idempotent replay is checked before the version precondition.
 
 `confirmedEffectiveDate` is **required** when `stageCode` is `HR_VALIDATION` and
 `decision` is `APPROVE`. It must be **absent or null** for manager stages and for every
-`REJECT`. This spec does not apply BR7 to the confirmed date.
+`REJECT`. BR9: the 14-to-180-day window is not applied. A confirmed date outside that window is still 200. A malformed date remains 422.
 
 **Success response (200):** the same shape as API02 after the transition, with
 `availableDecisions` empty when the caller has no further decision on this request.
@@ -360,6 +356,14 @@ writes nothing. Idempotent replay is checked before the version precondition.
     when `If-Match` does not match the stored `version`, then HTTP 409 `version-conflict`
     carrying `currentVersion` and the decision is not merged (OWN-11).
 
+16. `internal-transfer-approval-chain.AC16` — Given a request in `HR_VALIDATION` and a
+    caller with role `HR_BUSINESS_PARTNER` who is not a named assignee on the request,
+    when they `APPROVE` with a `confirmedEffectiveDate` that is fewer than 14 days ahead
+    or more than 180 days ahead, then the decision commits, the date is stored, and the
+    response is 200 — BR7's window is not applied (BR9, G1-F01). A second principal with
+    the same role may make that decision; authorisation does not require
+    `assigned_party_ref` on `HR_VALIDATION` (BR6, BRD-001 BR13, G1-F02).
+
 ## Unit Test Cases (spec-derived)
 
 | Test ID                                 | Maps to AC | Scenario                                                  | Expected                                                                                                                                    |
@@ -396,6 +400,7 @@ writes nothing. Idempotent replay is checked before the version precondition.
 | `internal-transfer-approval-chain.UT30` | AC15       | API03 with matching `If-Match`                            | 200; aggregate `version` incremented by 1                                                                                                   |
 | `internal-transfer-approval-chain.UT31` | AC15       | API03 with no `If-Match`                                  | 400 `precondition-required`; stage still `IN_PROGRESS`                                                                                      |
 | `internal-transfer-approval-chain.UT32` | AC15       | API03 with stale `If-Match`                               | 409 `version-conflict` with `currentVersion`; stage unchanged                                                                               |
+| `internal-transfer-approval-chain.UT33` | AC16       | HR approve with confirmed date outside the 14–180 window, by a `HR_BUSINESS_PARTNER` who is not the stage assignee | 200; date stored; request `FULFILMENT`                                                                 |
 
 ## Surfaces
 
@@ -433,9 +438,9 @@ Layout and component structure are not specified here.
 | --- | ----------------------------------------------------------------------------------------------- | ----- | --------- | -------------------------------------------- |
 | 1   | None that change approve/reject sequencing, terminal rejection, or who sets the confirmed date. | —     | —         | Closed in BRD-001 OQ-01, OQ-02, OQ-05, OQ-07. OQ-11 and OQ-12 **Resolved 2026-09-11 (Product v1)** — OWN-12 and OWN-05. |
 
-BR6's "any `HR_BUSINESS_PARTNER` may complete `HR_VALIDATION`" remains Assumption A3.
-OQ-11 confirms HR is shown as a role, not a named person. If HR Policy later assigns a
-named BP per request, BR6 must change in a new increment.
+BR6 cites BRD-001 BR13 and OWN-04. The "any HR Business Partner" model is that rule, not
+Assumption A3. OQ-11 confirms HR is shown as a role, not a named person. A named BP per
+request would be a new increment.
 
 ## Assumptions
 
@@ -444,10 +449,10 @@ named BP per request, BR6 must change in a new increment.
   fail-closed guard if a row is somehow null; this spec does not look up managers live.
 - A2 — Token roles include `HR_BUSINESS_PARTNER` from the IdP. If false: HR auth cannot
   be implemented as specified.
-- A3 — Any principal with that role may complete any `HR_VALIDATION` that is
-  `IN_PROGRESS`. If false: BR6 and API03 auth change.
-- A4 — Confirmed effective date has no portal-enforced 14/180-day window (BR7 is the
-  employee's requested date only). If false: AC3 must gain a validation row.
+- A3 — **Closed in v1.4 (G1-F02).** Promoted to BR6. Source: BRD-001 BR13 and OWN-04.
+- A4 — **Closed in v1.4 (G1-F01).** Promoted to BR9. Source: BRD-001 BR7, which names the
+  requested effective date, and `internal-transfer-request` BR7, which evaluates that
+  window at submit only.
 - A5 — The employee withdrawal endpoint remains owned by the request spec; this spec only
   loses the race (AC9). If false: withdrawal must be duplicated here.
 
@@ -471,8 +476,18 @@ named BP per request, BR6 must change in a new increment.
 | v1.1    | 2026-09-08 | Authentication and authorisation section; AC13 (401), AC14 (front-end session); cites BRD-001 BR12–BR13 | BRD-001 KD-07, KD-08 |
 | v1.2    | 2026-09-11 | Product v1 lock: OQ-11 (OWN-12) and OQ-12 (OWN-05) confirmed. BR5/BR6 citations updated; no behaviour change | Product, 2026-09-11 |
 | v1.3    | 2026-09-15 | OWN-11 participation: API02 returns `version`; API03 requires `If-Match` and compare-and-swap; 409 `version-conflict`. AC15, UT30–UT32. AC10 retained as fail-closed guard now that request-spec BR15 refuses unresolved managers at submit | `internal-transfer-request` G1-F18, G1-F17 |
+| v1.4    | 2026-09-24 | G1-F01 and G1-F02 answered from existing BRD rules. BR9: the 14–180 day window binds the requested date only. BR6 cites BRD-001 BR13 for any `HR_BUSINESS_PARTNER`. A3 and A4 closed. AC16, UT33. Resubmitted, not Approved | Gate 1 G1-F01, G1-F02 (Abhijit Adhikari, 2026-09-23) |
 
 ## Gate 1 Review
+
+### Author response — v1.4, 2026-09-24 (Alamgir Sarkar)
+
+| Finding | Severity | Addressed in v1.4 by |
+| --- | --- | --- |
+| G1-F01 — BR7 window on `confirmedEffectiveDate` left as Assumption A4 | Blocker | BR9, sourced from BRD-001 BR7 (the rule names the **requested** effective date) and from `internal-transfer-request` BR7 (evaluated at submit). The window does not bind the HR-confirmed date, so API03 does not gain a 422 row for it. AC16 and UT33 assert a date outside the window is accepted |
+| G1-F02 — any `HR_BUSINESS_PARTNER` left as Assumption A3 | Blocker | BR6 now cites BRD-001 BR13 and OWN-04 as the decision: any principal with that role may complete any in-progress `HR_VALIDATION`. No named assignee. The open-question hedge is removed. AC16 covers a caller who is not the stage assignee |
+
+v1.4 is resubmitted. It is not Approved.
 
 > Reviewed by: Abhijit Adhikari, 2026-09-23, **Changes Requested** (against v1.3) — 2
 > Blocker findings. **A4 / confirmed-effective-date rule (G1-F01):** the spec assumes,

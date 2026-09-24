@@ -6,16 +6,12 @@
 
 ## Status
 
-**Changes Requested** (2026-09-23, against v1.4) — 4 Blocker findings G1-F13–G1-F16; see
-_Gate 1 Review_ at the end of this file. Full state machine in `.ai-context/status.md`.
+**In Peer Review (Gate 1)** — v1.5, resubmitted 2026-09-24. v1.5 answers the 2026-09-23
+**Changes Requested** verdict on v1.4 (G1-F13–G1-F16). Not Approved until Abhijit Adhikari
+re-reviews. Do not implement the v1.4/v1.5 increment until **Approved**.
 
-**Reviewer note:** v1.2 answered all five Blocker and seven Should-fix findings from the
-2026-09-09 review; v1.3 closed OQ-20 (no automatic and no portal-driven resume in v1 —
-BR10, AC17, OWN-08); v1.4 stated how this spec participates in the shared aggregate
-`version` (request-spec G1-F18). The 2026-09-23 pass is the first review of v1.4 and raises
-four new Blockers: compensation ordering guarantees, failed-fulfilment employee visibility,
-`SUCCESS` semantics, and distinguishing contract-readiness from end-to-end readiness.
-Finding-by-finding disposition is in _Gate 1 Review_ at the end of this file.
+**Reviewer note:** v1.5 answers G1-F13–G1-F16. Disposition is in _Gate 1 Review_. v1.3
+remains the last Approved version until v1.5 is re-reviewed.
 
 ## Linked BRD
 
@@ -26,7 +22,7 @@ Finding-by-finding disposition is in _Gate 1 Review_ at the end of this file.
 | Role                               | Name             | Date                           |
 | ---------------------------------- | ---------------- | ------------------------------ |
 | Author / owner                     | Alamgir Sarkar   | 2026-09-03                     |
-| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-23 — **Changes Requested** on v1.4 (was Approved on v1.3, 2026-09-11; Changes Requested on v1.0, 2026-09-09) |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-23 — **Changes Requested** on v1.4. v1.5 resubmitted 2026-09-24; re-review outstanding |
 | Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
@@ -83,6 +79,13 @@ a consumer exists, outbox rows retry and remain unpublished; the employee-facing
 stays `FULFILMENT` with those stages `IN_PROGRESS` (architecture: known debt). That is
 visible, not silent.
 
+**Contract readiness is not end-to-end readiness (G1-F16).** Gate 1 approval of this spec
+certifies that the portal contract — events, API01, stage transitions — is complete enough
+to build against. It does not mean the transfer journey works end to end. Payroll, ITSM
+and Facilities consumers are still unbuilt. A request can rest in `FULFILMENT` with a
+stage `IN_PROGRESS` until those consumers exist. That programme readiness is separate
+from this spec's Definition of Done.
+
 ## Business Rules
 
 | Rule ID                                          | Rule                                                                                                                                                                                                                                                                      | Source                                     | Business or technical decision                 |
@@ -91,8 +94,8 @@ visible, not silent.
 | `internal-transfer-downstream-orchestration.BR2` | Fulfilment stage order is **strictly sequential** and settled for v1, not undecided: `ORG_DATA_UPDATE` (sequence 4) must reach `COMPLETED` before `PAYROLL_UPDATE` (5), `IT_ACCESS` (6) or `FACILITIES` (7) is signalled, and those three, when applicable, are signalled one at a time in sequence-number order, skipping `applicable: false` rows. **At most one fulfilment stage is `IN_PROGRESS` on a request at any time.** Parallel fan-out is deferred, not open — see Out of Scope.                     | BRD-001 journey stages 4–7                 | Business (as-is order); sequencing technical |
 | `internal-transfer-downstream-orchestration.BR3` | The portal does not write employment or org data to the HRIS. It emits an event; the HRIS (or its adapter) is system of record for that update.                                                                                                                           | BRD-001 OQ-09; ADR-0002                    | Technical                                      |
 | `internal-transfer-downstream-orchestration.BR4` | No Payroll, ITSM or Facilities HTTP call is made inside an employee or approver request. Delivery is outbox relay → HTTPS webhook.                                                                                                                                        | BRD-001 OQ-10; ADR-0001; constitution      | Technical                                      |
-| `internal-transfer-downstream-orchestration.BR5` | Downstream systems report success or failure back. Delivery is at-least-once in both directions: consumers dedupe on the envelope `eventId` (`requestId` + `stageCode` + `eventType` is the natural key of a stage signal, not the dedupe key), and the portal dedupes inbound reports on API01's `eventId` (BR11).                                                                                                                  | ADR-0001                                   | Technical                                      |
-| `internal-transfer-downstream-orchestration.BR6` | On a reported stage failure, the portal records that stage as `FAILED` and emits a compensate signal for every fulfilment stage already `COMPLETED` on that request, in reverse sequence. It does not mark the request `COMPLETED`.                                       | BRD-001 spec map (compensation on failure) | Business intent; mechanism technical           |
+| `internal-transfer-downstream-orchestration.BR5` | Downstream systems report success or failure back. **`outcome: SUCCESS` means the downstream business operation itself has completed** — the org update is applied, payroll is updated, access is changed, or the facilities arrangement is done. Intake, ticket creation, or queueing a job is not `SUCCESS`; an asynchronous consumer must not report `SUCCESS` until its own work is resolved (G1-F15). Delivery is at-least-once in both directions: consumers dedupe on the envelope `eventId` (`requestId` + `stageCode` + `eventType` is the natural key of a stage signal, not the dedupe key), and the portal dedupes inbound reports on API01's `eventId` (BR11). | ADR-0001; Gate 1 G1-F15 (2026-09-23) | Technical |
+| `internal-transfer-downstream-orchestration.BR6` | On a reported stage failure, the portal records that stage as `FAILED` and emits a compensate signal for every fulfilment stage already `COMPLETED` on that request. **Reverse sequence is creation order only:** outbox rows are written from the highest completed sequence number down to the lowest. The relay is at-least-once and does not guarantee delivery or processing order across consumers (ADR-0001, BR5). Each `compensate.v1` names one `stageCode` and is applied by that stage's consumer on its own. There is no cross-consumer processing-order requirement and no sequence field a consumer must wait on (G1-F13). It does not mark the request `COMPLETED`. | BRD-001 spec map (compensation on failure); Gate 1 G1-F13 (2026-09-23); ADR-0001 | Business intent; mechanism technical |
 | `internal-transfer-downstream-orchestration.BR7` | `EMPLOYEE_CONFIRMATION` is completed by the portal when every applicable stage among `ORG_DATA_UPDATE`, `PAYROLL_UPDATE`, `IT_ACCESS` and `FACILITIES` is `COMPLETED`. It is not an employee click. Telling the employee is notifications spec.                           | BRD-001 journey stage 8                    | Business                                       |
 | `internal-transfer-downstream-orchestration.BR8` | On a reported stage failure, every applicable **fulfilment work stage** on that request still `NOT_STARTED` becomes `CANCELLED` and is never signalled. `EMPLOYEE_CONFIRMATION`, being portal-set rather than signalled, stays `NOT_STARTED`: BR7's precondition can no longer be met, and the request is **not** terminal. | Gate 1 G1-F04 (2026-09-09)                 | Technical, inside BR6's business intent        |
 | `internal-transfer-downstream-orchestration.BR9` | A compensate signal must be **acknowledged**, not assumed. The consumer reports the outcome of its reversal through API01 with `reportType: COMPENSATION`, moving that stage from `COMPENSATION_REQUESTED` to `COMPENSATED` or `COMPENSATION_FAILED`. An unacknowledged compensate signal is never treated as a completed reversal. | Gate 1 G1-F03 (2026-09-09)                 | Technical                                      |
@@ -147,7 +150,10 @@ signalled (BR8, AC12). `EMPLOYEE_CONFIRMATION` stays `NOT_STARTED` — BR7's pre
 can no longer be met, and the request is deliberately not terminal.
 
 **3. Compensation.** One `employee.transfer.compensate.v1` is emitted per fulfilment stage
-already `COMPLETED` on that request, in reverse sequence order, and each of those stages
+already `COMPLETED` on that request. The portal writes those outbox rows in reverse
+sequence order (highest completed sequence first). That order is creation order only
+(BR6, G1-F13): each event is applied by its own consumer, and the relay does not make
+consumers process them in that order. Each of those stages
 moves to `COMPENSATION_REQUESTED` (AC4). The consumer performs the reversal and
 acknowledges it through API01 with `reportType: COMPENSATION` — `COMPENSATED` on success
 (AC13), `COMPENSATION_FAILED` on failure (AC14). An unacknowledged compensate signal is
@@ -299,7 +305,7 @@ endpoint participates, it does not redefine the field.
 | `requestId` | UUID | Yes | Data, never identity |
 | `stageCode` | Enum — the four fulfilment stage codes | Yes | `EMPLOYEE_CONFIRMATION` is portal-set (BR7) and is rejected here |
 | `reportType` | Enum `FULFILMENT` \| `COMPENSATION` | Yes | Absent is 422, never defaulted — a defaulted report type is how a reversal gets mistaken for fulfilment |
-| `outcome` | Enum `SUCCESS` \| `FAILED` | Yes | Meaning depends on `reportType` per the matrix above |
+| `outcome` | Enum `SUCCESS` \| `FAILED` | Yes | `SUCCESS` means the downstream business operation has completed (BR5, G1-F15), not that the consumer accepted, ticketed, or queued the work. `FAILED` means that operation did not complete. Meaning by `reportType` is the transition matrix |
 | `occurredAt` | RFC3339 | Yes | Consumer's clock, recorded in audit; portal ordering uses its own commit order |
 | `failureCode` | String matching `^[A-Z0-9_]{1,64}$` | No | Only meaningful when `outcome` is `FAILED`. A closed, consumer-defined code so the operational owner has something actionable. **Not** a free-text field — narrative, names or reasons here are a constitution breach, and a value failing the pattern is 422 (AC15) |
 
@@ -379,7 +385,7 @@ event type and a documented consumer migration, never an in-place change.
 | ----------------------------------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `employee.transfer.fulfilment-stage.v1`   | An applicable fulfilment **work stage** becomes `IN_PROGRESS` and is signalled to its consumer | `referenceNo`, `employeeId`, `stageCode`, `confirmedEffectiveDate`, current and target department/location/position/grade/cost-centre **IDs**                               |
 | `employee.transfer.fulfilment-failed.v1`  | A fulfilment work stage is reported `FAILED` — one event per failure, not one per cancelled or compensating stage | `referenceNo`, `employeeId`, `failedStageCode`, `failureCode` (when supplied), `cancelledStageCodes`, `compensatingStageCodes`                                              |
-| `employee.transfer.compensate.v1`         | BR6 — once per already-`COMPLETED` fulfilment work stage, reverse sequence order       | `referenceNo`, `employeeId`, `stageCode` (the stage to reverse), `failedStageCode`                                                                                          |
+| `employee.transfer.compensate.v1`         | BR6 — once per already-`COMPLETED` fulfilment work stage. Outbox rows are created in reverse sequence. Creation order is not a processing-order requirement (G1-F13) | `referenceNo`, `employeeId`, `stageCode` (the stage to reverse), `failedStageCode` |
 | `employee.transfer.completed.v1`          | Request reaches `COMPLETED`                                                            | `referenceNo`, `employeeId`, `confirmedEffectiveDate`                                                                                                                       |
 
 `requestId` and `correlationId` are envelope fields and are therefore on every event above.
@@ -510,6 +516,19 @@ This spec **consumes** `employee.transfer.approved.v1` from the approval-chain s
     `version` by 1 and the other is refused with 409 `version-conflict`; a byte-identical
     `eventId` replay still returns 200 without incrementing `version` (OWN-11).
 
+21. `internal-transfer-downstream-orchestration.AC21` — Given two or more fulfilment
+    stages already `COMPLETED` when one later stage is reported `FAILED`, when the
+    compensate events are written, then the outbox rows are created in descending
+    sequence order, each payload names only its own `stageCode`, and nothing in the
+    contract requires a consumer to wait for another consumer's reversal before applying
+    its own (BR6, G1-F13). Given a consumer reports `outcome: SUCCESS` for
+    `reportType: FULFILMENT`, then that report certifies the business operation
+    completed, not intake (BR5, G1-F15). Given the request then rests in `FULFILMENT`
+    with a `FAILED` or `COMPENSATION_*` stage, then the employee-facing presentation is
+    `internal-transfer-request` BR16 — "HR is completing this", `pendingWith.role`
+    `HR_OPERATIONS` — and not "Being actioned" (G1-F14). Gate 1 approval of this spec
+    does not assert that Payroll, ITSM, or Facilities consumers exist (G1-F16).
+
 ## Unit Test Cases (spec-derived)
 
 | Test ID                                           | Maps to AC | Scenario                                           | Expected                                                                                     |
@@ -545,6 +564,8 @@ This spec **consumes** `employee.transfer.approved.v1` from the approval-chain s
 | `internal-transfer-downstream-orchestration.UT29` | AC4, AC12, AC13 | **Integration**, contract double: failure then compensation acknowledgement | Ends in the "failed, reversal acknowledged" resting shape, request `FULFILMENT` |
 | `internal-transfer-downstream-orchestration.UT30` | AC5, AC19  | **Integration**, contract double redelivers reports out of order and duplicated | Final portal state identical to the in-order, non-duplicated run            |
 | `internal-transfer-downstream-orchestration.UT31` | AC20       | Two reports computed from the same aggregate `version` | One 200 and `version` + 1; the other 409 `version-conflict`; no merge       |
+| `internal-transfer-downstream-orchestration.UT32` | AC21       | Two completed stages then a later `FAILED`             | Compensate outbox rows created high sequence first; each payload has one `stageCode`; no consumer wait field |
+| `internal-transfer-downstream-orchestration.UT33` | AC21       | `SUCCESS` reported only as ticket intake               | Not a valid `SUCCESS` under BR5 — the report that completes the stage is the resolved operation, not intake |
 
 Integration rows use a contract double for the downstream consumer, never a hand-rolled
 stub (constitution — Testing Discipline). This module handles downstream orchestration, so
@@ -575,9 +596,16 @@ There are no orphans in either direction.
 
 ## Surfaces
 
-No new employee-facing screen. Stage statuses appear on the request spec's status view —
-including the three compensation statuses v1.2 adds, whose display labels that spec owns.
-This spec's only HTTP surface is API01 (machine-to-machine).
+No new employee-facing screen. This spec's only HTTP surface is API01 (machine-to-machine).
+
+**Failed and compensating fulfilment — employee view (G1-F14).** When this spec leaves
+the request in `FULFILMENT` with any stage `FAILED`, `COMPENSATION_REQUESTED`,
+`COMPENSATED`, or `COMPENSATION_FAILED`, that set is exactly the trigger for
+`internal-transfer-request` BR16. API04 and API05 there show `statusDisplay`
+"HR is completing this" and `pendingWith.role` `HR_OPERATIONS` with `partyName` null.
+They must not show the healthy-path label "Being actioned". This spec does not render
+that page and does not redefine the labels. Display labels for the stage statuses,
+including the compensation statuses, stay owned by the request spec.
 
 ## Explicitly Out of Scope
 
@@ -657,8 +685,20 @@ No part of this spec requires a plan to guess. Portal resume is deferred, not un
 | v1.2    | 2026-09-11 | Gate 1 response. New _Fulfilment Lifecycle and State Transitions_ section (stage status vocabulary, four paths, stage and request transition matrices, resting shapes); BR8–BR11; _Webhook signature contract_; API01 `reportType`, `failureCode`, replay/rotation and `idempotency-key-conflict` exceptions; event envelope and the named `employee.transfer.fulfilment-failed.v1`; AC12–AC19; UT16–UT30 including three integration rows; traceability matrix; A5, A6; BRD-001 OQ-20 raised for the business half of resume-after-failure | Gate 1 G1-F01–G1-F12 (Abhijit Adhikari, 2026-09-09) |
 | v1.3    | 2026-09-11 | Product v1 lock: OQ-20 confirmed — off-portal closeout; portal resume deferred. Behaviour unchanged from v1.2 | Product, 2026-09-11 |
 | v1.4    | 2026-09-15 | OWN-11 participation: API01 reads aggregate `version` in-transaction and compare-and-swaps; 409 `version-conflict` on a lost race; byte-identical `eventId` replay still does not increment version | `internal-transfer-request` G1-F18 |
+| v1.5    | 2026-09-24 | G1-F13–G1-F16 answered. Reverse sequence is outbox creation order only. `SUCCESS` means the business operation completed. Failed fulfilment cites request-spec BR16. Gate 1 approval is the contract, not end-to-end readiness. AC21, UT32, UT33. Resubmitted, not Approved | Gate 1 G1-F13–G1-F16 (Abhijit Adhikari, 2026-09-23) |
 
 ## Gate 1 Review
+
+### Author response — v1.5, 2026-09-24 (Alamgir Sarkar)
+
+| Finding | Severity | Addressed in v1.5 by |
+| --- | --- | --- |
+| G1-F13 — reverse sequence could be read as consumer processing order | Blocker | BR6 and the compensation path: reverse sequence is the order outbox rows are created. ADR-0001 / BR5 stay at-least-once with no cross-consumer processing order. Each `compensate.v1` is applied by its own consumer. AC21, UT32 |
+| G1-F14 — failed `FULFILMENT` not tied to the employee status view | Blocker | Surfaces cite `internal-transfer-request` BR16. The stage set this spec leaves (`FAILED`, `COMPENSATION_*`) is that rule's trigger: "HR is completing this", `pendingWith.role` `HR_OPERATIONS`, not "Being actioned" |
+| G1-F15 — `SUCCESS` undefined | Blocker | BR5 and the API01 `outcome` note: `SUCCESS` means the downstream business operation completed. Ticket intake or queueing is not `SUCCESS`. UT33 |
+| G1-F16 — contract readiness read as end-to-end readiness | Blocker | Context callout: Gate 1 approval certifies this contract only. Unbuilt Payroll, ITSM, and Facilities consumers remain a separate readiness question |
+
+v1.5 is resubmitted. It is not Approved.
 
 > Reviewed by: Abhijit Adhikari, 2026-09-23, **Changes Requested** (against v1.4) — 4
 > Blocker findings. **Compensation ordering (G1-F13):** BR6 and the compensate event
