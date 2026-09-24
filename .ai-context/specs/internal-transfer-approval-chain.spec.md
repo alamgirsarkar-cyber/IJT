@@ -6,14 +6,15 @@
 
 ## Status
 
-**Changes Requested** — v1.4, reviewed 2026-09-24 by Abhijit Adhikari (G1-F03: duplicate
-ownership of `ORG_DATA_UPDATE` with `internal-transfer-downstream-orchestration`). v1.4
-answered the 2026-09-23 verdict on v1.3 (G1-F01, G1-F02). Do not implement until **Approved**.
+**In Peer Review (Gate 1)** — v1.5, resubmitted 2026-09-24. v1.5 answers G1-F03: this
+spec owns the `ORG_DATA_UPDATE` `NOT_STARTED` → `IN_PROGRESS` start (AC3), matching
+OWN-10. Downstream v1.6 cites that transition and does not restate it. Do not implement
+until **Approved**.
 
 **Reviewer note:** this spec consumes the request aggregate and stage plan.
 `internal-transfer-request` is Gate 1 **Approved** (v1.5, 2026-09-15). OQ-11 and OQ-12
-are closed. v1.4 closes G1-F01 as BR9 and G1-F02 as BR6 citing BRD-001 BR13. Re-review
-of v1.4 on 2026-09-24 returned **Changes Requested** (G1-F03).
+are closed. v1.4 closed G1-F01 as BR9 and G1-F02 as BR6 citing BRD-001 BR13. The
+2026-09-24 **Changes Requested** verdict on v1.4 (G1-F03) is answered by v1.5.
 
 ## Linked BRD
 
@@ -24,7 +25,7 @@ of v1.4 on 2026-09-24 returned **Changes Requested** (G1-F03).
 | Role | Name | Date |
 |---|---|---|
 | Author / owner | Alamgir Sarkar | 2026-09-03 |
-| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-23 — **Changes Requested** on v1.3. 2026-09-24 — **Changes Requested** on v1.4 (G1-F03) |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-24 — **Changes Requested** on v1.4 (G1-F03). v1.5 resubmitted the same day |
 | Gate 2 reviewer | Tapas Dutta | — |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`.
@@ -281,8 +282,10 @@ writes nothing. Idempotent replay is checked before the version precondition.
    `COMPLETED`, `confirmedEffectiveDate` is stored, `effectiveDateStatus` is `CONFIRMED`,
    request status becomes `FULFILMENT`, `ORG_DATA_UPDATE` becomes `IN_PROGRESS` if it is
    `applicable` (it always is), an audit record is written, and an outbox row
-   `employee.transfer.approved.v1` is written in the same transaction. The payload contains
-   no reason text, no names and no contact details.
+   `employee.transfer.approved.v1` is written in the same transaction. This spec is the
+   only owner of that `NOT_STARTED` → `IN_PROGRESS` start (OWN-10). Downstream consumes
+   `approved.v1` to emit `fulfilment-stage.v1` and does not set the stage status. The
+   payload contains no reason text, no names and no contact details.
 
 4. `internal-transfer-approval-chain.AC4` — Given a request waiting on `MANAGER_RELEASE`,
    `MANAGER_ACCEPT` or `HR_VALIDATION`, when the authorised caller submits `REJECT`, then
@@ -477,8 +480,17 @@ request would be a new increment.
 | v1.2    | 2026-09-11 | Product v1 lock: OQ-11 (OWN-12) and OQ-12 (OWN-05) confirmed. BR5/BR6 citations updated; no behaviour change | Product, 2026-09-11 |
 | v1.3    | 2026-09-15 | OWN-11 participation: API02 returns `version`; API03 requires `If-Match` and compare-and-swap; 409 `version-conflict`. AC15, UT30–UT32. AC10 retained as fail-closed guard now that request-spec BR15 refuses unresolved managers at submit | `internal-transfer-request` G1-F18, G1-F17 |
 | v1.4    | 2026-09-24 | G1-F01 and G1-F02 answered from existing BRD rules. BR9: the 14–180 day window binds the requested date only. BR6 cites BRD-001 BR13 for any `HR_BUSINESS_PARTNER`. A3 and A4 closed. AC16, UT33. Resubmitted, not Approved | Gate 1 G1-F01, G1-F02 (Abhijit Adhikari, 2026-09-23) |
+| v1.5    | 2026-09-24 | G1-F03: AC3 is the sole owner of the `ORG_DATA_UPDATE` start. Downstream v1.6 references that transition and emits `fulfilment-stage.v1` only. Resubmitted, not Approved | Gate 1 G1-F03 (Abhijit Adhikari, 2026-09-24) |
 
 ## Gate 1 Review
+
+### Author response — v1.5, 2026-09-24 (Alamgir Sarkar)
+
+| Finding | Severity | Addressed in v1.5 by |
+| --- | --- | --- |
+| G1-F03 — duplicate ownership of `ORG_DATA_UPDATE` | Major | This spec keeps the start. AC3 states it is the only owner of `NOT_STARTED` → `IN_PROGRESS`, matching the request spec's transition table (OWN-10). Downstream v1.6 drops that row from its matrix and from AC1; handling `approved.v1` writes `fulfilment-stage.v1` only |
+
+v1.5 is resubmitted. It is not Approved. Downstream v1.6 is resubmitted with it, because the Approved v1.5 text of that spec still performed the same transition.
 
 > Reviewed by: Abhijit Adhikari, 2026-09-24, **Changes Requested** (against v1.4) — 1
 > Major finding. **Duplicate ownership of `ORG_DATA_UPDATE` (G1-F03):** this is the main

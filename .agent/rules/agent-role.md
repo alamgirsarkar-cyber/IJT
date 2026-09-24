@@ -69,7 +69,7 @@ requirement is written down. Shared facts go in `.ai-context/ownership_index.md`
 | Plan | `.ai-context/plans/internal-transfer-request.plan.md` |
 | Tasks | `.ai-context/tasks/internal-transfer-request.tasks.md` |
 | Prompts | `.ai-context/prompts/internal-transfer-request.prompts.md` |
-| **Next prompt** | Blocked — both remaining specs in the review order came back **Changes Requested** from Abhijit Adhikari on 2026-09-23: `internal-transfer-approval-chain` v1.3 (G1-F01–G1-F02: BR7/confirmed-date applicability, BR6 HR authorisation model — both need an explicit Product/Security decision, not an assumption) and `internal-transfer-downstream-orchestration` v1.4 (G1-F13–G1-F16: compensation ordering, failed-fulfilment employee visibility, `SUCCESS` semantics, contract-vs-E2E readiness). Their 2026-09-22 plans/tasks are **not valid** until each is resolved and re-reviewed — do not implement, do not continue plan review for either spec. All four transfer specs now have a spec-level state: request Approved (v1.5); notifications Approved (v1.3); approval-chain and downstream both Changes Requested |
+| **Next prompt** | Blocked on Gate 1. `internal-transfer-approval-chain` v1.5 and `internal-transfer-downstream-orchestration` v1.6 are resubmitted (2026-09-24) for G1-F03: approval-chain AC3 is the only owner of the `ORG_DATA_UPDATE` start; downstream emits `fulfilment-stage.v1` on `approved.v1` and does not set that status. Do not implement either until Abhijit Adhikari approves both. Request v1.5 and notifications v1.3 stay Approved |
 
 ## Standing constraints (append to every prompt)
 

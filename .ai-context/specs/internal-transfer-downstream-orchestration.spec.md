@@ -6,11 +6,14 @@
 
 ## Status
 
-**Approved** — v1.5, Gate 1 approved 2026-09-24 by Abhijit Adhikari. v1.5 answered the
-2026-09-23 **Changes Requested** verdict on v1.4 (G1-F13–G1-F16).
+**In Peer Review (Gate 1)** — v1.6, resubmitted 2026-09-24. v1.6 removes this spec's
+duplicate ownership of the `ORG_DATA_UPDATE` `NOT_STARTED` → `IN_PROGRESS` start
+(`internal-transfer-approval-chain` G1-F03). The 2026-09-24 **Approved** verdict covered
+v1.5 only and is superseded for this increment. Do not implement v1.6 until **Approved**.
 
-**Reviewer note:** v1.5 answers G1-F13–G1-F16. Disposition is in _Gate 1 Review_. v1.5
-supersedes v1.3 as the Approved version (2026-09-24).
+**Reviewer note:** v1.5 remains the last Approved text for G1-F13–G1-F16. v1.6 changes
+only who starts `ORG_DATA_UPDATE`. Approval-chain owns that status transition; this spec
+cites it and, on `approved.v1`, writes `fulfilment-stage.v1` only.
 
 ## Linked BRD
 
@@ -21,7 +24,7 @@ supersedes v1.3 as the Approved version (2026-09-24).
 | Role                               | Name             | Date                           |
 | ---------------------------------- | ---------------- | ------------------------------ |
 | Author / owner                     | Alamgir Sarkar   | 2026-09-03                     |
-| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-23 — **Changes Requested** on v1.4. 2026-09-24 — **Approved** on v1.5 |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-24 — **Approved** on v1.5, superseded by the v1.6 resubmission (approval-chain G1-F03) |
 | Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
@@ -123,7 +126,7 @@ completed by the portal alone under BR7. Stages 1–3 belong to
 | Stage status | Meaning | Set by |
 | --- | --- | --- |
 | `NOT_STARTED` | Row exists from the stage plan; not yet signalled | `internal-transfer-request` at submit |
-| `IN_PROGRESS` | Signalled to its consumer; awaiting a report | This spec (AC1, AC2) |
+| `IN_PROGRESS` | Signalled to its consumer; awaiting a report | `ORG_DATA_UPDATE` start: `internal-transfer-approval-chain` AC3 (OWN-10). Later fulfilment stages: this spec (AC2) |
 | `COMPLETED` | Consumer reported `SUCCESS` | This spec (AC2, AC3) |
 | `FAILED` | Consumer reported `FAILED` | This spec (AC4) |
 | `CANCELLED` | Will not run — BR8 after a failure on the same request; or withdrawal, which the request spec owns | This spec (AC12); `internal-transfer-request` (its AC14) |
@@ -137,7 +140,10 @@ owned by `internal-transfer-request`, not here (see Context).
 
 ### The four paths
 
-**1. Completion.** `employee.transfer.approved.v1` starts `ORG_DATA_UPDATE` (AC1). Each
+**1. Completion.** Approval-chain AC3 starts `ORG_DATA_UPDATE` (`NOT_STARTED` →
+`IN_PROGRESS`) in the HR-approve transaction and emits `employee.transfer.approved.v1`.
+This spec does not repeat that status change. Handling `approved.v1` writes
+`employee.transfer.fulfilment-stage.v1` for the stage that is already `IN_PROGRESS` (AC1). Each
 `SUCCESS` report completes that stage and signals the next applicable one in sequence
 order (AC2). When the last applicable stage completes, `EMPLOYEE_CONFIRMATION` completes,
 the request becomes `COMPLETED` and `employee.transfer.completed.v1` is emitted (AC3).
@@ -178,7 +184,8 @@ while `ORG_DATA_UPDATE` is still `IN_PROGRESS`.
 
 | From | Trigger | To | Side effects, committed in one transaction |
 | --- | --- | --- | --- |
-| `NOT_STARTED` | `approved.v1` handled (`ORG_DATA_UPDATE` only) | `IN_PROGRESS` | One `fulfilment-stage.v1` outbox row + audit row |
+| `NOT_STARTED` | `approved.v1` handled | **Not this spec.** `ORG_DATA_UPDATE` is already `IN_PROGRESS` when the event is handled (`internal-transfer-approval-chain` AC3; OWN-10). A handler that finds it still `NOT_STARTED` changes nothing and writes no `fulfilment-stage.v1` | — |
+| `IN_PROGRESS` | `approved.v1` handled (`ORG_DATA_UPDATE` only) | `IN_PROGRESS` (unchanged) | One `fulfilment-stage.v1` outbox row. No stage-status audit row — the start was committed with the approval |
 | `NOT_STARTED` | Previous applicable fulfilment stage reached `COMPLETED` | `IN_PROGRESS` | One `fulfilment-stage.v1` outbox row + audit row |
 | `NOT_STARTED` | Another fulfilment work stage on the request reported `FAILED` (BR8) — `EMPLOYEE_CONFIRMATION` excepted, it stays `NOT_STARTED` | `CANCELLED` | Audit row only — never signalled |
 | `IN_PROGRESS` | API01, `reportType: FULFILMENT`, `outcome: SUCCESS` | `COMPLETED` | Audit row; next applicable stage signalled, or `completed.v1` when it was the last |
@@ -393,15 +400,21 @@ never named the failure event that `internal-transfer-notifications` already say
 consumes, which left that spec pointing at an event with no contract.
 
 This spec **consumes** `employee.transfer.approved.v1` from the approval-chain spec
-(internal handler, not a public API): that is the only start signal for fulfilment.
+(internal handler, not a public API). The event is the signal to emit
+`fulfilment-stage.v1` for `ORG_DATA_UPDATE`. It is not the transition that sets that
+stage `IN_PROGRESS` — approval-chain AC3 already did, in the same transaction that wrote
+the outbox row.
 
 ## Acceptance Criteria
 
-1. `internal-transfer-downstream-orchestration.AC1` — Given a request that has just
-   entered `FULFILMENT` via `employee.transfer.approved.v1`, when the handler runs, then
-   `ORG_DATA_UPDATE` is `IN_PROGRESS` and one `employee.transfer.fulfilment-stage.v1`
-   outbox row for that stage is written in the same transaction as the stage update — and
-   `PAYROLL_UPDATE`, `IT_ACCESS` and `FACILITIES` remain `NOT_STARTED` even if applicable.
+1. `internal-transfer-downstream-orchestration.AC1` — Given a request in `FULFILMENT`
+   whose `ORG_DATA_UPDATE` is already `IN_PROGRESS` (set by
+   `internal-transfer-approval-chain` AC3, not by this handler) and
+   `employee.transfer.approved.v1` is delivered, when the handler runs, then that stage
+   status is unchanged, one `employee.transfer.fulfilment-stage.v1` outbox row for that
+   stage is written, and `PAYROLL_UPDATE`, `IT_ACCESS` and `FACILITIES` remain
+   `NOT_STARTED` even if applicable. If `ORG_DATA_UPDATE` is still `NOT_STARTED`, the
+   handler writes nothing and changes nothing.
 
 2. `internal-transfer-downstream-orchestration.AC2` — Given `ORG_DATA_UPDATE` is reported
    `SUCCESS`, when API01 is processed, then that stage becomes `COMPLETED`, the next
@@ -532,8 +545,9 @@ This spec **consumes** `employee.transfer.approved.v1` from the approval-chain s
 
 | Test ID                                           | Maps to AC | Scenario                                           | Expected                                                                                     |
 | ------------------------------------------------- | ---------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `internal-transfer-downstream-orchestration.UT01` | AC1        | Handle `approved.v1`                               | `ORG_DATA_UPDATE` `IN_PROGRESS`; one fulfilment-stage outbox row; later stages `NOT_STARTED` |
-| `internal-transfer-downstream-orchestration.UT02` | AC1        | Outbox write fails on AC1                          | Stage not left `IN_PROGRESS` without an outbox row                                           |
+| `internal-transfer-downstream-orchestration.UT01` | AC1        | Handle `approved.v1` with `ORG_DATA_UPDATE` already `IN_PROGRESS` | Stage status unchanged; one fulfilment-stage outbox row; later stages `NOT_STARTED` |
+| `internal-transfer-downstream-orchestration.UT01b` | AC1       | Handle `approved.v1` while `ORG_DATA_UPDATE` is still `NOT_STARTED` | No stage change; no fulfilment-stage outbox row |
+| `internal-transfer-downstream-orchestration.UT02` | AC1        | Outbox write fails on AC1                          | No fulfilment-stage row; stage status stays the `IN_PROGRESS` approval-chain already committed; retry emits exactly one row |
 | `internal-transfer-downstream-orchestration.UT03` | AC2        | Org SUCCESS; payroll applicable                    | Payroll `IN_PROGRESS` and signalled; IT/Facilities still `NOT_STARTED` if later in sequence  |
 | `internal-transfer-downstream-orchestration.UT04` | AC2        | Org SUCCESS; payroll not applicable, IT applicable | IT signalled next; payroll never signalled                                                   |
 | `internal-transfer-downstream-orchestration.UT05` | AC3        | Only org applicable, org SUCCESS                   | Status `COMPLETED`; `EMPLOYEE_CONFIRMATION` `COMPLETED`; `completed.v1` present              |
@@ -685,12 +699,15 @@ No part of this spec requires a plan to guess. Portal resume is deferred, not un
 | v1.3    | 2026-09-11 | Product v1 lock: OQ-20 confirmed — off-portal closeout; portal resume deferred. Behaviour unchanged from v1.2 | Product, 2026-09-11 |
 | v1.4    | 2026-09-15 | OWN-11 participation: API01 reads aggregate `version` in-transaction and compare-and-swaps; 409 `version-conflict` on a lost race; byte-identical `eventId` replay still does not increment version | `internal-transfer-request` G1-F18 |
 | v1.5    | 2026-09-24 | G1-F13–G1-F16 answered. Reverse sequence is outbox creation order only. `SUCCESS` means the business operation completed. Failed fulfilment cites request-spec BR16. Gate 1 approval is the contract, not end-to-end readiness. AC21, UT32, UT33. Resubmitted, not Approved | Gate 1 G1-F13–G1-F16 (Abhijit Adhikari, 2026-09-23) |
+| v1.6    | 2026-09-24 | `ORG_DATA_UPDATE` start is no longer performed here. Approval-chain AC3 owns `NOT_STARTED` → `IN_PROGRESS`. Handling `approved.v1` emits `fulfilment-stage.v1` only (AC1, UT01, UT01b, UT02). Resubmitted. Not Approved | `internal-transfer-approval-chain` G1-F03 (Abhijit Adhikari, 2026-09-24) |
 
 ## Gate 1 Review
 
 > Reviewed by: Abhijit Adhikari, 2026-09-24, **Approved** (against v1.5) — "Approved."
 > Reviewed manually (chat verdict). Findings worksheet:
 > `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
+> **Superseded-by:** v1.6 (2026-09-24), which stops this spec from also performing the
+> `ORG_DATA_UPDATE` start owned by approval-chain AC3. v1.6 is resubmitted and not Approved.
 
 ### Author response — v1.5, 2026-09-24 (Alamgir Sarkar)
 
