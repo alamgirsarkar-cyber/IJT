@@ -6,12 +6,11 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — v1.6, resubmitted 2026-09-24. v1.6 removes this spec's
-duplicate ownership of the `ORG_DATA_UPDATE` `NOT_STARTED` → `IN_PROGRESS` start
-(`internal-transfer-approval-chain` G1-F03). The 2026-09-24 **Approved** verdict covered
-v1.5 only and is superseded for this increment. Do not implement v1.6 until **Approved**.
+**Approved** — v1.6, Gate 1 approved 2026-09-24 by Abhijit Adhikari. v1.6 removes this
+spec's duplicate ownership of the `ORG_DATA_UPDATE` `NOT_STARTED` → `IN_PROGRESS` start
+(`internal-transfer-approval-chain` G1-F03). It supersedes the same day's v1.5 approval.
 
-**Reviewer note:** v1.5 remains the last Approved text for G1-F13–G1-F16. v1.6 changes
+**Reviewer note:** G1-F13–G1-F16 were answered in v1.5. v1.6 changes
 only who starts `ORG_DATA_UPDATE`. Approval-chain owns that status transition; this spec
 cites it and, on `approved.v1`, writes `fulfilment-stage.v1` only.
 
@@ -24,7 +23,7 @@ cites it and, on `approved.v1`, writes `fulfilment-stage.v1` only.
 | Role                               | Name             | Date                           |
 | ---------------------------------- | ---------------- | ------------------------------ |
 | Author / owner                     | Alamgir Sarkar   | 2026-09-03                     |
-| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-24 — **Approved** on v1.5, superseded by the v1.6 resubmission (approval-chain G1-F03) |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-24 — **Approved** on v1.5, superseded by the v1.6 resubmission (approval-chain G1-F03). 2026-09-24 — **Approved** on v1.6 |
 | Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
@@ -703,11 +702,16 @@ No part of this spec requires a plan to guess. Portal resume is deferred, not un
 
 ## Gate 1 Review
 
+> Reviewed by: Abhijit Adhikari, 2026-09-24, **Approved** (against v1.6) — "Both specs are approved now."
+> Approved together with `internal-transfer-approval-chain` v1.5 (G1-F03). Reviewed
+> manually (chat verdict). Findings worksheet:
+> `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
+
 > Reviewed by: Abhijit Adhikari, 2026-09-24, **Approved** (against v1.5) — "Approved."
 > Reviewed manually (chat verdict). Findings worksheet:
 > `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
 > **Superseded-by:** v1.6 (2026-09-24), which stops this spec from also performing the
-> `ORG_DATA_UPDATE` start owned by approval-chain AC3. v1.6 is resubmitted and not Approved.
+> `ORG_DATA_UPDATE` start owned by approval-chain AC3. v1.6 **Approved** 2026-09-24 (line above).
 
 ### Author response — v1.5, 2026-09-24 (Alamgir Sarkar)
 

@@ -6,10 +6,9 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — v1.5, resubmitted 2026-09-24. v1.5 answers G1-F03: this
-spec owns the `ORG_DATA_UPDATE` `NOT_STARTED` → `IN_PROGRESS` start (AC3), matching
-OWN-10. Downstream v1.6 cites that transition and does not restate it. Do not implement
-until **Approved**.
+**Approved** — v1.5, Gate 1 approved 2026-09-24 by Abhijit Adhikari. v1.5 answers G1-F03:
+this spec owns the `ORG_DATA_UPDATE` `NOT_STARTED` → `IN_PROGRESS` start (AC3), matching
+OWN-10. Downstream v1.6 (Approved the same day) cites that transition and does not restate it.
 
 **Reviewer note:** this spec consumes the request aggregate and stage plan.
 `internal-transfer-request` is Gate 1 **Approved** (v1.5, 2026-09-15). OQ-11 and OQ-12
@@ -25,7 +24,7 @@ are closed. v1.4 closed G1-F01 as BR9 and G1-F02 as BR6 citing BRD-001 BR13. The
 | Role | Name | Date |
 |---|---|---|
 | Author / owner | Alamgir Sarkar | 2026-09-03 |
-| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-24 — **Changes Requested** on v1.4 (G1-F03). v1.5 resubmitted the same day |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-24 — **Changes Requested** on v1.4 (G1-F03). 2026-09-24 — **Approved** on v1.5 |
 | Gate 2 reviewer | Tapas Dutta | — |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`.
@@ -483,6 +482,11 @@ request would be a new increment.
 | v1.5    | 2026-09-24 | G1-F03: AC3 is the sole owner of the `ORG_DATA_UPDATE` start. Downstream v1.6 references that transition and emits `fulfilment-stage.v1` only. Resubmitted, not Approved | Gate 1 G1-F03 (Abhijit Adhikari, 2026-09-24) |
 
 ## Gate 1 Review
+
+> Reviewed by: Abhijit Adhikari, 2026-09-24, **Approved** (against v1.5) — "Both specs are approved now."
+> Approved together with `internal-transfer-downstream-orchestration` v1.6. G1-F03 is
+> closed by v1.5. Reviewed manually (chat verdict). Findings worksheet:
+> `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`.
 
 ### Author response — v1.5, 2026-09-24 (Alamgir Sarkar)
 

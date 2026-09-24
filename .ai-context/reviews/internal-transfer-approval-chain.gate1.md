@@ -14,8 +14,8 @@
 | Author                                       | Alamgir Sarkar                                                         |
 | **Reviewer (not the author)**                | Abhijit Adhikari                                                       |
 | Security / Architecture (constitution check) | _Pending — name reviewer and date when obtained_                       |
-| Submitted                                    | 2026-09-07; **v1.3 (OWN-11 `If-Match` on API03) submitted 2026-09-15**; **v1.4 submitted 2026-09-24** |
-| Outcome                                      | **Approved** (2026-09-09, v1.0). **v1.1–v1.3 published without a new Gate 1 pass** (spec's own Superseded-by note); v1.3 re-reviewed 2026-09-23 — **Changes Requested**; v1.4 re-reviewed 2026-09-24 — **Changes Requested** |
+| Submitted                                    | 2026-09-07; **v1.3 (OWN-11 `If-Match` on API03) submitted 2026-09-15**; **v1.4 submitted 2026-09-24**; **v1.5 submitted 2026-09-24** |
+| Outcome                                      | **Approved** (2026-09-09, v1.0). **v1.1–v1.3 published without a new Gate 1 pass** (spec's own Superseded-by note); v1.3 re-reviewed 2026-09-23 — **Changes Requested**; v1.4 re-reviewed 2026-09-24 — **Changes Requested**; v1.5 re-reviewed 2026-09-24 — **Approved** |
 
 ## Submission notes for the reviewer
 
@@ -113,14 +113,25 @@ issue.
 
 ---
 
+## Re-review — v1.5, 2026-09-24: Approved
+
+Abhijit Adhikari reviewed manually (chat, not the Artifact dashboard): "Both specs are approved now." — this spec
+v1.5 and `internal-transfer-downstream-orchestration` v1.6 together. v1.5 closes G1-F03:
+AC3 is the only owner of the `ORG_DATA_UPDATE` `NOT_STARTED` → `IN_PROGRESS` start;
+downstream v1.6 no longer performs it. No new findings.
+
+**Verdict: Approved.**
+
+---
+
 ## Outcome
 
 | Field                              | Value                                                       |
 | ---------------------------------- | ----------------------------------------------------------- |
-| **Outcome**                        | **Approved** (2026-09-09, v1.0); **Changes Requested** (2026-09-23, v1.3); **Changes Requested** (2026-09-24, v1.4) |
-| **Spec version after review**      | v1.0 — Approved (2026-09-09); v1.3 — **Changes Requested** (2026-09-23, findings G1-F01–G1-F02); v1.4 — **Changes Requested** (2026-09-24, finding G1-F03) |
-| **Date**                           | 2026-09-09 (v1.0); 2026-09-23 (v1.3); 2026-09-24 (v1.4)     |
-| **Next step if Approved**          | Plan drafting may start after request spec is also Approved |
-| **Next step if Changes Requested** | Author revises spec, bumps version, resubmits — **applies now** |
+| **Outcome**                        | **Approved** (2026-09-09, v1.0); **Changes Requested** (2026-09-23, v1.3); **Changes Requested** (2026-09-24, v1.4); **Approved** (2026-09-24, v1.5) |
+| **Spec version after review**      | v1.0 — Approved (2026-09-09); v1.3 — **Changes Requested** (2026-09-23, findings G1-F01–G1-F02); v1.4 — Changes Requested (2026-09-24, finding G1-F03); v1.5 — **Approved** (2026-09-24, G1-F03 closed) |
+| **Date**                           | 2026-09-09 (v1.0); 2026-09-23 (v1.3); 2026-09-24 (v1.4, v1.5) |
+| **Next step if Approved**          | Plan review. The plan and tasks drafted 2026-09-22 predate v1.4–v1.5 and need checking against v1.5 first |
+| **Next step if Changes Requested** | N/A — v1.5 Approved 2026-09-24 |
 
 _When complete: update the spec status and `.ai-context/status.md` the same day._

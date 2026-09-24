@@ -14,8 +14,8 @@
 | Author                                       | Alamgir Sarkar                                                         |
 | **Reviewer (not the author)**                | Abhijit Adhikari                                                       |
 | Security / Architecture (constitution check) | _Pending — name reviewer and date when obtained_                       |
-| Submitted                                    | 2026-09-07; **v1.4 (OWN-11 CAS on API01) submitted 2026-09-15**; **v1.5 submitted 2026-09-24** |
-| Outcome                                      | **Approved** (2026-09-11, v1.3) — was **Changes Requested** (2026-09-09, v1.0). **v1.4 re-reviewed 2026-09-23 — Changes Requested**. **v1.5 re-reviewed 2026-09-24 — Approved** |
+| Submitted                                    | 2026-09-07; **v1.4 (OWN-11 CAS on API01) submitted 2026-09-15**; **v1.5 submitted 2026-09-24**; **v1.6 submitted 2026-09-24** |
+| Outcome                                      | **Approved** (2026-09-11, v1.3) — was **Changes Requested** (2026-09-09, v1.0). **v1.4 re-reviewed 2026-09-23 — Changes Requested**. **v1.5 re-reviewed 2026-09-24 — Approved**. **v1.6 re-reviewed 2026-09-24 — Approved** |
 
 ## Submission notes for the reviewer
 
@@ -164,5 +164,22 @@ spec's _Gate 1 Review_).
 | **Outcome** | **Approved** (2026-09-24, v1.5) |
 | **Spec version after review** | v1.0 — Changes Requested (2026-09-09); v1.3 — Approved (2026-09-11); v1.4 — Changes Requested (2026-09-23); v1.5 — **Approved** (2026-09-24) |
 | **Date** | 2026-09-09; 2026-09-11; 2026-09-23; 2026-09-24 |
-| **Next step if Approved** | Plan review. The plan and tasks drafted 2026-09-22 predate v1.5 and need checking against it first |
+| **Next step if Approved** | Superseded by v1.6 (below) |
+| **Next step if Changes Requested** | N/A for this round |
+
+## Re-review — v1.6, 2026-09-24: Approved
+
+Abhijit Adhikari reviewed manually (chat, not the Artifact dashboard): "Both specs are approved now." — this spec
+v1.6 and `internal-transfer-approval-chain` v1.5 together. v1.6's only change answers
+approval-chain G1-F03: handling `approved.v1` emits `fulfilment-stage.v1` only, and the
+`ORG_DATA_UPDATE` start belongs to approval-chain AC3. No new findings.
+
+## Outcome (v1.6 re-review)
+
+| Field | Value |
+|---|---|
+| **Outcome** | **Approved** (2026-09-24, v1.6) |
+| **Spec version after review** | v1.0 — Changes Requested (2026-09-09); v1.3 — Approved (2026-09-11); v1.4 — Changes Requested (2026-09-23); v1.5 — Approved (2026-09-24, superseded); v1.6 — **Approved** (2026-09-24) |
+| **Date** | 2026-09-09; 2026-09-11; 2026-09-23; 2026-09-24 |
+| **Next step if Approved** | Plan review. The plan and tasks drafted 2026-09-22 predate v1.5–v1.6 and need checking against v1.6 first |
 | **Next step if Changes Requested** | N/A for this round |
