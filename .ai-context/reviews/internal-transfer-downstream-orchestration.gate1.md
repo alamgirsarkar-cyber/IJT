@@ -14,8 +14,8 @@
 | Author                                       | Alamgir Sarkar                                                         |
 | **Reviewer (not the author)**                | Abhijit Adhikari                                                       |
 | Security / Architecture (constitution check) | _Pending — name reviewer and date when obtained_                       |
-| Submitted                                    | 2026-09-07; **v1.4 (OWN-11 CAS on API01) submitted 2026-09-15**       |
-| Outcome                                      | **Approved** (2026-09-11, v1.3) — was **Changes Requested** (2026-09-09, v1.0). **v1.4 re-reviewed 2026-09-23 — Changes Requested** |
+| Submitted                                    | 2026-09-07; **v1.4 (OWN-11 CAS on API01) submitted 2026-09-15**; **v1.5 submitted 2026-09-24** |
+| Outcome                                      | **Approved** (2026-09-11, v1.3) — was **Changes Requested** (2026-09-09, v1.0). **v1.4 re-reviewed 2026-09-23 — Changes Requested**. **v1.5 re-reviewed 2026-09-24 — Approved** |
 
 ## Submission notes for the reviewer
 
@@ -149,4 +149,20 @@ re-approval.
 | **Spec version after review** | v1.0 — Changes Requested (2026-09-09); v1.3 — Approved (2026-09-11); v1.4 — **Changes Requested** (2026-09-23, findings G1-F13–G1-F16) |
 | **Date** | 2026-09-09; 2026-09-11; 2026-09-23 |
 | **Next step if Approved** | N/A for this round |
-| **Next step if Changes Requested** | Author revises spec, bumps version, resubmits — **applies now** |
+| **Next step if Changes Requested** | Author revises spec, bumps version, resubmits — done: v1.5 resubmitted 2026-09-24 |
+
+## Re-review — v1.5, 2026-09-24: Approved
+
+Abhijit Adhikari reviewed manually (chat, not the Artifact dashboard). Verdict as given:
+"Approved." No new findings raised. v1.5 answered G1-F13–G1-F16 (author response on the
+spec's _Gate 1 Review_).
+
+## Outcome (v1.5 re-review)
+
+| Field | Value |
+|---|---|
+| **Outcome** | **Approved** (2026-09-24, v1.5) |
+| **Spec version after review** | v1.0 — Changes Requested (2026-09-09); v1.3 — Approved (2026-09-11); v1.4 — Changes Requested (2026-09-23); v1.5 — **Approved** (2026-09-24) |
+| **Date** | 2026-09-09; 2026-09-11; 2026-09-23; 2026-09-24 |
+| **Next step if Approved** | Plan review. The plan and tasks drafted 2026-09-22 predate v1.5 and need checking against it first |
+| **Next step if Changes Requested** | N/A for this round |

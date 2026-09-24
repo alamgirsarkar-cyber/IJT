@@ -6,12 +6,11 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — v1.5, resubmitted 2026-09-24. v1.5 answers the 2026-09-23
-**Changes Requested** verdict on v1.4 (G1-F13–G1-F16). Not Approved until Abhijit Adhikari
-re-reviews. Do not implement the v1.4/v1.5 increment until **Approved**.
+**Approved** — v1.5, Gate 1 approved 2026-09-24 by Abhijit Adhikari. v1.5 answered the
+2026-09-23 **Changes Requested** verdict on v1.4 (G1-F13–G1-F16).
 
-**Reviewer note:** v1.5 answers G1-F13–G1-F16. Disposition is in _Gate 1 Review_. v1.3
-remains the last Approved version until v1.5 is re-reviewed.
+**Reviewer note:** v1.5 answers G1-F13–G1-F16. Disposition is in _Gate 1 Review_. v1.5
+supersedes v1.3 as the Approved version (2026-09-24).
 
 ## Linked BRD
 
@@ -22,7 +21,7 @@ remains the last Approved version until v1.5 is re-reviewed.
 | Role                               | Name             | Date                           |
 | ---------------------------------- | ---------------- | ------------------------------ |
 | Author / owner                     | Alamgir Sarkar   | 2026-09-03                     |
-| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-23 — **Changes Requested** on v1.4. v1.5 resubmitted 2026-09-24; re-review outstanding |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-23 — **Changes Requested** on v1.4. 2026-09-24 — **Approved** on v1.5 |
 | Gate 2 reviewer                    | Tapas Dutta      | —                              |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
@@ -689,6 +688,10 @@ No part of this spec requires a plan to guess. Portal resume is deferred, not un
 
 ## Gate 1 Review
 
+> Reviewed by: Abhijit Adhikari, 2026-09-24, **Approved** (against v1.5) — "Approved."
+> Reviewed manually (chat verdict). Findings worksheet:
+> `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
+
 ### Author response — v1.5, 2026-09-24 (Alamgir Sarkar)
 
 | Finding | Severity | Addressed in v1.5 by |
@@ -723,7 +726,8 @@ v1.5 is resubmitted. It is not Approved.
 > no portal-driven or automatic resume in v1. Findings worksheet:
 > `.ai-context/reviews/internal-transfer-downstream-orchestration.gate1.md`.
 > **Superseded-by:** the 2026-09-23 Changes Requested verdict above, covering v1.4
-> (additive OWN-11 compare-and-swap on API01) together with the four new findings.
+> (additive OWN-11 compare-and-swap on API01) together with the four new findings; and
+> then by the 2026-09-24 **Approved** verdict on v1.5.
 
 > Reviewed by: Abhijit Adhikari, 2026-09-09, **Changes Requested** (against v1.0) — five
 > Blocker and seven Should-fix findings. Recorded verdict: the spec "is not yet buildable

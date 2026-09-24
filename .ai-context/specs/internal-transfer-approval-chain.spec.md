@@ -6,14 +6,14 @@
 
 ## Status
 
-**In Peer Review (Gate 1)** — v1.4, resubmitted 2026-09-24. v1.4 answers the 2026-09-23
-**Changes Requested** verdict on v1.3 (G1-F01, G1-F02). Not Approved until Abhijit Adhikari
-re-reviews. Do not implement until **Approved**.
+**Changes Requested** — v1.4, reviewed 2026-09-24 by Abhijit Adhikari (G1-F03: duplicate
+ownership of `ORG_DATA_UPDATE` with `internal-transfer-downstream-orchestration`). v1.4
+answered the 2026-09-23 verdict on v1.3 (G1-F01, G1-F02). Do not implement until **Approved**.
 
 **Reviewer note:** this spec consumes the request aggregate and stage plan.
 `internal-transfer-request` is Gate 1 **Approved** (v1.5, 2026-09-15). OQ-11 and OQ-12
 are closed. v1.4 closes G1-F01 as BR9 and G1-F02 as BR6 citing BRD-001 BR13. Re-review
-of v1.4 is outstanding.
+of v1.4 on 2026-09-24 returned **Changes Requested** (G1-F03).
 
 ## Linked BRD
 
@@ -24,7 +24,7 @@ of v1.4 is outstanding.
 | Role | Name | Date |
 |---|---|---|
 | Author / owner | Alamgir Sarkar | 2026-09-03 |
-| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-23 — **Changes Requested** on v1.3. v1.4 resubmitted 2026-09-24; re-review outstanding |
+| Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-23 — **Changes Requested** on v1.3. 2026-09-24 — **Changes Requested** on v1.4 (G1-F03) |
 | Gate 2 reviewer | Tapas Dutta | — |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`.
@@ -479,6 +479,14 @@ request would be a new increment.
 | v1.4    | 2026-09-24 | G1-F01 and G1-F02 answered from existing BRD rules. BR9: the 14–180 day window binds the requested date only. BR6 cites BRD-001 BR13 for any `HR_BUSINESS_PARTNER`. A3 and A4 closed. AC16, UT33. Resubmitted, not Approved | Gate 1 G1-F01, G1-F02 (Abhijit Adhikari, 2026-09-23) |
 
 ## Gate 1 Review
+
+> Reviewed by: Abhijit Adhikari, 2026-09-24, **Changes Requested** (against v1.4) — 1
+> Major finding. **Duplicate ownership of `ORG_DATA_UPDATE` (G1-F03):** this is the main
+> remaining issue. AC3 moves `ORG_DATA_UPDATE` to `IN_PROGRESS` in the HR-approval
+> transaction, while `internal-transfer-downstream-orchestration` (State transition matrix,
+> `NOT_STARTED` → `IN_PROGRESS` on `approved.v1` handled; AC1) also owns that same
+> transition. Exactly one spec must own it. Reviewed manually (chat verdict). Findings
+> worksheet: `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`.
 
 ### Author response — v1.4, 2026-09-24 (Alamgir Sarkar)
 

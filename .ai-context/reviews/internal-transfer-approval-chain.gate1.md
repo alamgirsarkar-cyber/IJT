@@ -14,8 +14,8 @@
 | Author                                       | Alamgir Sarkar                                                         |
 | **Reviewer (not the author)**                | Abhijit Adhikari                                                       |
 | Security / Architecture (constitution check) | _Pending — name reviewer and date when obtained_                       |
-| Submitted                                    | 2026-09-07; **v1.3 (OWN-11 `If-Match` on API03) submitted 2026-09-15** |
-| Outcome                                      | **Approved** (2026-09-09, v1.0). **v1.1–v1.3 published without a new Gate 1 pass** (spec's own Superseded-by note); v1.3 re-reviewed 2026-09-23 — **Changes Requested** |
+| Submitted                                    | 2026-09-07; **v1.3 (OWN-11 `If-Match` on API03) submitted 2026-09-15**; **v1.4 submitted 2026-09-24** |
+| Outcome                                      | **Approved** (2026-09-09, v1.0). **v1.1–v1.3 published without a new Gate 1 pass** (spec's own Superseded-by note); v1.3 re-reviewed 2026-09-23 — **Changes Requested**; v1.4 re-reviewed 2026-09-24 — **Changes Requested** |
 
 ## Submission notes for the reviewer
 
@@ -38,6 +38,14 @@
 |---|---|---|---|---|
 | G1-F01 | Blocker | Assumption A4 (line 444); AC3 (lines 277–284); API03 request payload note "This spec does not apply BR7 to the confirmed date" (line 238) | Whether BR7's 14–180 day window applies to the HR-confirmed effective date (as opposed to only the employee's requested date) is left as an unconfirmed Assumption (A4), not an explicit business decision | Product obtains and records an explicit decision on whether BR7 applies to `confirmedEffectiveDate`. If it does, AC3 gains a validation rule and API03 gains a 422 exception row; if not, A4 is promoted from assumption to a stated, sourced business rule |
 | G1-F02 | Blocker | BR6 (line 76); Assumption A3 (lines 442–443); Open Questions note "BR6's ... remains Assumption A3" (lines 431–433) | BR6 authorises **any** principal holding role `HR_BUSINESS_PARTNER` to complete **any** request's `HR_VALIDATION`, with no per-case assignment or ownership check. This authorisation model is stated only as an unconfirmed Assumption (A3), not a deliberate product/security decision | Product/Security explicitly confirm the "any HR Business Partner may act on any case" model is intended (as opposed to a named/assigned HR BP per request). Record the decision and cite it from BR6 directly; remove the "remains Assumption A3" hedge once confirmed |
+
+### Re-review findings — v1.4, 2026-09-24
+
+| ID | Severity | Where | Finding | Required change |
+|---|---|---|---|---|
+| G1-F03 | Major (reviewer's term) | AC3 (lines 278–285); counterpart: `internal-transfer-downstream-orchestration` § State transition matrix (line 182, `NOT_STARTED` → `IN_PROGRESS` on `approved.v1` handled) and AC1 (line 401) | Duplicate ownership of `ORG_DATA_UPDATE`. Approval-chain AC3 moves the stage to `IN_PROGRESS` in the HR-approval transaction; downstream also owns that same transition when it handles `approved.v1`. This is the main remaining issue | Exactly one spec owns the `ORG_DATA_UPDATE` start transition; the other references it rather than restating it |
+
+G1-F01 and G1-F02 (v1.3) were not re-raised on v1.4.
 
 ---
 
@@ -94,15 +102,24 @@ authorised broadly).
 sourced product/security decision, with spec and AC changes if the answer requires them —
 before Gate 1 approval.
 
+## Re-review — v1.4, 2026-09-24: Changes Requested
+
+Abhijit Adhikari reviewed manually (chat, not the Artifact dashboard). One Major finding,
+G1-F03: duplicate ownership of `ORG_DATA_UPDATE` between this spec's AC3 and
+`internal-transfer-downstream-orchestration`. The reviewer called it the main remaining
+issue.
+
+**Verdict: Changes Requested.**
+
 ---
 
 ## Outcome
 
 | Field                              | Value                                                       |
 | ---------------------------------- | ----------------------------------------------------------- |
-| **Outcome**                        | **Approved** (2026-09-09, v1.0); **Changes Requested** (2026-09-23, v1.3) |
-| **Spec version after review**      | v1.0 — Approved (2026-09-09); v1.3 — **Changes Requested** (2026-09-23, findings G1-F01–G1-F02) |
-| **Date**                           | 2026-09-09 (v1.0); 2026-09-23 (v1.3)                        |
+| **Outcome**                        | **Approved** (2026-09-09, v1.0); **Changes Requested** (2026-09-23, v1.3); **Changes Requested** (2026-09-24, v1.4) |
+| **Spec version after review**      | v1.0 — Approved (2026-09-09); v1.3 — **Changes Requested** (2026-09-23, findings G1-F01–G1-F02); v1.4 — **Changes Requested** (2026-09-24, finding G1-F03) |
+| **Date**                           | 2026-09-09 (v1.0); 2026-09-23 (v1.3); 2026-09-24 (v1.4)     |
 | **Next step if Approved**          | Plan drafting may start after request spec is also Approved |
 | **Next step if Changes Requested** | Author revises spec, bumps version, resubmits — **applies now** |
 

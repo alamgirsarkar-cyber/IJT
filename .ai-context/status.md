@@ -23,8 +23,8 @@ Task states are the checkbox state in the feature's `tasks.md`:
 | Spec ID                                      | Title                                          | Status                      | Owner          | Last Updated | Notes                                                                                                                                                             |
 | -------------------------------------------- | ---------------------------------------------- | --------------------------- | -------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `internal-transfer-request`                  | Employee Internal Transfer Request             | **Plan Drafted** | Alamgir Sarkar | 2026-09-22   | Spec Gate 1 **Approved** 2026-09-15 (v1.5). Plan realigned to v1.5; tasks T01–T11. Plan review pending Abhijit Adhikari. Record: `reviews/internal-transfer-request.gate1.md` |
-| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-24   | v1.4 resubmitted. G1-F01 closed as BR9 (BRD-001 BR7 binds the requested date only). G1-F02 closed as BR6 citing BRD-001 BR13 (any `HR_BUSINESS_PARTNER`). Re-review outstanding. Plan drafted 2026-09-22 is not valid until this version is Approved. |
-| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **In Peer Review (Gate 1)** | Alamgir Sarkar | 2026-09-24   | v1.5 resubmitted. G1-F13–G1-F16 answered: compensate reverse order is creation order only; failed fulfilment cites request BR16; `SUCCESS` is the completed business operation; Gate 1 approval is the contract, not end-to-end readiness. Re-review outstanding. v1.3 remains the last Approved version. |
+| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **Changes Requested** | Alamgir Sarkar | 2026-09-24   | v1.4 re-reviewed 2026-09-24 by Abhijit Adhikari: **Changes Requested**, G1-F03 (Major): duplicate ownership of `ORG_DATA_UPDATE` with downstream-orchestration. G1-F01/G1-F02 not re-raised. Plan drafted 2026-09-22 is not valid until this spec is Approved. |
+| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **Approved** | Alamgir Sarkar | 2026-09-24   | Spec Gate 1 **Approved** 2026-09-24 (v1.5) by Abhijit Adhikari; supersedes v1.3. Plan and tasks drafted 2026-09-22 predate v1.5 — check against v1.5 before plan review. Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
 | `internal-transfer-notifications`            | Employee and approver notifications            | **Plan Drafted** | Alamgir Sarkar | 2026-09-22   | Spec Gate 1 **Approved** 2026-09-11 (v1.3). Plan and tasks T01–T08 drafted. No frontend task — spec has no screen. Plan review pending. |
 
 ## Released Specs
@@ -62,6 +62,14 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
 
 ### 2026-09-24
 
+- **`internal-transfer-downstream-orchestration`: Gate 1 re-review of v1.5 by Abhijit
+  Adhikari — Approved.** Reviewed manually (chat verdict, "Approved."). No new findings.
+  v1.5 supersedes v1.3 as the Approved version.
+- **`internal-transfer-approval-chain`: Gate 1 re-review of v1.4 by Abhijit Adhikari —
+  Changes Requested.** Reviewed manually (chat verdict). G1-F03 (Major): duplicate ownership
+  of `ORG_DATA_UPDATE` — approval-chain AC3 and downstream-orchestration (transition matrix,
+  AC1) both own its `NOT_STARTED` → `IN_PROGRESS` transition. Reviewer: the main remaining
+  issue. Record: `reviews/internal-transfer-approval-chain.gate1.md`.
 - **`internal-transfer-approval-chain` revised to v1.4** in response to Gate 1
   **Changes Requested** (Abhijit Adhikari, 2026-09-23, G1-F01 and G1-F02). BR9 records
   that BRD-001 BR7's window binds the requested effective date only. BR6 cites BRD-001
