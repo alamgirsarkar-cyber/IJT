@@ -70,7 +70,7 @@ Named people on this assessment:
 | --- | --- |
 | Author of record | Alamgir Sarkar |
 | Gate 1 reviewer | Abhijit Adhikari |
-| Gate 2 reviewer | Tapash Dutta |
+| Gate 2 reviewer | Subhajit Mukherjee |
 
 Functions that own decisions (no named incumbents):
 

@@ -25,7 +25,7 @@ are closed. v1.4 closed G1-F01 as BR9 and G1-F02 as BR6 citing BRD-001 BR13. The
 |---|---|---|
 | Author / owner | Alamgir Sarkar | 2026-09-03 |
 | Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-24 — **Changes Requested** on v1.4 (G1-F03). 2026-09-24 — **Approved** on v1.5 |
-| Gate 2 reviewer | Tapash Dutta | — |
+| Gate 2 reviewer | Subhajit Mukherjee | — |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-approval-chain.gate1.md`.
 

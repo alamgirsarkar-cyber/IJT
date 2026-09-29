@@ -29,7 +29,7 @@ if (lower.includes("abhijit") && lower.includes("adhikari")) {
   );
 } else if (isTapasDutta) {
   process.stdout.write(
-    "Welcome Tapash Dutta. Gate 2 reviewer. Read .agent/rules/governance.md " +
+    "Welcome Subhajit Mukherjee. Gate 2 reviewer. Read .agent/rules/governance.md " +
       "§ Reviewer self-identification. Ask Artifact vs Manual — do not infer.\n"
   );
 } else if (lower.includes("alamgir") && lower.includes("sarkar")) {
@@ -41,7 +41,7 @@ if (lower.includes("abhijit") && lower.includes("adhikari")) {
   process.stdout.write(
     "Session git user.name is \"" +
       name +
-      "\". If this is not Abhijit Adhikari, Tapash Dutta, or Alamgir Sarkar, " +
+      "\". If this is not Abhijit Adhikari, Subhajit Mukherjee, or Alamgir Sarkar, " +
       "treat this name as author of record for this session " +
       "(.agent/rules/governance.md step 4).\n"
   );

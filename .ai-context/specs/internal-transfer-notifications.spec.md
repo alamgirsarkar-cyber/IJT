@@ -28,7 +28,7 @@ submit release.
 | ---------------------------------- | ---------------- | ------------------------------ |
 | Author / owner                     | Alamgir Sarkar   | 2026-09-03                     |
 | Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-11 — **Approved** on v1.3 (was Changes Requested on v1.0, 2026-09-09) |
-| Gate 2 reviewer                    | Tapash Dutta      | —                              |
+| Gate 2 reviewer                    | Subhajit Mukherjee      | —                              |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-notifications.gate1.md`.
 
