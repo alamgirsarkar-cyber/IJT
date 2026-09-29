@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Internal Transfer Wireframes - My Transfer Requests</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            app: {
+              bg: '#121418',
+              surface: '#181b20',
+              border: '#2a2e36',
+              borderLight: '#353a44',
+              textMuted: '#9aa2b1',
+              pillActive: '#2d333f',
+              pillHover: '#232832',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Custom Stylesheet for fine-grained presentation -->
+<style data-purpose="base-styling">
+    body {
+      background-color: #121418;
+      color: #e5e7eb;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Subtle custom scrollbar */
+    ::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #121418;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2a2e36;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3b4250;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-slate-700 selection:text-white">
+<!-- BEGIN: WireframeOverviewHeader -->
+<!-- Contextual header explaining the wireframe collection and step switcher -->
+<header class="w-full px-6 pt-8 pb-4 max-w-7xl mx-auto" data-purpose="wireframe-intro">
+<div class="mb-4">
+<h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white">Internal transfer wireframes</h1>
+<p class="text-xs sm:text-sm text-app-textMuted mt-1 leading-relaxed max-w-4xl">
+        Employee wizard, request detail, and approval screens from the request and approval tasks. Layout only. PDF, destination photo, search, and extra navigation are omitted.
+      </p>
+</div>
+<!-- Navigation Pills for Wireframe Screens -->
+<nav aria-label="Wireframe views" class="flex items-center gap-1.5 overflow-x-auto py-2 no-scrollbar">
+<!-- Active Pill -->
+<a aria-current="page" class="px-3.5 py-1 text-xs font-medium rounded-full bg-slate-200 text-slate-900 border border-slate-300 shadow-sm whitespace-nowrap transition-colors" href="#my-requests">
+        My requests
+      </a>
+<a class="px-3.5 py-1 text-xs font-medium rounded-full bg-transparent text-gray-400 hover:text-gray-200 hover:bg-[#1e222a] border border-app-border whitespace-nowrap transition-colors" href="#step-1">
+        1 Target
+      </a>
+<a class="px-3.5 py-1 text-xs font-medium rounded-full bg-transparent text-gray-400 hover:text-gray-200 hover:bg-[#1e222a] border border-app-border whitespace-nowrap transition-colors" href="#step-2">
+        2 Date
+      </a>
+<a class="px-3.5 py-1 text-xs font-medium rounded-full bg-transparent text-gray-400 hover:text-gray-200 hover:bg-[#1e222a] border border-app-border whitespace-nowrap transition-colors" href="#step-3">
+        3 Reason
+      </a>
+<a class="px-3.5 py-1 text-xs font-medium rounded-full bg-transparent text-gray-400 hover:text-gray-200 hover:bg-[#1e222a] border border-app-border whitespace-nowrap transition-colors" href="#step-4">
+        4 Review
+      </a>
+<a class="px-3.5 py-1 text-xs font-medium rounded-full bg-transparent text-gray-400 hover:text-gray-200 hover:bg-[#1e222a] border border-app-border whitespace-nowrap transition-colors" href="#request-detail">
+        Request detail
+      </a>
+<a class="px-3.5 py-1 text-xs font-medium rounded-full bg-transparent text-gray-400 hover:text-gray-200 hover:bg-[#1e222a] border border-app-border whitespace-nowrap transition-colors" href="#approvals-inbox">
+        Approvals inbox
+      </a>
+<a class="px-3.5 py-1 text-xs font-medium rounded-full bg-transparent text-gray-400 hover:text-gray-200 hover:bg-[#1e222a] border border-app-border whitespace-nowrap transition-colors" href="#manager-decision">
+        Manager decision
+      </a>
+<a class="px-3.5 py-1 text-xs font-medium rounded-full bg-transparent text-gray-400 hover:text-gray-200 hover:bg-[#1e222a] border border-app-border whitespace-nowrap transition-colors" href="#hr-decision">
+        HR decision
+      </a>
+</nav>
+</header>
+<!-- END: WireframeOverviewHeader -->
+<!-- BEGIN: MainApplicationWorkspace -->
+<!-- Wireframe Container replicating enterprise viewport -->
+<main class="w-full max-w-7xl mx-auto px-4 sm:px-6 pb-12 flex-1" data-purpose="app-frame">
+<div class="border border-app-border rounded-lg bg-app-surface overflow-hidden shadow-2xl">
+<!-- BEGIN: ApplicationHeader -->
+<header class="border-b border-app-border bg-[#15171c] px-6 py-3.5 flex items-center justify-between" data-purpose="portal-navigation">
+<div class="flex items-center space-x-6 sm:space-x-8">
+<!-- Brand Logo/Name -->
+<div class="flex items-center">
+<span class="text-white font-semibold text-base tracking-tight cursor-pointer hover:opacity-90">OnePoint</span>
+</div>
+<!-- Application Level Links -->
+<nav class="flex items-center space-x-6 text-sm">
+<!-- Active Tab -->
+<a class="text-white font-medium hover:text-white transition-colors relative py-1 border-b-2 border-slate-300" href="#requests">
+              My Transfer Requests
+            </a>
+<!-- Inactive Tab with Notification Badge -->
+<a class="text-app-textMuted hover:text-gray-200 transition-colors flex items-center gap-1.5 py-1" href="#approvals">
+<span>Approvals Inbox</span>
+<span aria-label="2 pending approvals" class="inline-flex items-center justify-center px-1.5 py-0.2 text-[11px] font-medium leading-none rounded-full bg-[#272b35] text-gray-300 border border-[#3b414f]">
+                2
+              </span>
+</a>
+</nav>
+</div>
+<!-- Right User Auth Indicator -->
+<div class="flex items-center" data-purpose="user-status">
+<button class="text-sm text-app-textMuted hover:text-gray-200 focus:outline-none focus:underline flex items-center gap-1.5 transition-colors" type="button">
+<span>Signed in</span>
+</button>
+</div>
+</header>
+<!-- END: ApplicationHeader -->
+<!-- BEGIN: ContentArea -->
+<section class="p-6 sm:p-8" data-purpose="transfer-requests-content">
+<!-- Content Toolbar -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6">
+<h2 class="text-lg sm:text-xl font-semibold text-white tracking-tight">My Transfer Requests</h2>
+<button class="inline-flex items-center justify-center px-3.5 py-1.5 border border-app-borderLight text-xs sm:text-sm font-medium rounded text-gray-200 hover:text-white hover:bg-[#232731] hover:border-gray-500 focus:outline-none focus:ring-1 focus:ring-slate-400 transition-all self-start sm:self-auto" data-purpose="action-new-request" type="button">
+            New request
+          </button>
+</div>
+<!-- Requests Data Table -->
+<div class="overflow-x-auto" data-purpose="requests-table-container">
+<table class="w-full text-left border-collapse text-xs sm:text-sm">
+<thead>
+<tr class="text-app-textMuted text-xs uppercase tracking-wider font-semibold border-b border-app-border">
+<th class="py-3 pr-6 font-medium" scope="col">Reference</th>
+<th class="py-3 px-6 font-medium" scope="col">Status</th>
+<th class="py-3 px-6 font-medium" scope="col">Pending with</th>
+<th class="py-3 pl-6 font-medium" scope="col">Effective date</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-app-border">
+<!-- Item Row 1 -->
+<tr class="text-gray-300 hover:bg-[#1d2027]/50 transition-colors">
+<td class="py-4 pr-6 font-normal whitespace-nowrap text-gray-200">
+                  ITR-2026-08125
+                </td>
+<td class="py-4 px-6 whitespace-nowrap text-gray-300">
+                  With your line manager
+                </td>
+<td class="py-4 px-6 whitespace-nowrap text-gray-300">
+                  Line manager
+                </td>
+<td class="py-4 pl-6 whitespace-nowrap text-gray-300">
+<span>1 Nov 2026</span>
+<span class="mx-1 text-app-textMuted">·</span>
+<span class="text-app-textMuted">Requested</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Wireframe Annotation / Helper Note -->
+<div class="pt-6 mt-2 border-t border-[#22252e]">
+<p class="text-xs text-app-textMuted leading-relaxed">
+            Reason text is not on this list. Pagination sits under the table.
+          </p>
+</div>
+</section>
+<!-- END: ContentArea -->
+</div>
+</main>
+<!-- END: MainApplicationWorkspace -->
+</body></html>

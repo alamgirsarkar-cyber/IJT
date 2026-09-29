@@ -22,10 +22,10 @@ Task states are the checkbox state in the feature's `tasks.md`:
 
 | Spec ID                                      | Title                                          | Status                      | Owner          | Last Updated | Notes                                                                                                                                                             |
 | -------------------------------------------- | ---------------------------------------------- | --------------------------- | -------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `internal-transfer-request`                  | Employee Internal Transfer Request             | **Plan Drafted** | Alamgir Sarkar | 2026-09-22   | Spec Gate 1 **Approved** 2026-09-15 (v1.5). Plan realigned to v1.5; tasks T01–T11. Plan review pending Abhijit Adhikari. Record: `reviews/internal-transfer-request.gate1.md` |
-| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **Approved** | Alamgir Sarkar | 2026-09-24   | Spec Gate 1 **Approved** 2026-09-24 (v1.5) by Abhijit Adhikari; G1-F03 closed (AC3 owns the `ORG_DATA_UPDATE` start). Plan and tasks drafted 2026-09-22 predate v1.4–v1.5 — check against v1.5 before plan review. Record: `reviews/internal-transfer-approval-chain.gate1.md` |
-| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **Approved** | Alamgir Sarkar | 2026-09-24   | Spec Gate 1 **Approved** 2026-09-24 (v1.6) by Abhijit Adhikari; supersedes the same-day v1.5 approval. `approved.v1` no longer starts `ORG_DATA_UPDATE`. Plan and tasks drafted 2026-09-22 predate v1.5–v1.6 — check against v1.6 before plan review. Record: `reviews/internal-transfer-downstream-orchestration.gate1.md` |
-| `internal-transfer-notifications`            | Employee and approver notifications            | **Plan Drafted** | Alamgir Sarkar | 2026-09-22   | Spec Gate 1 **Approved** 2026-09-11 (v1.3). Plan and tasks T01–T08 drafted. No frontend task — spec has no screen. Plan review pending. |
+| `internal-transfer-request`                  | Employee Internal Transfer Request             | **Tasks Generated** | Alamgir Sarkar | 2026-09-29   | Spec Gate 1 **Approved** 2026-09-15 (v1.5). T10–T11 match the Stitch screens in `docs/designs/internal-transfer-ui/`. PDF, destination image, and extra nav surfaces stay out. |
+| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **Tasks Generated** | Alamgir Sarkar | 2026-09-29   | Spec Gate 1 **Approved** 2026-09-24 (v1.5). T07–T08 match the Stitch inbox, manager release, and HR validate screens in the same design folder. |
+| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **Tasks Generated** | Alamgir Sarkar | 2026-09-24   | Spec Gate 1 **Approved** 2026-09-24 (v1.6). Plan and tasks realigned: `approved.v1` emits `fulfilment-stage.v1` only; AC20 and AC21 are in scope. |
+| `internal-transfer-notifications`            | Employee and approver notifications            | **Tasks Generated** | Alamgir Sarkar | 2026-09-24   | Spec Gate 1 **Approved** 2026-09-11 (v1.3). Plan and tasks T01–T08 match that spec. No frontend task — spec has no screen. |
 
 ## Released Specs
 
@@ -65,7 +65,11 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
 - **Gate 1 Approved: `internal-transfer-approval-chain` v1.5 and
   `internal-transfer-downstream-orchestration` v1.6** — Abhijit Adhikari, manual review
   (chat verdict, "Both specs are approved now."). G1-F03 closed. All four transfer specs are now Gate 1 Approved.
-  Next: plan review; the 2026-09-22 plans for these two specs predate the approved versions.
+- **Approval-chain and downstream plans and tasks realigned** to those approved specs.
+  Approval-chain T03 owns the `ORG_DATA_UPDATE` start and covers AC16. Downstream T02
+  emits `fulfilment-stage.v1` only. AC20 is in scope. AC21 is on T04. Request and
+  notifications plans already matched their approved specs. Gate 1 is the spec review.
+  These plans and tasks are not waiting on a separate review.
 - **G1-F03 answered.** Approval-chain v1.5 keeps sole ownership of the `ORG_DATA_UPDATE`
   `NOT_STARTED` → `IN_PROGRESS` start (AC3, matching OWN-10). Downstream v1.6 cites that
   transition and, on `approved.v1`, writes `fulfilment-stage.v1` only. Both resubmitted.

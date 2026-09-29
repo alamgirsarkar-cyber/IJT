@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>New transfer · Target - OnePoint</title>
+<!-- Tailwind CSS CDN with forms and container-queries plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              charcoal: '#121316',
+              surface: '#1c1e22',
+              card: '#22252a',
+              border: '#333740',
+              borderDashed: '#3f4450',
+              textMuted: '#9aa0a6',
+              primary: '#3b82f6',
+              primaryHover: '#2563eb'
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-inputs">
+    /* Custom styling for styled wireframe input selectors */
+    .field-select {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239aa0a6' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 1rem center;
+      background-repeat: no-repeat;
+      background-size: 1.25em 1.25em;
+      padding-right: 2.5rem;
+      appearance: none;
+    }
+  </style>
+</head>
+<body class="bg-[#111215] text-slate-100 min-h-screen font-sans antialiased selection:bg-blue-600 selection:text-white pb-16">
+<!-- BEGIN: TopWireframeBar -->
+<!-- Wireframe switcher pills matching top header bar in reference -->
+<header class="w-full border-b border-[#23262d] bg-[#16171b] px-6 py-4" data-purpose="wireframe-switcher">
+<div class="max-w-6xl mx-auto space-y-3">
+<div>
+<h1 class="text-lg font-semibold text-white tracking-tight">Internal transfer wireframes</h1>
+<p class="text-xs text-slate-400 mt-0.5">
+          Employee wizard, request detail, and approval screens from the request and approval tasks. Layout only. PDF, destination photo, search, and extra navigation are omitted.
+        </p>
+</div>
+<!-- Navigation Pills -->
+<nav aria-label="Wireframe Steps" class="flex flex-wrap items-center gap-2 pt-1">
+<button class="px-3.5 py-1 text-xs font-medium rounded-full bg-[#242730] text-slate-300 hover:text-white hover:bg-[#2e323d] transition-colors" type="button">
+          My requests
+        </button>
+<button class="px-3.5 py-1 text-xs font-medium rounded-full bg-slate-200 text-slate-900 font-semibold shadow-sm" type="button">
+          1 Target
+        </button>
+<button class="px-3.5 py-1 text-xs font-medium rounded-full bg-[#242730] text-slate-300 hover:text-white hover:bg-[#2e323d] transition-colors" type="button">
+          2 Date
+        </button>
+<button class="px-3.5 py-1 text-xs font-medium rounded-full bg-[#242730] text-slate-300 hover:text-white hover:bg-[#2e323d] transition-colors" type="button">
+          3 Reason
+        </button>
+<button class="px-3.5 py-1 text-xs font-medium rounded-full bg-[#242730] text-slate-300 hover:text-white hover:bg-[#2e323d] transition-colors" type="button">
+          4 Review
+        </button>
+<button class="px-3.5 py-1 text-xs font-medium rounded-full bg-[#242730] text-slate-300 hover:text-white hover:bg-[#2e323d] transition-colors" type="button">
+          Request detail
+        </button>
+<button class="px-3.5 py-1 text-xs font-medium rounded-full bg-[#242730] text-slate-300 hover:text-white hover:bg-[#2e323d] transition-colors" type="button">
+          Approvals inbox
+        </button>
+<button class="px-3.5 py-1 text-xs font-medium rounded-full bg-[#242730] text-slate-300 hover:text-white hover:bg-[#2e323d] transition-colors" type="button">
+          Manager decision
+        </button>
+<button class="px-3.5 py-1 text-xs font-medium rounded-full bg-[#242730] text-slate-300 hover:text-white hover:bg-[#2e323d] transition-colors" type="button">
+          HR decision
+        </button>
+</nav>
+</div>
+</header>
+<!-- END: TopWireframeBar -->
+<!-- BEGIN: MainApplicationContainer -->
+<main class="max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-12" data-purpose="app-shell">
+<!-- BEGIN: EnterpriseAppHeader -->
+<!-- App Navigation Header -->
+<div class="border border-[#2a2d35] bg-[#17191e] rounded-t-lg px-6 py-4 flex items-center justify-between shadow-sm">
+<div class="flex items-center space-x-6">
+<!-- Logo / App Name -->
+<span class="font-bold text-white text-base tracking-normal">OnePoint</span>
+<!-- Navigation Links -->
+<nav aria-label="Portal Navigation" class="flex items-center space-x-5 text-sm">
+<a aria-current="page" class="font-semibold text-white transition-colors" href="#">
+            My Transfer Requests
+          </a>
+<a class="text-slate-400 hover:text-slate-200 transition-colors inline-flex items-center gap-1.5" href="#">
+<span>Approvals Inbox</span>
+<span class="inline-flex items-center justify-center px-1.5 py-0.5 text-[11px] font-semibold bg-[#2a2e37] text-slate-300 rounded">
+              2
+            </span>
+</a>
+</nav>
+</div>
+<!-- Right User status -->
+<div class="text-xs font-medium text-slate-400 flex items-center gap-2">
+<span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+<span>Signed in</span>
+</div>
+</div>
+<!-- END: EnterpriseAppHeader -->
+<!-- BEGIN: WizardBody -->
+<div class="border-x border-b border-[#2a2d35] bg-[#1a1c22] rounded-b-lg p-6 sm:p-10 shadow-lg">
+<!-- Wizard Title Header -->
+<section class="mb-8" data-purpose="step-heading">
+<h2 class="text-xl font-bold text-white tracking-tight">New transfer · Target</h2>
+<p class="text-xs font-medium text-slate-400 mt-1 uppercase tracking-wider">Step 1 of 4</p>
+</section>
+<!-- Target Form Fields -->
+<form class="space-y-5" data-purpose="transfer-form" onsubmit="event.preventDefault();">
+<!-- Current assignment Info Box -->
+<div class="border border-[#383d49] bg-[#1f2229] rounded-md p-4" data-purpose="current-assignment-display">
+<div class="text-sm font-semibold text-white">Current assignment</div>
+<div class="text-xs text-slate-400 mt-1 font-normal tracking-wide">
+            Finance · Clerk · Site A
+          </div>
+</div>
+<!-- Department Input / Dropdown -->
+<div data-purpose="input-department">
+<label class="sr-only" for="department">Department</label>
+<div class="relative">
+<select class="field-select w-full bg-[#1b1e24] text-slate-300 text-sm border border-[#333742] rounded-md px-4 py-3.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors cursor-pointer" id="department" name="department">
+<option disabled="" selected="" value="">Department</option>
+<option class="bg-[#1b1e24] text-slate-200" value="engineering">Engineering</option>
+<option class="bg-[#1b1e24] text-slate-200" value="finance">Finance</option>
+<option class="bg-[#1b1e24] text-slate-200" value="human-resources">Human Resources</option>
+<option class="bg-[#1b1e24] text-slate-200" value="marketing">Marketing</option>
+<option class="bg-[#1b1e24] text-slate-200" value="operations">Operations</option>
+</select>
+</div>
+</div>
+<!-- Location Input / Dropdown -->
+<div data-purpose="input-location">
+<label class="sr-only" for="location">Location</label>
+<div class="relative">
+<select class="field-select w-full bg-[#1b1e24] text-slate-300 text-sm border border-[#333742] rounded-md px-4 py-3.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors cursor-pointer" id="location" name="location">
+<option disabled="" selected="" value="">Location</option>
+<option class="bg-[#1b1e24] text-slate-200" value="site-a">Site A</option>
+<option class="bg-[#1b1e24] text-slate-200" value="site-b">Site B</option>
+<option class="bg-[#1b1e24] text-slate-200" value="site-c">Site C</option>
+<option class="bg-[#1b1e24] text-slate-200" value="remote">Remote</option>
+</select>
+</div>
+</div>
+<!-- Open Position Input / Dropdown -->
+<div data-purpose="input-position">
+<label class="sr-only" for="open-position">Open position</label>
+<div class="relative">
+<select class="field-select w-full bg-[#1b1e24] text-slate-300 text-sm border border-[#333742] rounded-md px-4 py-3.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors cursor-pointer" id="open-position" name="open-position">
+<option disabled="" selected="" value="">Open position</option>
+<option class="bg-[#1b1e24] text-slate-200" value="financial-analyst">Senior Financial Analyst</option>
+<option class="bg-[#1b1e24] text-slate-200" value="accountant">General Accountant</option>
+<option class="bg-[#1b1e24] text-slate-200" value="operations-lead">Operations Coordinator</option>
+</select>
+</div>
+</div>
+<!-- BEGIN: ActionButtons -->
+<!-- Wizard Navigation Actions -->
+<div class="pt-3 flex items-center space-x-3" data-purpose="form-actions">
+<button class="px-4 py-2 border border-[#383d48] bg-[#1e2128] text-slate-300 hover:text-white hover:bg-[#252932] rounded text-xs font-semibold tracking-wide transition-colors" type="button">
+            Cancel
+          </button>
+<button class="px-5 py-2 bg-slate-200 text-slate-950 hover:bg-white rounded text-xs font-semibold tracking-wide transition-colors shadow-sm" type="submit">
+            Continue
+          </button>
+</div>
+<!-- END: ActionButtons -->
+</form>
+</div>
+<!-- END: WizardBody -->
+</main>
+<!-- END: MainApplicationContainer -->
+</body></html>

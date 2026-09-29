@@ -2,15 +2,15 @@
 
 ## Derived From
 
-`.ai-context/plans/internal-transfer-approval-chain.plan.md` (Plan Drafted — plan review pending)
+`.ai-context/plans/internal-transfer-approval-chain.plan.md` (aligned to Approved spec v1.5)
 
-Generated from the plan's Sequencing section on 2026-09-22.
+Generated from the plan's Sequencing section on 2026-09-22. Realigned 2026-09-24 to
+Approved spec v1.5.
 
 Backend tasks follow `.agent/rules/int-standards.node.md`.
 Frontend tasks follow `.agent/rules/int-standards.react.md`.
 
-v1.3 `If-Match` behaviour (AC15) is inside T05. Do not start implementation until the
-spec's Gate 1 block names v1.3 Approved. See the plan's Derived From.
+Gate 1 approved the spec. These tasks are not a separate review.
 
 ## Task States
 
@@ -45,16 +45,19 @@ implementation. Do not prompt this file as a whole.
         is decrypted only for the HR role and is not logged
 
 - [ ] `internal-transfer-approval-chain.T03` — Backend: approve transaction
-      — Acceptance: `AC1`, `AC2`, `AC3`
-      — Tests first: `UT01`, `UT02`, `UT03`, `UT04`, `UT05`, `UT06`
+      — Acceptance: `AC1`, `AC2`, `AC3`, `AC16`
+      — Tests first: `UT01`, `UT02`, `UT03`, `UT04`, `UT05`, `UT06`, `UT33`
       — Touches: `employee-services/src/internal-transfer/approval/domain/`,
         `employee-services/src/internal-transfer/approval/api/`
       — Depends on: `T02`
       — Note: one transaction, no outbound HTTP. `MANAGER_RELEASE` approve stays in
         `MANAGER_REVIEW` and emits `stage-pending.v1` for `MANAGER_ACCEPT`.
         `MANAGER_ACCEPT` approve moves to `HR_VALIDATION`. HR approve requires
-        `confirmedEffectiveDate`, sets `FULFILMENT`, moves `ORG_DATA_UPDATE` to
-        `IN_PROGRESS`, emits `approved.v1` with the allow-list payload
+        `confirmedEffectiveDate`, sets `FULFILMENT`, and is the only writer that moves
+        `ORG_DATA_UPDATE` to `IN_PROGRESS`. A date outside the 14–180 day window is
+        accepted (BR9). Any `HR_BUSINESS_PARTNER` may approve, including one who is not
+        a named assignee (BR6). Emits `approved.v1` with the allow-list payload.
+        Does not write `fulfilment-stage.v1`
 
 - [ ] `internal-transfer-approval-chain.T04` — Backend: reject transaction
       — Acceptance: `AC4`, `AC5`
@@ -72,8 +75,7 @@ implementation. Do not prompt this file as a whole.
         `employee-services/src/internal-transfer/approval/persistence/`
       — Depends on: `T03`, `T04`
       — Note: idempotent replay is checked before `If-Match`. Null `assigned_party_ref`
-        is 409 `assignee-unresolved` with no live lookup and no delegation. Blocked for
-        implementation until the spec names v1.3 Approved
+        is 409 `assignee-unresolved` with no live lookup and no delegation
 
 - [ ] `internal-transfer-approval-chain.T06` — Backend: audit, narrative exclusion, rate limits
       — Acceptance: `AC11`
@@ -91,11 +93,14 @@ implementation. Do not prompt this file as a whole.
         release decision, approve, see the stage leave the inbox
       — Touches: `employee-portal-web/src/features/internal-transfer-approval/`
       — Depends on: `T01`, `T02`, `T03`
-      — Note: RTK Query only. Design system components. Copy externalised. Queries by
+      — Note: inbox lives in the portal shell next to My Transfer Requests. The pending
+        badge is `totalItems`. RTK Query only. Match `docs/designs/internal-transfer-ui/approvals-inbox`
+        and `manager-decision-release` (`.png` and `.html`). No reason control. Styling is Tailwind CSS and the shared
+        shadcn/ui components from the request feature. Copy externalised. Queries by
         accessible role. MSW uses the spec's 200 and problem bodies, including 409
-        `version-conflict`, which is shown to the user and not overwritten. No reason
-        in storage, URL or analytics. Unauthenticated visit uses the portal sign-in.
-        `axe` and a keyboard pass are part of this task
+        `version-conflict`, which is shown to the user and not overwritten. No reason in
+        storage, URL or analytics. Unauthenticated visit uses the portal sign-in. `axe`
+        and a keyboard pass are part of this task. No PDF download and no destination image
 
 - [ ] `internal-transfer-approval-chain.T08` — Frontend: HR inbox and validation
       — Acceptance: `AC12`, `AC14`, HR half of `AC7` (reason rendered, then not stored)
@@ -105,8 +110,10 @@ implementation. Do not prompt this file as a whole.
       — Touches: `employee-portal-web/src/features/internal-transfer-approval/`
       — Depends on: `T02`, `T03`, `T07`
       — Note: reason text is not written to a slice, `localStorage`, the URL or a log.
-        Confirmed date is required only on HR approve. This feature does not import the
-        employee wizard feature
+        Confirmed date is required only on HR approve. Match
+        `docs/designs/internal-transfer-ui/hr-decision-validate.png` and `.html`, using the
+        same Tailwind and shadcn/ui components. This feature does not
+        import the employee wizard feature
 
 ## Traceability
 
@@ -115,6 +122,7 @@ implementation. Do not prompt this file as a whole.
 | `AC1` — release approve | T03 | UT01, UT02 | Not Started |
 | `AC2` — accept approve | T03 | UT03 | Not Started |
 | `AC3` — HR approve and confirmed date | T03 | UT04, UT05, UT06 | Not Started |
+| `AC16` — window does not bind the confirmed date; any HR BP | T03 | UT33 | Not Started |
 | `AC4` — reject is terminal | T04 | UT07, UT08, UT09 | Not Started |
 | `AC5` — out of order refused | T04 | UT10, UT11 | Not Started |
 | `AC6` — 404, token identity | T01, T02 | UT12, UT13, UT14 | Not Started |
@@ -128,7 +136,7 @@ implementation. Do not prompt this file as a whole.
 | `AC14` — portal session, no transfer login | T07, T08 | UT29 | Not Started |
 | `AC15` — `If-Match` | T05 | UT30, UT31, UT32 | Not Started |
 
-**Reverse check:** T01 → AC6/AC7/AC13 · T02 → AC6/AC7/AC13 · T03 → AC1/AC2/AC3 ·
+**Reverse check:** T01 → AC6/AC7/AC13 · T02 → AC6/AC7/AC13 · T03 → AC1/AC2/AC3/AC16 ·
 T04 → AC4/AC5 · T05 → AC8/AC9/AC10/AC13/AC15 · T06 → AC11 · T07 → AC7/AC12/AC14 ·
 T08 → AC7/AC12/AC14. No orphans.
 

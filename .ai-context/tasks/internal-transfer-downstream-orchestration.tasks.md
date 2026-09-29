@@ -2,15 +2,17 @@
 
 ## Derived From
 
-`.ai-context/plans/internal-transfer-downstream-orchestration.plan.md` (Plan Drafted — plan review pending)
+`.ai-context/plans/internal-transfer-downstream-orchestration.plan.md` (aligned to Approved spec v1.6)
 
-Generated from the plan's Sequencing section on 2026-09-22.
+Generated from the plan's Sequencing section on 2026-09-22. Realigned 2026-09-24 to
+Approved spec v1.6.
 
 All tasks are backend and follow `.agent/rules/int-standards.node.md`.
 The spec defines no employee-facing screen, so there is no frontend task. Employee
 rendering of fulfilment stage labels stays on `internal-transfer-request.T07` and `T11`.
 
-T07 (AC20, v1.4 compare-and-swap) does not start until Gate 1 re-reviews v1.4.
+Gate 1 approved the spec. These tasks are not a separate review.
+T02 does not set `ORG_DATA_UPDATE` to `IN_PROGRESS`. Approval-chain T03 does.
 
 ## Task States
 
@@ -35,15 +37,17 @@ implementation. Do not prompt this file as a whole.
         without a valid HMAC is 401. Body, signature and secret are not logged.
         No new crypto dependency
 
-- [ ] `internal-transfer-downstream-orchestration.T02` — Backend: start fulfilment
+- [ ] `internal-transfer-downstream-orchestration.T02` — Backend: signal org update
       — Acceptance: `AC1`, `AC6`
-      — Tests first: `UT01`, `UT02`, `UT09`
+      — Tests first: `UT01`, `UT01b`, `UT02`, `UT09`
       — Touches: `employee-services/src/internal-transfer/fulfilment/domain/`
       — Depends on: `T01`, `internal-transfer-approval-chain.T03`
       — Note: handler runs after `approved.v1` is published, not inside the approval
-        HTTP transaction. `ORG_DATA_UPDATE` becomes `IN_PROGRESS` with one
-        `fulfilment-stage.v1` row, or the transaction rolls back. Later stages stay
-        `NOT_STARTED`. No HTTP call to Payroll, ITSM, Facilities or an HRIS write
+        HTTP transaction. `ORG_DATA_UPDATE` is already `IN_PROGRESS`. The handler writes
+        one `fulfilment-stage.v1` row and does not change the stage status. If the stage
+        is still `NOT_STARTED`, it writes nothing (UT01b). A failed outbox write emits
+        no row; retry emits exactly one. Later stages stay `NOT_STARTED`. No HTTP call
+        to Payroll, ITSM, Facilities or an HRIS write
 
 - [ ] `internal-transfer-downstream-orchestration.T03` — Backend: sequential success
       — Acceptance: `AC2`, `AC3`, `AC19`
@@ -57,13 +61,15 @@ implementation. Do not prompt this file as a whole.
         contract double
 
 - [ ] `internal-transfer-downstream-orchestration.T04` — Backend: failure, cancel, compensate
-      — Acceptance: `AC4`, `AC12`
-      — Tests first: `UT06`, `UT07`, `UT16`, `UT17`
+      — Acceptance: `AC4`, `AC12`, `AC21`
+      — Tests first: `UT06`, `UT07`, `UT16`, `UT17`, `UT32`, `UT33`
       — Touches: `employee-services/src/internal-transfer/fulfilment/domain/`
       — Depends on: `T03`
-      — Note: request stays `FULFILMENT`. One `fulfilment-failed.v1`. Compensate in
-        reverse sequence. Zero compensate events when org update is the failing stage.
-        Later `NOT_STARTED` work stages become `CANCELLED` and are never signalled
+      — Note: request stays `FULFILMENT`. One `fulfilment-failed.v1`. Compensate rows are
+        created highest sequence first; that order is creation order only (AC21). Zero
+        compensate events when org update is the failing stage. Later `NOT_STARTED` work
+        stages become `CANCELLED` and are never signalled. `SUCCESS` means the business
+        operation completed, not ticket intake (UT33)
 
 - [ ] `internal-transfer-downstream-orchestration.T05` — Backend: compensation acknowledgement
       — Acceptance: `AC13`, `AC14`, `AC17`
@@ -91,18 +97,18 @@ implementation. Do not prompt this file as a whole.
       — Tests first: `UT31`
       — Touches: `employee-services/src/internal-transfer/fulfilment/domain/`
       — Depends on: `T06`
-      — **Blocked.** v1.4 is not Approved. Do not start this task until a new Gate 1
-        line on the spec names v1.4 Approved. In-transaction expected version, no
-        `If-Match`. Byte-identical `eventId` replay stays 200 and does not increment
+      — Note: in-transaction expected version, no `If-Match`. Byte-identical `eventId`
+        replay stays 200 and does not increment. Part of Approved v1.6 (AC20)
 
 ## Traceability
 
 | AC | Covered by | Test cases | Status |
 |---|---|---|---|
-| `AC1` — start org update | T02 | UT01, UT02 | Not Started |
+| `AC1` — signal org update already in progress | T02 | UT01, UT01b, UT02 | Not Started |
 | `AC2` — next applicable stage | T03 | UT03, UT04, UT14 | Not Started |
 | `AC3` — request completed | T03 | UT05 | Not Started |
 | `AC4` — failure and compensate | T04 | UT06, UT07, UT17 | Not Started |
+| `AC21` — compensate creation order; `SUCCESS` is the business operation | T04 | UT32, UT33 | Not Started |
 | `AC5` — eventId idempotency | T06 | UT08, UT21 | Not Started |
 | `AC6` — no sync downstream call | T02 | UT09 | Not Started |
 | `AC7` — payload and logs | T06 | UT10 | Not Started |
@@ -118,12 +124,12 @@ implementation. Do not prompt this file as a whole.
 | `AC17` — no portal resume | T05 | UT25 | Not Started |
 | `AC18` — envelope | T06 | UT26 | Not Started |
 | `AC19` — out of order refused | T03 | UT27 | Not Started |
-| `AC20` — version compare-and-swap | T07 | UT31 | Not Started — blocked on v1.4 Gate 1 |
+| `AC20` — version compare-and-swap | T07 | UT31 | Not Started |
 
 Integration rows: UT28 on T03, UT29 on T05, UT30 on T06.
 
 **Reverse check:** T01 → AC8/AC11/AC16 · T02 → AC1/AC6 · T03 → AC2/AC3/AC19 ·
-T04 → AC4/AC12 · T05 → AC13/AC14/AC17 · T06 → AC5/AC7/AC9/AC10/AC15/AC18 ·
+T04 → AC4/AC12/AC21 · T05 → AC13/AC14/AC17 · T06 → AC5/AC7/AC9/AC10/AC15/AC18 ·
 T07 → AC20. No orphans. No frontend task, because the spec has no screen.
 
 ## Deferred — must NOT appear in any of these tasks
@@ -133,7 +139,7 @@ T07 → AC20. No orphans. No frontend task, because the spec has no screen.
 - An HTTP call to Payroll, ITSM, Facilities or an HRIS write from a request handler
 - Notification mail
 - Approval decisions
-- T07, until v1.4 is Approved
+- Setting `ORG_DATA_UPDATE` to `IN_PROGRESS` (approval-chain T03 owns that)
 
 ## Execution Notes
 

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>New transfer · Reason - OnePoint</title>
+<!-- Tailwind CSS v3 CDN with forms and container-queries plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#121212',
+              card: '#181818',
+              surface: '#202020',
+              border: '#2e2e2e',
+              muted: '#7e7e7e',
+              text: '#e1e1e1'
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-layout">
+    body {
+      background-color: #121212;
+      color: #e5e7eb;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    /* Subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #121212;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2b2b2b;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3d3d3d;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#121212] text-gray-200 antialiased p-4 sm:p-6 lg:p-8">
+<!-- BEGIN: PageWrapper -->
+<div class="max-w-6xl mx-auto space-y-6" data-purpose="page-wrapper">
+<!-- BEGIN: HeaderAndPillsSection -->
+<section class="space-y-4" data-purpose="navigation-meta">
+<!-- Title & wireframe context description -->
+<div>
+<h1 class="text-xl sm:text-2xl font-semibold tracking-tight text-white">Internal transfer wireframes</h1>
+<p class="text-xs sm:text-sm text-gray-400 mt-1">
+          Employee wizard, request detail, and approval screens from the request and approval tasks. Layout only. PDF, destination photo, search, and extra navigation are omitted.
+        </p>
+</div>
+<!-- Horizontal Pill Preview Bar -->
+<div class="flex items-center gap-1.5 overflow-x-auto pb-2 text-xs no-scrollbar" data-purpose="prototype-step-pills">
+<button class="px-3 py-1 rounded-full border border-neutral-700 text-gray-400 hover:text-white hover:border-neutral-600 transition whitespace-nowrap" type="button">
+          My requests
+        </button>
+<button class="px-3 py-1 rounded-full border border-neutral-700 text-gray-400 hover:text-white hover:border-neutral-600 transition whitespace-nowrap" type="button">
+          1 Target
+        </button>
+<button class="px-3 py-1 rounded-full border border-neutral-700 text-gray-400 hover:text-white hover:border-neutral-600 transition whitespace-nowrap" type="button">
+          2 Date
+        </button>
+<!-- Active Pill: 3 Reason -->
+<button class="px-3.5 py-1 rounded-full border border-gray-400 bg-neutral-800 text-white font-medium shadow-sm whitespace-nowrap" type="button">
+          3 Reason
+        </button>
+<button class="px-3 py-1 rounded-full border border-neutral-700 text-gray-400 hover:text-white hover:border-neutral-600 transition whitespace-nowrap" type="button">
+          4 Review
+        </button>
+<button class="px-3 py-1 rounded-full border border-neutral-700 text-gray-400 hover:text-white hover:border-neutral-600 transition whitespace-nowrap" type="button">
+          Request detail
+        </button>
+<button class="px-3 py-1 rounded-full border border-neutral-700 text-gray-400 hover:text-white hover:border-neutral-600 transition whitespace-nowrap" type="button">
+          Approvals inbox
+        </button>
+<button class="px-3 py-1 rounded-full border border-neutral-700 text-gray-400 hover:text-white hover:border-neutral-600 transition whitespace-nowrap" type="button">
+          Manager decision
+        </button>
+<button class="px-3 py-1 rounded-full border border-neutral-700 text-gray-400 hover:text-white hover:border-neutral-600 transition whitespace-nowrap" type="button">
+          HR decision
+        </button>
+</div>
+</section>
+<!-- END: HeaderAndPillsSection -->
+<!-- BEGIN: AppContainer -->
+<div class="border border-neutral-800 rounded bg-[#161616] overflow-hidden shadow-2xl" data-purpose="app-frame">
+<!-- BEGIN: AppNavBar -->
+<nav class="flex items-center justify-between border-b border-neutral-800/80 px-6 py-3 text-sm" data-purpose="top-navigation-bar">
+<div class="flex items-center gap-6">
+<span class="font-bold text-white text-base tracking-wide">OnePoint</span>
+<div class="flex items-center gap-4 text-xs font-medium">
+<a class="text-white hover:text-white transition" href="#">My Transfer Requests</a>
+<a class="text-gray-400 hover:text-white transition flex items-center gap-1.5" href="#">
+              Approvals Inbox
+              <span class="inline-flex items-center justify-center text-[10px] bg-neutral-800 text-gray-300 rounded px-1.5 py-0.2">2</span>
+</a>
+</div>
+</div>
+<div class="text-xs text-gray-400">
+          Signed in
+        </div>
+</nav>
+<!-- END: AppNavBar -->
+<!-- BEGIN: MainContentArea -->
+<main class="p-6 sm:p-8 space-y-6 max-w-4xl" data-purpose="form-content">
+<!-- Title and Subtitle header -->
+<div class="space-y-1">
+<h2 class="text-lg sm:text-xl font-medium text-white tracking-normal">
+            New transfer · Reason
+          </h2>
+<p class="text-xs sm:text-sm text-gray-400">
+            Step 3 of 4. Optional. Shown later only to you and HR.
+          </p>
+</div>
+<!-- Form Step Container -->
+<form class="space-y-6" data-purpose="reason-form" onsubmit="event.preventDefault();">
+<!-- Dashed Textarea Container -->
+<div class="relative">
+<label class="sr-only" for="transfer-reason">Why are you requesting this transfer?</label>
+<textarea class="w-full bg-[#181818] border border-dashed border-neutral-700/80 rounded p-4 text-sm text-gray-200 placeholder-gray-400 focus:outline-none focus:border-neutral-500 focus:ring-1 focus:ring-neutral-500 transition-colors resize-none leading-relaxed" id="transfer-reason" name="transferReason" placeholder="Why are you requesting this transfer?" rows="5"></textarea>
+</div>
+<!-- Bottom Action Buttons -->
+<div class="flex items-center gap-3 pt-1" data-purpose="wizard-actions">
+<!-- Back Button -->
+<button class="px-4 py-1.5 text-xs font-normal text-gray-300 border border-neutral-700 hover:border-neutral-500 hover:text-white rounded bg-transparent transition focus:outline-none focus:ring-1 focus:ring-neutral-500" type="button">
+              Back
+            </button>
+<!-- Continue Button -->
+<button class="px-4 py-1.5 text-xs font-normal text-gray-300 border border-neutral-700 hover:border-neutral-500 hover:text-white rounded bg-transparent transition focus:outline-none focus:ring-1 focus:ring-neutral-500" type="submit">
+              Continue
+            </button>
+</div>
+</form>
+</main>
+<!-- END: MainContentArea -->
+</div>
+<!-- END: AppContainer -->
+</div>
+<!-- END: PageWrapper -->
+</body></html>

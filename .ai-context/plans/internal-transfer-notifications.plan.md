@@ -6,7 +6,7 @@
 
 ## Status
 
-**Plan Drafted** · **Author:** Alamgir Sarkar · **Reviewer:** Abhijit Adhikari (_plan review pending_)
+**Tasks Generated** · **Author:** Alamgir Sarkar · Gate 1 approved the spec (v1.3). This plan is not a separate review.
 
 ## Architecture Approach
 

@@ -2,7 +2,7 @@
 
 ## Derived From
 
-`.ai-context/plans/internal-transfer-request.plan.md` (Plan Drafted against spec v1.5 — plan review pending)
+`.ai-context/plans/internal-transfer-request.plan.md` (aligned to Approved spec v1.5)
 
 Generated from the plan's Sequencing section. T01–T10 reviewed by the engineer on 2026-09-01.
 T11 added 2026-09-22 when the plan was realigned to the Approved v1.5 spec. T03–T09 acceptance
@@ -125,19 +125,29 @@ any implementation prompt runs. Prompts are in
         thing being proven is that no log line anywhere contains the text, not that a
         redaction function works
 
-- [ ] `internal-transfer-request.T10` — Front end: transfer wizard and status timeline
+- [ ] `internal-transfer-request.T10` — Front end: transfer wizard and request detail
       — Acceptance: `AC19` (WCAG 2.1 AA), `AC21` (existing portal OIDC session; no transfer
         login), and the employee-facing surfacing of `AC11`, `AC12`, `AC14`
       — Tests first: `UT53`, `UT54`, `UT55`, `UT58`, `UT59`, plus a Playwright journey covering
         draft → submit → view → withdraw
       — Touches: `employee-portal-web/src/features/internal-transfer/`
       — Depends on: `T03`, `T07`, `T08`
-      — Note: accessibility is an acceptance condition of this task. Automated axe checks plus
-        a manual keyboard and screen-reader pass; the stage timeline must not convey status by
-        colour alone. Auth is the portal session, not a feature-local credential form.
-        Standards: `.agent/rules/int-standards.react.md` — RTK Query, design system, copy
-        externalised, reason text not stored in a slice or `localStorage`, MSW against the
-        spec's error shapes, queries by accessible role
+      — Note: the detail page shows reference, version, `statusDisplay`, active stage,
+        `pendingWith`, withdraw, BR8 and BR9 advisories, current assignment beside target,
+        effective date with `effectiveDateStatus`, and all eight stages in order. A name
+        is shown only for the caller's own line manager. The reason narrative is the
+        owner's detail only. Stage 8 is not a button. Status is not conveyed by colour
+        alone. Accessibility is an acceptance condition: axe, keyboard, and screen reader.
+        Auth is the portal session. Standards: `.agent/rules/int-standards.react.md` —
+        RTK Query, copy externalised, reason text not stored in a slice
+        or `localStorage`, MSW against the spec's error shapes, queries by accessible role.
+        Visual system: Tailwind CSS and shadcn/ui components in
+        `employee-portal-web/src/components/ui/`. Match the Stitch screens saved in
+        `docs/designs/internal-transfer-ui/`: `my-transfer-requests`, `new-transfer-1-target`,
+        `new-transfer-2-date`, `new-transfer-3-reason`, `new-transfer-4-review`, and
+        `request-detail` (each `.png` and `.html`). Layout, type, and spacing follow those
+        files. Data and actions still follow this spec.
+        No PDF download, destination image, global search, or extra nav product surface
 
 - [ ] `internal-transfer-request.T11` — Front end: failed-fulfilment status labels
       — Acceptance: `AC11` (employee view when `FULFILMENT` has a `FAILED` or
@@ -147,8 +157,9 @@ any implementation prompt runs. Prompts are in
         resume or confirmation control. `EMPLOYEE_CONFIRMATION` is not a button
       — Touches: `employee-portal-web/src/features/internal-transfer/`
       — Depends on: `T07`, `T10`
-      — Note: no new route. The status and list screens already in T10 render the labels
-        T07 returns. Stack rules as T10
+      — Note: no new route. The detail and list from T10 render the labels T07 returns,
+        using the same Tailwind and shadcn/ui components. The tracker does not offer a
+        signature, lock, or resume control. Stack rules as T10
 
 ## Traceability
 

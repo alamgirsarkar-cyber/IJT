@@ -8,7 +8,7 @@ Realigned 2026-09-22 to that approved spec. The 2026-08-31 draft described v1.2.
 
 ## Status
 
-**Plan Drafted** · **Author:** Alamgir Sarkar · **Reviewer:** Abhijit Adhikari (_plan review pending_)
+**Tasks Generated** · **Author:** Alamgir Sarkar · Gate 1 approved the spec (v1.5). This plan is not a separate review.
 Review record: `.ai-context/reviews/internal-transfer-request.gate1-plan.md`
 
 ## Architecture Approach
@@ -46,13 +46,39 @@ Review record: `.ai-context/reviews/internal-transfer-request.gate1-plan.md`
   with `components/`, `hooks/`, `api/`, `model/`; function components; server state only
   through RTK Query; no second state library; copy in resource files; tests query by
   accessible role (React Testing Library) and journeys in Playwright, with MSW at the
-  network boundary using this spec's problem+json shapes. Screens: a four-step wizard
-  (target → date → reason → review) and a status timeline, both on the portal design
-  system. Reason text is submitted and not kept in a slice, `localStorage`, the URL or
-  analytics. The wizard **reuses the portal OIDC session**; RTK Query attaches the bearer
-  token. There is no transfer login page. Unauthenticated users hit the portal's existing
-  sign-in (AC21). WCAG 2.1 AA is part of the frontend task, including `axe` and a keyboard
-  and screen-reader pass.
+  network boundary using this spec's problem+json shapes. Styling is Tailwind CSS.
+  Components come from shadcn/ui (Radix primitives styled with Tailwind), introduced
+  once under `employee-portal-web/src/components/ui/` because the portal has no design
+  system yet. Feature code uses those components; it does not invent a second set of
+  buttons, fields, or banners.   Screens match the Stitch project Internal Transfer UI
+  (`13142646408568860364`). Screenshot and HTML for each screen are in
+  `docs/designs/internal-transfer-ui/`. The implemented page follows that
+  layout, type, and spacing. Data and actions still come from this spec.
+  Screens: a request list, a four-step wizard (target → date → reason → review),
+  and a request detail page.
+
+  | Screen | Stitch screen | Files |
+  | --- | --- | --- |
+  | My Transfer Requests | `1000ca66f4e546179ae74cc55dc55410` | `my-transfer-requests.png`, `my-transfer-requests.html` |
+  | New transfer, target | `5dba0e4d84fc456ab7dbfd82cdee9446` | `new-transfer-1-target.png`, `new-transfer-1-target.html` |
+  | New transfer, date | `f332b443df004552838f144fd78dde6e` | `new-transfer-2-date.png`, `new-transfer-2-date.html` |
+  | New transfer, reason | `096458883bc84fd298ecf4f58455ed34` | `new-transfer-3-reason.png`, `new-transfer-3-reason.html` |
+  | New transfer, review | `c65cdac4d19c4663a667ddd2ec1c489e` | `new-transfer-4-review.png`, `new-transfer-4-review.html` |
+  | Request detail | `3f906250ac38446db4027f9a0849b769` | `request-detail.png`, `request-detail.html` | The
+  detail page follows the employee status layout: reference and `version`,
+  `statusDisplay`, the active stage and `pendingWith`, withdraw, advisory banners for
+  BR8 and BR9 from the API, current assignment beside the requested target, effective
+  date with `effectiveDateStatus`, and the eight-stage tracker in sequence including
+  `applicable: false` rows. Stage status is text, not colour alone. A person's name
+  appears only when `pendingWith` or the stage is the caller's own line manager
+  (OWN-12). The reason narrative renders only on the owner's detail, from API04, and
+  is not kept in a slice, `localStorage`, the URL or analytics. `EMPLOYEE_CONFIRMATION`
+  is a tracker row, not a signature button. The wizard **reuses the portal OIDC
+  session**; RTK Query attaches the bearer token. There is no transfer login page.
+  Unauthenticated users hit the portal's existing sign-in (AC21). WCAG 2.1 AA is part
+  of the frontend task, including `axe` and a keyboard and screen-reader pass. The
+  shell may label My Transfer Requests and Approvals Inbox; it does not add search,
+  a PDF download, destination photography, or a Downstream or Audit product surface.
 - **Backend layout** follows `.agent/rules/int-standards.node.md` inside the existing
   `employee-services` module: `src/internal-transfer/{api,domain,rules,persistence,integration,readmodel}`.
   Boundary validation is `class-validator` (`whitelist`, `forbidNonWhitelisted`). Persistence
@@ -287,10 +313,13 @@ endpoints they already name.
    approval (API06, AC23).
 9. **Cross-cutting hardening** — rate limiting, log redaction and its test, field-level
    encryption, correlation-ID propagation, unlisted-transition refusal (AC27).
-10. **Front end — wizard and status timeline** — `employee-portal-web` feature folder,
-    accessibility, existing portal session (AC19, AC21).
-11. **Front end — failed-fulfilment labels** — status and list screens render
-    "HR is completing this" and the stage vocabulary as text, with no resume action.
+10. **Front end — list, wizard, and request detail** — `employee-portal-web` feature
+    folder, Tailwind CSS and the shared shadcn/ui components. Detail page is the
+    eight-stage tracker layout above. Accessibility and the existing portal session
+    (AC19, AC21).
+11. **Front end — failed-fulfilment labels** — the same detail and list render
+    "HR is completing this" and the stage vocabulary as text, with no resume action
+    and no employee confirmation control.
 
 ## Documentation Impact
 

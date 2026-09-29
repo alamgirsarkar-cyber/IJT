@@ -2,16 +2,16 @@
 
 ## Derived From
 
-`.ai-context/specs/internal-transfer-downstream-orchestration.spec.md`
+`.ai-context/specs/internal-transfer-downstream-orchestration.spec.md` (v1.6, Approved 2026-09-24, Abhijit Adhikari)
 
-Gate 1 **Approved** v1.3 on 2026-09-11 (Abhijit Adhikari). The file's v1.4 text adds
-OWN-11 compare-and-swap on API01 (AC20) and is **not** Approved until a new Gate 1 pass.
-This plan sequences AC20 as its own task and marks that task blocked on that pass. The
-rest of the plan is the Approved v1.3 contract.
+Realigned 2026-09-24 to that approved spec. The 2026-09-22 draft described Approved v1.3
+and left AC20 blocked on a v1.4 pass. v1.6 includes that compare-and-swap (AC20), the
+v1.5 answers to G1-F13–G1-F16 (AC21), and the rule that this plan does not start
+`ORG_DATA_UPDATE`.
 
 ## Status
 
-**Plan Drafted** · **Author:** Alamgir Sarkar · **Reviewer:** Abhijit Adhikari (_plan review pending_)
+**Tasks Generated** · **Author:** Alamgir Sarkar · Gate 1 approved the spec (v1.6). This plan is not a separate review.
 
 ## Architecture Approach
 
@@ -24,8 +24,11 @@ rest of the plan is the Approved v1.3 contract.
   (its API04 and T11). This plan does not add a route in `employee-portal-web` and does
   not add a resume, retry or "mark complete" control. There is no React task.
 - **Start signal is `employee.transfer.approved.v1`**, consumed by an internal handler
-  after the approval transaction has committed. The handler does not run inside the
-  approval HTTP request. It does not consume `requested.v1`.
+  after the approval transaction has committed. Approval-chain AC3 has already set
+  `ORG_DATA_UPDATE` to `IN_PROGRESS`. This handler writes one `fulfilment-stage.v1` row
+  and does not change that status. If the stage is still `NOT_STARTED`, it writes
+  nothing. It does not run inside the approval HTTP request and does not consume
+  `requested.v1`.
 - **Delivery is the existing outbox relay** ([ADR-0001](../decisions/ADR-0001-outbox-event-driven-transfer-orchestration.md)).
   Applicability flags are read from the stage plan frozen at submit. They are not
   recomputed. Order is sequential: at most one fulfilment work stage is `IN_PROGRESS`.
@@ -71,7 +74,7 @@ No new datastore. Additive use of tables the request plan already creates.
 
 | System | Direction | Sync/Async | Failure behaviour | Timeout / retry | Owner |
 |---|---|---|---|---|---|
-| Approval-chain `approved.v1` | In (outbox) | Async | Handler does not start fulfilment until the event is published. A duplicate delivery is a no-op once `ORG_DATA_UPDATE` is already `IN_PROGRESS` | Relay | Portal |
+| Approval-chain `approved.v1` | In (outbox) | Async | Handler runs after publish. It emits `fulfilment-stage.v1` only when `ORG_DATA_UPDATE` is already `IN_PROGRESS`. It does not perform that status change. A duplicate delivery does not write a second signal | Relay | Portal |
 | HRIS org adapter webhook | Out | Async | Outbox retains the `fulfilment-stage.v1` row. Request stays `FULFILMENT`. No employee error | Exponential backoff; alert at 15 min unpublished | HR Systems |
 | Payroll webhook | Out | Async | Same. Stage stays `IN_PROGRESS` if the consumer does not exist | Same | Finance Systems |
 | ITSM webhook | Out | Async | Same. Ticket adapter is their backlog | Same | IT Service Management |
@@ -91,7 +94,8 @@ No new datastore. Additive use of tables the request plan already creates.
 
 | Scenario | Behaviour | Maps to AC |
 |---|---|---|
-| Outbox write fails while starting `ORG_DATA_UPDATE` | Transaction rolls back; stage is not left `IN_PROGRESS` without a signal | AC1 |
+| `approved.v1` while `ORG_DATA_UPDATE` is already `IN_PROGRESS` | Status unchanged; one `fulfilment-stage.v1` row. A failed outbox write leaves the status as approval-chain committed it and emits no row; retry emits exactly one | AC1 |
+| `approved.v1` while `ORG_DATA_UPDATE` is still `NOT_STARTED` | No status change and no `fulfilment-stage.v1` | AC1 |
 | `SUCCESS` on the current stage | That stage `COMPLETED`; next applicable work stage `IN_PROGRESS` and signalled; `applicable: false` rows never signalled | AC2 |
 | Last applicable work stage `SUCCESS` | `EMPLOYEE_CONFIRMATION` `COMPLETED`; request `COMPLETED`; one `completed.v1` | AC3 |
 | `FAILED` on an `IN_PROGRESS` work stage | Stage `FAILED`; request stays `FULFILMENT`; one `fulfilment-failed.v1`; compensate signals for earlier `COMPLETED` stages; no `completed.v1`. If the failing stage is org update, zero compensate events | AC4 |
@@ -107,14 +111,16 @@ No new datastore. Additive use of tables the request plan already creates.
 | Compensation `FAILED` | Stage `COMPENSATION_FAILED`; no further compensate event; no portal retry | AC14 |
 | Report against `FAILED` or `CANCELLED` | 409. No scheduled job retries the stage | AC17 |
 | Report for a stage that is not yet `IN_PROGRESS` | 409 with `currentStageStatus`; no event | AC19 |
-| Two reports read the same `version` | One commits and increments by 1; the other is 409 `version-conflict`. **Blocked until v1.4 is Approved** | AC20 |
+| Two reports read the same `version` | One commits and increments by 1; the other is 409 `version-conflict` | AC20 |
+| Two or more completed stages, then `FAILED` | Compensate outbox rows are created highest sequence first. That is creation order only. Each payload names one `stageCode`. No field tells a consumer to wait | AC21 |
+| `SUCCESS` meaning ticket intake or queueing | Not a completing report. `SUCCESS` is the business operation finished (BR5) | AC21 |
 | `reportType` absent | 422. Never defaulted | API01 |
 | `EMPLOYEE_CONFIRMATION` as `stageCode` | 422 | API01 |
 
 ## Constitution Check
 
-- [x] **No implementation without an approved spec** — v1.3 is Approved. AC20 is sequenced
-      and blocked, not implemented under the v1.3 approval.
+- [x] **No implementation without an approved spec** — v1.6 is Approved (2026-09-24),
+      including AC20 and AC21. Gate 1 is that spec review. This plan is not a further gate.
 - [x] **No vibe coding** — tasks from Sequencing only.
 - [x] **Test-first** — UT IDs named per task. Integration rows UT28–UT30 use a contract
       double of the downstream consumer, not a stub shaped like the handler.
@@ -155,7 +161,7 @@ No new datastore. Additive use of tables the request plan already creates.
 |---|---|---|
 | Sequential fulfilment rather than parallel fan-out | Already decided in the spec (BR2) and ADR-0001. Reversal is a new spec increment, more than a day | ADR-0001 stands. No new ADR |
 | `eventId` idempotency retained for the life of the request, not 24 h | Yes for correctness of BR11, but reversal is a retention change on one table, under a day if done before data exists | Recorded here. Not a new ADR unless retention policy is challenged |
-| In-transaction CAS without `If-Match` on API01 | Specified in v1.4 / OWN-11. Not chosen by this plan | No ADR until v1.4 is Approved |
+| In-transaction CAS without `If-Match` on API01 | Specified in OWN-11 and AC20. Reversal is a header change, under a day | Recorded here. Mechanics stay in the request spec |
 | No portal resume | Specified (BR10, OWN-08). Reversal is a new spec | Not an ADR candidate for this plan |
 
 ## Explicitly Deferred
@@ -173,25 +179,26 @@ No new datastore. Additive use of tables the request plan already creates.
 - HR cancellation after `COMPLETED`.
 - SLA on fulfilment stages (OQ-15).
 - Starting fulfilment from `requested.v1`.
-- **AC20 / v1.4 compare-and-swap** — sequenced as T07 and not started until Gate 1
-  re-reviews v1.4.
+- Setting `ORG_DATA_UPDATE` to `IN_PROGRESS`. Approval-chain AC3 owns that transition.
 
 ## Sequencing
 
 1. **Webhook authentication (backend)** — canonical string, replay window, key rotation,
    bearer-token rejection. No state change on 401.
-2. **Start fulfilment (backend)** — consume `approved.v1`; `ORG_DATA_UPDATE` to
-   `IN_PROGRESS` with one `fulfilment-stage.v1` row, or neither.
+2. **Signal org update (backend)** — consume `approved.v1` and write one
+   `fulfilment-stage.v1` row when `ORG_DATA_UPDATE` is already `IN_PROGRESS`. Do not
+   change that status. Write nothing if it is still `NOT_STARTED`.
 3. **Sequential success (backend)** — `SUCCESS` advances the next applicable stage or
    completes the request. Out-of-order and `applicable: false` reports refused.
 4. **Failure, cancel and compensate (backend)** — `FAILED`, BR8 cancellations, reverse-sequence
-   `compensate.v1`, including the zero-compensate case when org update itself fails.
+   `compensate.v1` as outbox creation order only (AC21), including the zero-compensate case
+   when org update itself fails. `SUCCESS` means the business operation completed.
 5. **Compensation acknowledgement (backend)** — `COMPENSATED` / `COMPENSATION_FAILED`,
    and the refusal to restart a `FAILED` or `CANCELLED` stage.
 6. **Idempotency, allow-list and audit (backend)** — `eventId` replay and conflict,
    envelope, PII absence, `failureCode` pattern, append-only audit, rate-limit counter.
-7. **Compare-and-swap (backend)** — AC20. **Blocked** until v1.4 Gate 1 Approval.
-   Not folded into T03–T06, so those can merge against the Approved v1.3 contract.
+7. **Compare-and-swap (backend)** — AC20. In-transaction expected version, no `If-Match`.
+   Kept as its own step so the report tasks stay independently mergeable.
 
 There is no frontend step.
 

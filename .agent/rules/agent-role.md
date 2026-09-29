@@ -69,7 +69,7 @@ requirement is written down. Shared facts go in `.ai-context/ownership_index.md`
 | Plan | `.ai-context/plans/internal-transfer-request.plan.md` |
 | Tasks | `.ai-context/tasks/internal-transfer-request.tasks.md` |
 | Prompts | `.ai-context/prompts/internal-transfer-request.prompts.md` |
-| **Next prompt** | Blocked on plan review, not on Gate 1 spec review. All four transfer specs are Gate 1 Approved: request v1.5, notifications v1.3, approval-chain v1.5 and downstream v1.6 (both 2026-09-24, Abhijit Adhikari; G1-F03 closed — approval-chain AC3 is the only owner of the `ORG_DATA_UPDATE` start). The 2026-09-22 plans and tasks for approval-chain and downstream predate those versions and must be checked against them before plan review. No plan is reviewed yet, so do not implement |
+| **Next prompt** | `internal-transfer-request.T01`. All four specs are Gate 1 Approved. Plans and tasks are not a separate review. Approval-chain and downstream were realigned on 2026-09-24 to spec v1.5 and v1.6 |
 
 ## Standing constraints (append to every prompt)
 

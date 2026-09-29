@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OnePoint - Internal Transfer Wireframes</title>
+<!-- Tailwind CSS v3 CDN with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brandDark: '#121212',
+            cardDark: '#1a1a1a',
+            borderDark: '#2e2e2e',
+            subtleDark: '#262626'
+          }
+        }
+      }
+    };
+  </script>
+<style data-purpose="custom-overrides">
+    /* Custom subtle scrollbar styling and form input resets */
+    ::-webkit-calendar-picker-indicator {
+      filter: invert(0.8);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="bg-[#121214] text-neutral-200 min-h-screen font-sans antialiased p-4 md:p-8">
+<!-- BEGIN: PageWrapper -->
+<div class="max-w-5xl mx-auto space-y-6" data-purpose="main-container">
+<!-- BEGIN: HeaderSection -->
+<header class="space-y-4" data-purpose="wireframe-intro">
+<div class="space-y-1">
+<h1 class="text-xl md:text-2xl font-bold tracking-tight text-neutral-100">Internal transfer wireframes</h1>
+<p class="text-xs md:text-sm text-neutral-400 max-w-4xl leading-relaxed">
+          Employee wizard, request detail, and approval screens from the request and approval tasks. Layout only. PDF, destination photo, search, and extra navigation are omitted.
+        </p>
+</div>
+<!-- Navigation Pill Bar / Prototype Flow Strip -->
+<nav aria-label="Workflow Steps" class="flex flex-wrap items-center gap-1.5 pt-1" data-purpose="flow-pills">
+<button class="px-3 py-1 rounded-full text-xs font-medium bg-[#1e1e20] text-neutral-400 hover:text-neutral-200 border border-neutral-800 transition-colors" type="button">
+          My requests
+        </button>
+<button class="px-3 py-1 rounded-full text-xs font-medium bg-[#1e1e20] text-neutral-400 hover:text-neutral-200 border border-neutral-800 transition-colors" type="button">
+          1 Target
+        </button>
+<!-- Active Pill (Step 2) -->
+<button aria-current="step" class="px-3 py-1 rounded-full text-xs font-semibold bg-neutral-200 text-neutral-900 border border-neutral-300 shadow-sm transition-colors" type="button">
+          2 Date
+        </button>
+<button class="px-3 py-1 rounded-full text-xs font-medium bg-[#1e1e20] text-neutral-400 hover:text-neutral-200 border border-neutral-800 transition-colors" type="button">
+          3 Reason
+        </button>
+<button class="px-3 py-1 rounded-full text-xs font-medium bg-[#1e1e20] text-neutral-400 hover:text-neutral-200 border border-neutral-800 transition-colors" type="button">
+          4 Review
+        </button>
+<button class="px-3 py-1 rounded-full text-xs font-medium bg-[#1e1e20] text-neutral-400 hover:text-neutral-200 border border-neutral-800 transition-colors" type="button">
+          Request detail
+        </button>
+<button class="px-3 py-1 rounded-full text-xs font-medium bg-[#1e1e20] text-neutral-400 hover:text-neutral-200 border border-neutral-800 transition-colors" type="button">
+          Approvals inbox
+        </button>
+<button class="px-3 py-1 rounded-full text-xs font-medium bg-[#1e1e20] text-neutral-400 hover:text-neutral-200 border border-neutral-800 transition-colors" type="button">
+          Manager decision
+        </button>
+<button class="px-3 py-1 rounded-full text-xs font-medium bg-[#1e1e20] text-neutral-400 hover:text-neutral-200 border border-neutral-800 transition-colors" type="button">
+          HR decision
+        </button>
+</nav>
+</header>
+<!-- END: HeaderSection -->
+<!-- BEGIN: ApplicationWindowFrame -->
+<main class="border border-neutral-800 rounded-md bg-[#18181a] shadow-2xl overflow-hidden" data-purpose="application-canvas">
+<!-- BEGIN: InternalAppNavBar -->
+<div class="px-6 py-3.5 border-b border-neutral-800 flex items-center justify-between text-sm" data-purpose="app-header">
+<div class="flex items-center space-x-6">
+<span class="font-bold text-neutral-100 tracking-tight text-base">OnePoint</span>
+<nav aria-label="Portal Navigation" class="flex items-center space-x-5 text-xs font-medium">
+<a aria-current="page" class="text-neutral-100 border-b border-neutral-300 pb-0.5" href="#">My Transfer Requests</a>
+<a class="text-neutral-400 hover:text-neutral-200 flex items-center gap-1.5 transition-colors" href="#">
+<span>Approvals Inbox</span>
+<span class="inline-flex items-center justify-center px-1.5 py-0.2 text-[10px] font-semibold text-neutral-300 bg-neutral-800 rounded-full border border-neutral-700">2</span>
+</a>
+</nav>
+</div>
+<div class="text-xs text-neutral-400 flex items-center gap-2">
+<span>Signed in</span>
+</div>
+</div>
+<!-- END: InternalAppNavBar -->
+<!-- BEGIN: WizardBodyContent -->
+<section class="p-6 md:p-8 space-y-6" data-purpose="form-step-container">
+<!-- Step Titles -->
+<div class="space-y-1">
+<h2 class="text-lg md:text-xl font-semibold text-neutral-100 tracking-tight">
+            New transfer · Effective date
+          </h2>
+<p class="text-xs font-normal text-neutral-400">
+            Step 2 of 4
+          </p>
+</div>
+<!-- Form Elements -->
+<form class="space-y-5 max-w-3xl" data-purpose="effective-date-form" onsubmit="event.preventDefault();">
+<!-- Date Input Box -->
+<div class="space-y-1.5">
+<div class="relative rounded border border-neutral-700 bg-[#1e1e20] focus-within:border-neutral-400 focus-within:ring-1 focus-within:ring-neutral-400 transition-colors">
+<label class="sr-only" for="requested-effective-date">Requested effective date</label>
+<input class="w-full bg-transparent border-0 px-3.5 py-2.5 text-sm text-neutral-200 placeholder-neutral-400 focus:ring-0 focus:outline-none" id="requested-effective-date" name="effective_date" placeholder="Requested effective date" type="text"/>
+</div>
+</div>
+<!-- BEGIN: AdvisoryBanner -->
+<div class="flex items-start space-x-2.5 text-amber-500/90 pt-1" data-purpose="payroll-advisory" role="alert">
+<!-- Warning Triangle Icon -->
+<svg aria-hidden="true" class="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-500" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+<line x1="12" x2="12" y1="9" y2="13"></line>
+<line x1="12" x2="12.01" y1="17" y2="17"></line>
+</svg>
+<div class="space-y-0.5">
+<span class="text-xs font-bold text-neutral-200 block">Payroll cycle</span>
+<p class="text-xs text-neutral-400 leading-normal">
+                This date is not the first of the month. Payroll may need an extra check. Advisory only.
+              </p>
+</div>
+</div>
+<!-- END: AdvisoryBanner -->
+<!-- BEGIN: ActionButtons -->
+<div class="flex items-center space-x-3 pt-3" data-purpose="form-actions">
+<!-- Back Secondary Button -->
+<button class="px-4 py-1.5 text-xs font-medium text-neutral-200 bg-[#222226] border border-neutral-700 rounded hover:bg-neutral-800 hover:border-neutral-600 transition-colors focus:outline-none focus:ring-1 focus:ring-neutral-400" type="button">
+              Back
+            </button>
+<!-- Continue Primary Button -->
+<button class="px-4 py-1.5 text-xs font-medium text-neutral-200 bg-[#2b2b30] border border-neutral-600 rounded hover:bg-neutral-700 hover:border-neutral-500 transition-colors focus:outline-none focus:ring-1 focus:ring-neutral-400" type="submit">
+              Continue
+            </button>
+</div>
+<!-- END: ActionButtons -->
+</form>
+</section>
+<!-- END: WizardBodyContent -->
+</main>
+<!-- END: ApplicationWindowFrame -->
+</div>
+<!-- END: PageWrapper -->
+</body></html>

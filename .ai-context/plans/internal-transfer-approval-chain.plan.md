@@ -2,17 +2,15 @@
 
 ## Derived From
 
-`.ai-context/specs/internal-transfer-approval-chain.spec.md` (v1.3)
+`.ai-context/specs/internal-transfer-approval-chain.spec.md` (v1.5, Approved 2026-09-24, Abhijit Adhikari)
 
-The spec's Gate 1 block records **Approved** on 2026-09-09 against v1.0, and its own
-superseded note says that line does not cover v1.3. This plan was drafted on 2026-09-22
-because the session was instructed that the approval chain is approved. It does not rewrite
-the Gate 1 block. Implementation of v1.3 behaviour (OWN-11 `If-Match`, AC15) does not start
-until that block names v1.3 Approved.
+Realigned 2026-09-24 to that approved spec. The 2026-09-22 draft described v1.3 and treated
+`If-Match` as blocked. v1.5 is Approved, including OWN-11, BR9 (the 14–180 day window does
+not bind `confirmedEffectiveDate`), and sole ownership of the `ORG_DATA_UPDATE` start (AC3).
 
 ## Status
 
-**Plan Drafted** · **Author:** Alamgir Sarkar · **Reviewer:** Abhijit Adhikari (_plan review pending_)
+**Tasks Generated** · **Author:** Alamgir Sarkar · Gate 1 approved the spec (v1.5). This plan is not a separate review.
 
 ## Architecture Approach
 
@@ -31,9 +29,9 @@ until that block names v1.3 Approved.
 - **A decision and its outbox row share one transaction** that contains no HTTP call
   ([ADR-0001](../decisions/ADR-0001-outbox-event-driven-transfer-orchestration.md)). HR
   approval does not call Payroll, ITSM, Facilities or the HRIS. It sets `FULFILMENT`,
-  moves `ORG_DATA_UPDATE` to `IN_PROGRESS`, and writes `employee.transfer.approved.v1`.
-  Downstream orchestration consumes that event; this plan does not signal fulfilment
-  consumers.
+  moves `ORG_DATA_UPDATE` from `NOT_STARTED` to `IN_PROGRESS` (this plan is the only
+  owner of that start), and writes `employee.transfer.approved.v1`. Downstream consumes
+  that event to emit `fulfilment-stage.v1` and does not set the stage status.
 - **Compare-and-swap is OWN-11, not a local lock.** API03 requires `If-Match` equal to
   the `version` API02 returned. The write is `UPDATE … WHERE version = :expected`.
   Idempotent replay is checked before that precondition. This plan does not redefine the
@@ -45,7 +43,24 @@ until that block names v1.3 Approved.
   decision; HR inbox and validation. Server state is RTK Query only. The session bearer
   token is attached by the existing portal client. There is no transfer login form.
   Reason text is rendered for `HR_BUSINESS_PARTNER` only and is not written to a slice,
-  `localStorage`, the URL, analytics or a console statement. Copy is externalised.
+  `localStorage`, the URL, analytics or a console statement. The inbox is the Approvals
+  entry in the same portal shell as My Transfer Requests; its badge is the inbox
+  `totalItems`, not a hardcoded count.   Screens match the Stitch project Internal Transfer UI
+  (`13142646408568860364`). Screenshot and HTML are in
+  `docs/designs/internal-transfer-ui/`. The implemented page follows that layout,
+  type, and spacing. Reason disclosure stays as OWN-05: the manager screen has no
+  reason, and HR sees it only on the decision page.
+
+  | Screen | Stitch screen | Files |
+  | --- | --- | --- |
+  | Approvals inbox | `cdd1fe4620a94712b0fc4a92d67a3ab2` | `approvals-inbox.png`, `approvals-inbox.html` |
+  | Manager decision | `f214c8cfede54e29b290e1a9dd8f78d1` | `manager-decision-release.png`, `manager-decision-release.html` |
+  | HR validation | `9a01bafb93bb4ac1b1ec03d489cb0936` | `hr-decision-validate.png`, `hr-decision-validate.html` |
+
+  They use the same Tailwind CSS setup and shadcn/ui components as the request feature
+  (`employee-portal-web/src/components/ui/`). This feature does not add a second
+  styling system. The decision page does not repeat a destination image or PDF action.
+  Copy is externalised.
   Components are queried in tests by accessible role; the network is mocked with MSW
   using this spec's success and problem bodies. `axe` plus a keyboard and screen-reader
   pass are acceptance of the frontend tasks, not a follow-up.
@@ -113,15 +128,14 @@ No new table. The request plan's schema is the store.
 | Missing `If-Match` | 400 `precondition-required` | AC15 |
 | Stale `If-Match` | 409 `version-conflict` with `currentVersion`; decision not merged | AC15 |
 | HR approve without `confirmedEffectiveDate` | 422 `validation-failed`; status stays `HR_VALIDATION` | AC3 |
+| Confirmed date outside the 14–180 day window, by any `HR_BUSINESS_PARTNER` | 200. The window binds the requested date only (BR9). The caller need not be a named stage assignee (BR6) | AC16 |
 | Confirmed date on a manager decision or on any reject | 422 | API03 exception table |
 | SQLite unavailable | 503 from the shared error middleware; no partial stage write | AC1, AC13 |
 
 ## Constitution Check
 
-- [x] **No implementation without an approved spec** — v1.0 is Approved on the spec. v1.3
-      (`If-Match`, AC15) is drafted here because the session treated the spec as approved,
-      and it stays blocked for implementation until the Gate 1 block names v1.3. See
-      Derived From.
+- [x] **No implementation without an approved spec** — v1.5 is Approved (2026-09-24).
+      Gate 1 is that spec review. This plan is not a further gate.
 - [x] **No vibe coding** — tasks are generated from Sequencing. One task ID per prompt.
 - [x] **Test-first** — each task names its UT IDs. Red before implementation.
 - [x] **Spec is the contract** — no behaviour beyond the spec. Task-ID references only.
@@ -200,17 +214,21 @@ No new table. The request plan's schema is the store.
 2. **Decision view (backend)** — API02, including `version`, HR-only `reason`, 404 for
    everyone else.
 3. **Approve transaction (backend)** — `MANAGER_RELEASE`, `MANAGER_ACCEPT`, then HR
-   approve with confirmed date, each with its outbox row.
+   approve with confirmed date, each with its outbox row. HR approve is the only writer
+   of `ORG_DATA_UPDATE` `IN_PROGRESS`. A date outside the 14–180 day window is accepted
+   (AC16).
 4. **Reject transaction (backend)** — terminal `REJECTED`, later stages `CANCELLED`,
    `rejected.v1`. Out-of-order decisions refused.
 5. **Concurrency and auth failures (backend)** — idempotency, `If-Match`, withdraw race,
    null assignee, 401. Its own task so the happy path cannot hide them.
 6. **Audit and narrative exclusion (backend)** — log capture, append-only audit, rate-limit
    counters.
-7. **Manager screens (frontend)** — inbox and decision. No reason field in the UI because
-   the key is absent.
-8. **HR screens (frontend)** — inbox and validation, including confirmed date and the
-   reason rendered from the response and then forgotten by the client.
+7. **Manager screens (frontend)** — Approvals inbox and decision in the portal shell,
+   built with Tailwind CSS and the shared shadcn/ui components. No reason field,
+   because the key is absent. No party name except where the API already omitted it.
+8. **HR screens (frontend)** — the same inbox and validation, same styling system,
+   including confirmed date and the reason rendered from the response and then
+   forgotten by the client.
 
 ## Documentation Impact
 

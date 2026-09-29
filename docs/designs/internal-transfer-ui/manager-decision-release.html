@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Manager Decision - Release ITR-2026-08125</title>
+<!-- Tailwind CSS v3 with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            app: {
+              bg: '#121212',
+              card: '#191919',
+              border: '#2a2a2a',
+              input: '#222222',
+              muted: '#8e8e93',
+              subtle: '#636366'
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Typography & Layout Tweaks -->
+<style data-purpose="base-styling">
+    body {
+      background-color: #121212;
+      color: #e5e7eb;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Hide scrollbars for pill navigation while retaining scrollability */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#121212] text-zinc-200 antialiased p-4 sm:p-6 lg:p-8">
+<div class="max-w-5xl mx-auto space-y-6">
+<!-- BEGIN: WireframeOverviewHeader -->
+<header class="space-y-3" data-purpose="wireframe-overview">
+<div class="space-y-1">
+<h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white">Internal transfer wireframes</h1>
+<p class="text-xs sm:text-sm text-zinc-400 max-w-4xl leading-relaxed">
+          Employee wizard, request detail, and approval screens from the request and approval tasks. Layout only. PDF, destination photo, search, and extra navigation are omitted.
+        </p>
+</div>
+<!-- Navigation flow pills representing prototype steps -->
+<nav aria-label="Wireframe Screen Steps" class="overflow-x-auto no-scrollbar pt-1">
+<div class="flex items-center gap-1.5 min-w-max text-xs">
+<a class="px-3 py-1 rounded-full border border-zinc-700/60 bg-zinc-800/40 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors" href="#">
+            My requests
+          </a>
+<a class="px-3 py-1 rounded-full border border-zinc-700/60 bg-zinc-800/40 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors" href="#">
+            1 Target
+          </a>
+<a class="px-3 py-1 rounded-full border border-zinc-700/60 bg-zinc-800/40 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors" href="#">
+            2 Date
+          </a>
+<a class="px-3 py-1 rounded-full border border-zinc-700/60 bg-zinc-800/40 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors" href="#">
+            3 Reason
+          </a>
+<a class="px-3 py-1 rounded-full border border-zinc-700/60 bg-zinc-800/40 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors" href="#">
+            4 Review
+          </a>
+<a class="px-3 py-1 rounded-full border border-zinc-700/60 bg-zinc-800/40 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors" href="#">
+            Request detail
+          </a>
+<a class="px-3 py-1 rounded-full border border-zinc-700/60 bg-zinc-800/40 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors" href="#">
+            Approvals inbox
+          </a>
+<!-- Active wireframe step -->
+<a aria-current="page" class="px-3 py-1 rounded-full bg-zinc-700/70 border border-zinc-500 text-white font-medium shadow-sm" href="#">
+            Manager decision
+          </a>
+<a class="px-3 py-1 rounded-full border border-zinc-700/60 bg-zinc-800/40 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors" href="#">
+            HR decision
+          </a>
+</div>
+</nav>
+</header>
+<!-- END: WireframeOverviewHeader -->
+<!-- BEGIN: MainWireframeCard -->
+<main class="border border-zinc-800 rounded-sm bg-[#161616] shadow-xl overflow-hidden" data-purpose="app-shell">
+<!-- BEGIN: ApplicationNavBar -->
+<nav aria-label="OnePoint Primary Navigation" class="border-b border-zinc-800/90 px-4 sm:px-6 py-3 flex items-center justify-between">
+<!-- Left Navigation Links -->
+<div class="flex items-center space-x-5 text-sm">
+<span class="font-semibold text-zinc-100 tracking-tight">OnePoint</span>
+<a class="text-zinc-400 hover:text-zinc-200 transition-colors text-xs sm:text-sm" href="#">
+            My Transfer Requests
+          </a>
+<div class="flex items-center space-x-1.5 text-xs sm:text-sm text-zinc-200 font-medium">
+<span>Approvals Inbox</span>
+<span class="inline-flex items-center justify-center text-[11px] font-semibold text-zinc-400 bg-zinc-800 rounded px-1.5 py-0.2">
+              2
+            </span>
+</div>
+</div>
+<!-- Right User Status -->
+<div class="text-xs text-zinc-400">
+          Signed in
+        </div>
+</nav>
+<!-- END: ApplicationNavBar -->
+<!-- BEGIN: ContentArea -->
+<section aria-labelledby="release-heading" class="p-5 sm:p-7 space-y-5" data-purpose="decision-view">
+<!-- Screen Heading -->
+<h2 class="text-base sm:text-lg font-semibold tracking-tight text-zinc-100" id="release-heading">
+          Release ITR-2026-08125
+        </h2>
+<!-- Transfer Summary Details Box -->
+<div class="border border-zinc-800 bg-[#141414] rounded-sm p-4 space-y-1.5" data-purpose="transfer-summary">
+<div class="text-xs sm:text-sm text-zinc-300 font-normal">
+            Employee · Finance clerk to Operations analyst
+          </div>
+<div class="text-xs sm:text-sm text-zinc-400">
+            Requested effective date 1 Nov 2026
+          </div>
+</div>
+<!-- Reason Status Indicator -->
+<div class="space-y-1.5 pt-0.5" data-purpose="reason-status">
+<div class="flex items-center space-x-2">
+<!-- Bullet indicator dot -->
+<span aria-hidden="true" class="h-2 w-2 rounded-full bg-zinc-500 inline-block shrink-0"></span>
+<span class="text-xs sm:text-sm font-medium text-zinc-300">Reason hidden</span>
+</div>
+<p class="text-xs text-zinc-400 pl-4">
+            The manager response has no reason field. This screen does not show the narrative.
+          </p>
+</div>
+<!-- Decision Action Buttons -->
+<div class="pt-2 flex items-center space-x-3" data-purpose="action-buttons">
+<button aria-label="Approve transfer release" class="px-3 py-1.5 text-xs rounded border border-zinc-700 bg-zinc-800/80 hover:bg-zinc-700/80 hover:border-zinc-600 text-zinc-100 font-normal transition-colors focus:outline-none focus:ring-1 focus:ring-zinc-400" type="button">
+            Approve release
+          </button>
+<button aria-label="Reject transfer release" class="px-3 py-1.5 text-xs rounded border border-zinc-700 bg-zinc-800/80 hover:bg-zinc-700/80 hover:border-zinc-600 text-zinc-100 font-normal transition-colors focus:outline-none focus:ring-1 focus:ring-zinc-400" type="button">
+            Reject
+          </button>
+</div>
+</section>
+<!-- END: ContentArea -->
+</main>
+<!-- END: MainWireframeCard -->
+</div>
+</body></html>

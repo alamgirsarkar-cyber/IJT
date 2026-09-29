@@ -2,7 +2,7 @@
 
 ## Derived From
 
-`.ai-context/plans/internal-transfer-notifications.plan.md` (Plan Drafted — plan review pending)
+`.ai-context/plans/internal-transfer-notifications.plan.md` (aligned to Approved spec v1.3)
 
 Generated from the plan's Sequencing section on 2026-09-22.
 

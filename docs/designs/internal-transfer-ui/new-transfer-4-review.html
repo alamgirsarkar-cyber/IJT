@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Internal Transfer Wireframes - Step 4 Review</title>
+<!-- Tailwind CSS v3 with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brandDark: {
+              950: '#111215',
+              900: '#17181c',
+              850: '#1d1e24',
+              800: '#23252b',
+              700: '#2f323a',
+              600: '#414550',
+              400: '#9499a8',
+              300: '#c5c8d4',
+              100: '#f0f1f5'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Typography & Micro-adjustments -->
+<style data-purpose="custom-styling">
+    body {
+      background-color: #16171a;
+      color: #dedfe3;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#16171a] text-[#dedfe3] antialiased selection:bg-neutral-700 selection:text-white pb-16">
+<!-- BEGIN: WireframeHeader -->
+<header class="max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-4" data-purpose="wireframe-intro">
+<div class="mb-4">
+<h1 class="text-xl sm:text-2xl font-semibold text-white tracking-tight">Internal transfer wireframes</h1>
+<p class="text-xs sm:text-sm text-[#8c8f99] mt-1 leading-relaxed">
+        Employee wizard, request detail, and approval screens from the request and approval tasks. Layout only. PDF, destination photo, search, and extra navigation are omitted.
+      </p>
+</div>
+<!-- Wireframe Stage Pill Navigation Bar -->
+<nav aria-label="Wireframe Screen Flow" class="flex items-center gap-1.5 overflow-x-auto py-1.5 scrollbar-none text-xs">
+<button class="px-3.5 py-1 rounded-full bg-[#202227] hover:bg-[#2c2e35] text-[#9b9fa9] hover:text-white transition-colors whitespace-nowrap border border-transparent" type="button">
+        My requests
+      </button>
+<button class="px-3.5 py-1 rounded-full bg-[#202227] hover:bg-[#2c2e35] text-[#9b9fa9] hover:text-white transition-colors whitespace-nowrap border border-transparent" type="button">
+        1 Target
+      </button>
+<button class="px-3.5 py-1 rounded-full bg-[#202227] hover:bg-[#2c2e35] text-[#9b9fa9] hover:text-white transition-colors whitespace-nowrap border border-transparent" type="button">
+        2 Date
+      </button>
+<button class="px-3.5 py-1 rounded-full bg-[#202227] hover:bg-[#2c2e35] text-[#9b9fa9] hover:text-white transition-colors whitespace-nowrap border border-transparent" type="button">
+        3 Reason
+      </button>
+<!-- Active Pill: 4 Review -->
+<button class="px-3.5 py-1 rounded-full bg-[#353842] text-white font-medium whitespace-nowrap border border-[#4a4e5c] shadow-sm" type="button">
+        4 Review
+      </button>
+<button class="px-3.5 py-1 rounded-full bg-[#202227] hover:bg-[#2c2e35] text-[#9b9fa9] hover:text-white transition-colors whitespace-nowrap border border-transparent" type="button">
+        Request detail
+      </button>
+<button class="px-3.5 py-1 rounded-full bg-[#202227] hover:bg-[#2c2e35] text-[#9b9fa9] hover:text-white transition-colors whitespace-nowrap border border-transparent" type="button">
+        Approvals inbox
+      </button>
+<button class="px-3.5 py-1 rounded-full bg-[#202227] hover:bg-[#2c2e35] text-[#9b9fa9] hover:text-white transition-colors whitespace-nowrap border border-transparent" type="button">
+        Manager decision
+      </button>
+<button class="px-3.5 py-1 rounded-full bg-[#202227] hover:bg-[#2c2e35] text-[#9b9fa9] hover:text-white transition-colors whitespace-nowrap border border-transparent" type="button">
+        HR decision
+      </button>
+</nav>
+</header>
+<!-- END: WireframeHeader -->
+<!-- BEGIN: ApplicationContainer -->
+<div class="max-w-6xl mx-auto px-4 sm:px-6 mt-2">
+<!-- Outer Application Canvas Box -->
+<div class="bg-[#18191d] border border-[#2b2d35] rounded shadow-2xl overflow-hidden" data-purpose="app-shell">
+<!-- BEGIN: ApplicationNavBar -->
+<nav aria-label="Main Application Navigation" class="border-b border-[#2b2d35] px-6 py-3 flex items-center justify-between text-sm">
+<div class="flex items-center gap-6">
+<!-- Logo / App Name -->
+<span class="font-bold text-white text-base tracking-normal">OnePoint</span>
+<!-- Navigation Links -->
+<div class="flex items-center gap-5 text-xs sm:text-sm">
+<a class="text-white font-medium hover:text-gray-200 transition-colors" href="#my-requests">
+              My Transfer Requests
+            </a>
+<a class="text-[#8c8f99] hover:text-white transition-colors inline-flex items-center gap-1.5" href="#approvals">
+<span>Approvals Inbox</span>
+<span class="inline-flex items-center justify-center px-1.5 py-0.2 text-[11px] font-medium bg-[#2a2d36] text-[#b3b7c4] rounded">2</span>
+</a>
+</div>
+</div>
+<!-- User Status -->
+<div class="text-xs sm:text-sm text-[#8c8f99] font-normal">
+          Signed in
+        </div>
+</nav>
+<!-- END: ApplicationNavBar -->
+<!-- BEGIN: MainContent -->
+<main class="p-6 sm:p-8" data-purpose="step-review-content">
+<!-- Page Title & Stepper Indicator -->
+<section aria-label="Step Information" class="mb-5">
+<h2 class="text-lg font-semibold text-white tracking-tight">New transfer · Review</h2>
+<p class="text-xs text-[#8c8f99] mt-1.5">Step 4 of 4</p>
+</section>
+<!-- Summary Details Panel -->
+<section aria-label="Transfer Summary" class="border border-[#2b2d35] bg-[#16171b] rounded-sm p-4 sm:p-5 mb-5 max-w-2xl">
+<ul class="space-y-1.5 text-xs sm:text-sm text-[#cfd2dc]" data-purpose="summary-items">
+<li class="font-normal text-white">Operations · Analyst · Site B</li>
+<li class="text-[#b1b5c2]">Effective date 1 Nov 2026</li>
+<li class="text-[#b1b5c2]">Reason recorded</li>
+</ul>
+</section>
+<!-- Info / Disclaimer Callout -->
+<section class="flex items-start gap-2.5 mb-7 max-w-2xl" data-purpose="hr-validation-note">
+<!-- Info Circle Icon -->
+<div aria-hidden="true" class="pt-0.5 text-[#737785] flex-shrink-0">
+<svg class="w-4 h-4" fill="currentColor" viewbox="0 0 16 16">
+<path clip-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0-1A6 6 0 1 0 8 2a6 6 0 0 0 0 12zM8 4.25a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0V5A.75.75 0 0 1 8 4.25zm0 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5z" fill-rule="evenodd"></path>
+</svg>
+</div>
+<!-- Notice Text Content -->
+<div>
+<h3 class="text-xs sm:text-sm font-medium text-[#d4d6e0] leading-tight">HR will check further</h3>
+<p class="text-xs text-[#828694] mt-1 leading-normal">
+              Submitting does not approve the transfer. HR still validates eligibility.
+            </p>
+</div>
+</section>
+<!-- Form Actions -->
+<div class="flex items-center gap-2.5 pt-1" data-purpose="action-buttons">
+<!-- Secondary Action: Back -->
+<button class="px-4 py-1.5 text-xs font-normal text-[#cfd2dc] bg-[#22242b] border border-[#333742] hover:bg-[#2b2d36] hover:border-[#434857] active:bg-[#1f2026] rounded transition-colors focus:outline-none focus:ring-1 focus:ring-neutral-500" type="button">
+            Back
+          </button>
+<!-- Primary Action: Submit -->
+<button class="px-4 py-1.5 text-xs font-medium text-white bg-[#2e313b] border border-[#434755] hover:bg-[#383c48] hover:border-[#525768] active:bg-[#262831] rounded shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-neutral-400" type="button">
+            Submit
+          </button>
+</div>
+</main>
+<!-- END: MainContent -->
+</div>
+</div>
+<!-- END: ApplicationContainer -->
+</body></html>

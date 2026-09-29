@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Internal Transfer - Request Detail (ITR-2026-08125)</title>
+<!-- Tailwind CSS CDN with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Custom Configuration -->
+<script data-purpose="tailwind-config">
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brandDark: {
+              950: '#0c0d0e',
+              900: '#141517',
+              850: '#18191c',
+              800: '#1f2125',
+              700: '#2b2d33',
+              600: '#3a3c42',
+              400: '#8b8e96',
+              300: '#b4b7be',
+              100: '#e5e7eb'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'Segoe UI', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+<!-- Custom CSS for specific wireframe details -->
+<style data-purpose="custom-styling">
+    /* Subtle scrollbar for wireframe preview pill bar */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-[#121316] text-[#c9cbcf] font-sans min-h-screen antialiased flex flex-col items-center p-3 sm:p-6 md:p-8">
+<!-- BEGIN: MainContainer -->
+<main class="w-full max-w-4xl mx-auto space-y-5" data-purpose="request-detail-view">
+<!-- BEGIN: WireframeTopPillBar -->
+<!-- Top wireframe meta-flow switcher from prompt preview -->
+<header class="space-y-3" data-purpose="prototype-header">
+<div class="border-b border-[#26282d] pb-3">
+<h1 class="text-xl font-semibold text-white tracking-tight">Internal transfer wireframes</h1>
+<p class="text-xs text-[#82868e] mt-1">
+          Employee wizard, request detail, and approval screens from the request and approval tasks. Layout only. PDF, destination photo, search, and extra navigation are omitted.
+        </p>
+</div>
+<!-- Navigation Pills Bar -->
+<nav aria-label="Prototype screens" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 text-xs" data-purpose="flow-switcher">
+<button class="px-3 py-1 rounded-full bg-[#1e2024] hover:bg-[#282a30] text-[#a0a4ac] transition-colors whitespace-nowrap" type="button">My requests</button>
+<button class="px-3 py-1 rounded-full bg-[#1e2024] hover:bg-[#282a30] text-[#a0a4ac] transition-colors whitespace-nowrap" type="button">1 Target</button>
+<button class="px-3 py-1 rounded-full bg-[#1e2024] hover:bg-[#282a30] text-[#a0a4ac] transition-colors whitespace-nowrap" type="button">2 Date</button>
+<button class="px-3 py-1 rounded-full bg-[#1e2024] hover:bg-[#282a30] text-[#a0a4ac] transition-colors whitespace-nowrap" type="button">3 Reason</button>
+<button class="px-3 py-1 rounded-full bg-[#1e2024] hover:bg-[#282a30] text-[#a0a4ac] transition-colors whitespace-nowrap" type="button">4 Review</button>
+<button aria-current="page" class="px-3 py-1 rounded-full bg-[#2d3036] text-white font-medium border border-[#3f434c] shadow-sm whitespace-nowrap" type="button">Request detail</button>
+<button class="px-3 py-1 rounded-full bg-[#1e2024] hover:bg-[#282a30] text-[#a0a4ac] transition-colors whitespace-nowrap" type="button">Approvals inbox</button>
+<button class="px-3 py-1 rounded-full bg-[#1e2024] hover:bg-[#282a30] text-[#a0a4ac] transition-colors whitespace-nowrap" type="button">Manager decision</button>
+<button class="px-3 py-1 rounded-full bg-[#1e2024] hover:bg-[#282a30] text-[#a0a4ac] transition-colors whitespace-nowrap" type="button">HR decision</button>
+</nav>
+</header>
+<!-- END: WireframeTopPillBar -->
+<!-- BEGIN: ApplicationWindowContainer -->
+<div class="border border-[#26282e] rounded-md bg-[#16171a] p-5 sm:p-7 shadow-2xl space-y-6">
+<!-- BEGIN: ApplicationNav -->
+<nav aria-label="Portal Navigation" class="flex flex-wrap items-center justify-between text-xs sm:text-sm border-b border-[#25272d] pb-4 gap-y-2" data-purpose="app-nav">
+<div class="flex items-center space-x-6">
+<span class="font-bold text-white tracking-wide text-sm sm:text-base">OnePoint</span>
+<span class="text-white font-medium border-b-2 border-white pb-1 -mb-[18px]">My Transfer Requests</span>
+<div class="flex items-center space-x-1.5 text-[#91959e] hover:text-white cursor-pointer transition-colors">
+<span>Approvals Inbox</span>
+<span class="bg-[#2a2d34] text-[#a5aab5] px-1.5 py-0.5 rounded text-[11px] font-mono leading-none">2</span>
+</div>
+</div>
+<div class="text-xs text-[#8d919a]">
+<span class="hover:text-white cursor-pointer">Signed in</span>
+</div>
+</nav>
+<!-- END: ApplicationNav -->
+<!-- BEGIN: RequestHeaderSection -->
+<section class="space-y-2 pt-1" data-purpose="header-info">
+<div class="flex items-start justify-between gap-4">
+<!-- Request ID & Version Pill -->
+<div class="flex items-center gap-2">
+<h2 class="text-lg sm:text-xl font-bold text-white tracking-tight">ITR-2026-08125</h2>
+<span class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-[#24262b] text-[#9da2ad] border border-[#30333a]">v3</span>
+</div>
+<!-- Withdraw Action -->
+<button class="px-3.5 py-1 text-xs font-medium text-[#c0c4cc] border border-[#363941] bg-[#1a1c20] hover:bg-[#23262c] hover:text-white rounded transition-colors" data-purpose="withdraw-action" type="button">
+            Withdraw
+          </button>
+</div>
+<!-- Current Status Line -->
+<p class="text-xs sm:text-sm text-[#9da1aa] leading-relaxed">
+          With your line manager <span class="text-[#555a63] mx-1">·</span> Pending with line manager
+        </p>
+</section>
+<!-- END: RequestHeaderSection -->
+<!-- BEGIN: NoticesSection -->
+<section aria-label="Status notifications" class="space-y-3" data-purpose="alerts-section">
+<!-- Warning: Payroll Cycle -->
+<div class="flex items-start space-x-2.5 text-xs text-[#d2d6df] bg-[#191a1e] p-2.5 rounded border-l-2 border-amber-500/70 border-y border-r border-[#24262d]">
+<svg aria-hidden="true" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<div class="space-y-0.5">
+<div class="font-medium text-white">Payroll cycle</div>
+<div class="text-[#969aa3]">Requested date is not the first of the month.</div>
+</div>
+</div>
+<!-- Info: HR Validation Notice -->
+<div class="flex items-start space-x-2.5 text-xs text-[#d2d6df] bg-[#191a1e] p-2.5 rounded border-l-2 border-sky-500/70 border-y border-r border-[#24262d]">
+<svg aria-hidden="true" class="w-4 h-4 text-sky-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+<path d="M12 16v-4m0-4h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<div class="space-y-0.5">
+<div class="font-medium text-white">HR will check further</div>
+<div class="text-[#969aa3]">Eligibility is still reviewed by HR.</div>
+</div>
+</div>
+</section>
+<!-- END: NoticesSection -->
+<!-- BEGIN: ComparisonGridSection -->
+<section aria-label="Role comparison" class="grid grid-cols-1 md:grid-cols-2 gap-4" data-purpose="current-vs-requested">
+<!-- Current Role Card -->
+<div class="border border-[#282a31] bg-[#18191d] p-3.5 rounded">
+<h3 class="text-sm font-semibold text-white mb-2 pb-1 border-b border-[#25272e]">Current</h3>
+<ul class="text-xs space-y-1.5 text-[#a8acb5]">
+<li class="font-medium text-[#dce0e8]">Finance</li>
+<li>Clerk</li>
+<li class="text-[#848892]">Site A</li>
+</ul>
+</div>
+<!-- Requested Role Card -->
+<div class="border border-[#282a31] bg-[#18191d] p-3.5 rounded">
+<h3 class="text-sm font-semibold text-white mb-2 pb-1 border-b border-[#25272e]">Requested</h3>
+<ul class="text-xs space-y-1.5 text-[#a8acb5]">
+<li class="font-medium text-[#dce0e8]">Operations</li>
+<li>Analyst</li>
+<li class="text-[#848892]">Site B</li>
+</ul>
+</div>
+</section>
+<!-- END: ComparisonGridSection -->
+<!-- Effective Date Metadata -->
+<div class="text-xs text-[#9aa0aa] font-medium" data-purpose="effective-date-indicator">
+        Effective date 1 Nov 2026 <span class="text-[#555a63] mx-1">·</span> <span class="text-[#b2b6bf]">Requested</span>
+</div>
+<!-- BEGIN: JustificationBox -->
+<section class="border border-[#282a31] bg-[#18191d] p-3.5 rounded" data-purpose="justification-card">
+<h3 class="text-xs font-semibold text-white mb-1.5 tracking-wide">Your reason</h3>
+<p class="text-xs text-[#a0a5af] leading-relaxed">
+          Closer to the operations team I already support.
+        </p>
+</section>
+<!-- END: JustificationBox -->
+<!-- BEGIN: StagesTableSection -->
+<section class="space-y-2.5 pt-1" data-purpose="stages-workflow-list">
+<h3 class="text-sm font-semibold text-white tracking-wide">Stages</h3>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-xs border-collapse">
+<thead>
+<tr class="sr-only">
+<th scope="col">Stage Number</th>
+<th scope="col">Stage Name</th>
+<th scope="col">Status</th>
+<th scope="col">Assignee</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#202227] text-[#9da2ac]">
+<!-- Stage 1 -->
+<tr class="hover:bg-[#1a1c20]/60 transition-colors">
+<td class="py-2 pr-3 w-8 font-mono text-[#686c75]">1</td>
+<td class="py-2 pr-4 font-medium text-white">Manager release</td>
+<td class="py-2 pr-4 text-[#e0e3eb]">In progress</td>
+<td class="py-2 text-[#7d828d]">Line manager</td>
+</tr>
+<!-- Stage 2 -->
+<tr class="hover:bg-[#1a1c20]/60 transition-colors">
+<td class="py-2 pr-3 font-mono text-[#686c75]">2</td>
+<td class="py-2 pr-4 font-medium text-white">HR validation</td>
+<td class="py-2 pr-4 text-[#7d828d]">Not started</td>
+<td class="py-2 text-[#7d828d]">—</td>
+</tr>
+<!-- Stage 3 -->
+<tr class="hover:bg-[#1a1c20]/60 transition-colors">
+<td class="py-2 pr-3 font-mono text-[#686c75]">3</td>
+<td class="py-2 pr-4 font-medium text-white">Organisation data</td>
+<td class="py-2 pr-4 text-[#7d828d]">Not started</td>
+<td class="py-2 text-[#7d828d]">—</td>
+</tr>
+<!-- Stage 4 -->
+<tr class="hover:bg-[#1a1c20]/60 transition-colors">
+<td class="py-2 pr-3 font-mono text-[#686c75]">4</td>
+<td class="py-2 pr-4 font-medium text-white">Payroll</td>
+<td class="py-2 pr-4 text-[#7d828d]">Not started</td>
+<td class="py-2 text-[#7d828d]">—</td>
+</tr>
+<!-- Stage 5 -->
+<tr class="hover:bg-[#1a1c20]/60 transition-colors">
+<td class="py-2 pr-3 font-mono text-[#686c75]">5</td>
+<td class="py-2 pr-4 font-medium text-white">Access</td>
+<td class="py-2 pr-4 text-[#7d828d]">Not required</td>
+<td class="py-2 text-[#7d828d]">—</td>
+</tr>
+<!-- Stage 6 -->
+<tr class="hover:bg-[#1a1c20]/60 transition-colors">
+<td class="py-2 pr-3 font-mono text-[#686c75]">6</td>
+<td class="py-2 pr-4 font-medium text-white">Facilities</td>
+<td class="py-2 pr-4 text-[#7d828d]">Not started</td>
+<td class="py-2 text-[#7d828d]">—</td>
+</tr>
+<!-- Stage 7 -->
+<tr class="hover:bg-[#1a1c20]/60 transition-colors">
+<td class="py-2 pr-3 font-mono text-[#686c75]">7</td>
+<td class="py-2 pr-4 font-medium text-white">Receiving manager</td>
+<td class="py-2 pr-4 text-[#7d828d]">Not started</td>
+<td class="py-2 text-[#7d828d]">—</td>
+</tr>
+<!-- Stage 8 -->
+<tr class="hover:bg-[#1a1c20]/60 transition-colors">
+<td class="py-2 pr-3 font-mono text-[#686c75]">8</td>
+<td class="py-2 pr-4 font-medium text-white">Employee confirmation</td>
+<td class="py-2 pr-4 text-[#7d828d]">Not started</td>
+<td class="py-2 text-[#7d828d]">—</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- END: StagesTableSection -->
+<!-- BEGIN: InformationalFooterNote -->
+<footer class="pt-4 border-t border-[#23252a] text-[11px] text-[#717680] leading-relaxed" data-purpose="design-guideline-note">
+        Stage 8 is a row, not a button. A name appears only for your own line manager. Status is written out, not colour alone.
+      </footer>
+<!-- END: InformationalFooterNote -->
+</div>
+<!-- END: ApplicationWindowContainer -->
+</main>
+<!-- END: MainContainer -->
+</body></html>

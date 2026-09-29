@@ -1,0 +1,22 @@
+{
+  "name": "employee-portal-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "vite --host localhost --port 5173",
+    "test": "node --experimental-strip-types --test src/features/internal-transfer-approval/approval.test.ts"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^4.5.2",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  }
+}
