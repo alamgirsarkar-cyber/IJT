@@ -19,7 +19,7 @@ the diff happens to contain.
 | Spec | `internal-transfer-request.spec.md` v1.2 (In Peer Review — not yet Approved) |
 | Plan | `internal-transfer-request.plan.md` (Plan Drafted — plan review pending) |
 | Security assessment | `.ai-context/security/internal-transfer-request.security.md` — Draft; conditions C1–C3 when build starts |
-| Reviewer | Subhajit Mukherjee |
+| Reviewer | Tapash Dutta |
 | Branch | `feature/internal-transfer-request` |
 | Tasks in scope | T01–T10 |
 

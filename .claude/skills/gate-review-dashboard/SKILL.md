@@ -1,7 +1,7 @@
 ---
 name: gate-review-dashboard
 description: >-
-  Render the Gate 1 or Gate 2 Review Dashboard for Abhijit Adhikari or Subhajit Mukherjee.
+  Render the Gate 1 or Gate 2 Review Dashboard for Abhijit Adhikari or Tapash Dutta.
   Use when they choose Artifact, or when they ask for the review dashboard. Follow
   .agent/workflows/gate-review-dashboard.md and reuse
   gate-review-dashboard-design.html verbatim. Write-back only per

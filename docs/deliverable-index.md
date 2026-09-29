@@ -17,7 +17,7 @@ BRD-001  ──▶  spec v1.1 (draft)  ──▶  Gate 1 (spec)  ──▶  plan
           tasks T01–T10 (prepared)  ──▶  test-first (RED) — blocked until Gate 1 complete
                     │
                     ▼
-         implementation  ──▶  Gate 2 (Subhajit Mukherjee)  ──▶  release
+         implementation  ──▶  Gate 2 (Tapash Dutta)  ──▶  release
               (not started)
 ```
 
@@ -37,7 +37,7 @@ BRD-001  ──▶  spec v1.1 (draft)  ──▶  Gate 1 (spec)  ──▶  plan
 | 7   | AI prompts                                    | [`.ai-context/prompts/internal-transfer-request.prompts.md`](../.ai-context/prompts/internal-transfer-request.prompts.md) — RED and GREEN prompt per task, all ID-referenced                                               | Complete                                     |
 | 8   | Security assessment                           | [`.ai-context/security/internal-transfer-request.security.md`](../.ai-context/security/internal-transfer-request.security.md) — data classification, 17 threats, constitution compliance, conditions C1–C3                 | Draft — pending Gate 1                       |
 | 9   | Gate 1 review                                 | Sign-off: dated `## Gate 1 Review` on the spec (`.agent/rules/governance.md`). Findings worksheet: [`.ai-context/reviews/internal-transfer-request.gate1.md`](../.ai-context/reviews/internal-transfer-request.gate1.md) (spec) and [`.gate1-plan.md`](../.ai-context/reviews/internal-transfer-request.gate1-plan.md) (plan) | **Pending** — Abhijit Adhikari; chat is not capture |
-| 10  | Gate 2 evidence                               | Findings: [`.ai-context/reviews/internal-transfer-request.gate2.md`](../.ai-context/reviews/internal-transfer-request.gate2.md). Sign-off: append to [`.ai-context/state/completed.md`](../.ai-context/state/completed.md) (Subhajit Mukherjee)                                                       | Prepared; **not yet evidenced**              |
+| 10  | Gate 2 evidence                               | Findings: [`.ai-context/reviews/internal-transfer-request.gate2.md`](../.ai-context/reviews/internal-transfer-request.gate2.md). Sign-off: append to [`.ai-context/state/completed.md`](../.ai-context/state/completed.md) (Tapash Dutta)                                                       | Prepared; **not yet evidenced**              |
 
 _The brief numbers deliverables 1–5 then 7–10; there is no deliverable 6._
 

@@ -41,7 +41,7 @@ This repo's Gate 1/Gate 2 timing lines up with the SDD assessment's own mileston
 |---|---|
 | Author of record | Alamgir Sarkar |
 | Gate 1 reviewer | Abhijit Adhikari |
-| Gate 2 reviewer | Subhajit Mukherjee |
+| Gate 2 reviewer | Tapash Dutta |
 
 A session whose git identity matches neither reviewer nor the author of record is treated
 as that session's author of record instead (see self-identification below).
@@ -78,13 +78,13 @@ is not delegable within an agent session.
 
 ## Reviewer self-identification & Review Dashboard automation
 
-**Trigger:** the moment Abhijit Adhikari or Subhajit Mukherjee identifies themselves in a session —
+**Trigger:** the moment Abhijit Adhikari or Tapash Dutta identifies themselves in a session —
 by name in chat ("I'm Abhijit Adhikari, ready to review," or similar), or via the session's
 git identity (`git config user.name`, self-declared and unauthenticated — a convenience, not
 an access-control mechanism):
 
 1. Welcome them by name and confirm which gate (Gate 1 for Abhijit Adhikari, Gate 2 for
-   Subhajit Mukherjee) and whether they're here to review now.
+   Tapash Dutta) and whether they're here to review now.
 2. If yes, ask them to choose — every time, never defaulted or inferred — **Artifact** (a
    rendered dashboard) or **Manual** (they read the spec/plan/diff themselves). Both paths
    run the identical scan in `.agent/workflows/gate-review-dashboard.md` (steps 1–3);
@@ -114,7 +114,7 @@ an access-control mechanism):
      Also update that spec's Status, `.ai-context/status.md`, and (if findings were
      categorised) `.ai-context/reviews/<slug>.gate1.md` the same day. Chat findings that
      are not written into those files are not captured.
-   - **Gate 2**: append `Gate 2 reviewed by: Subhajit Mukherjee, <date>, <verdict>` (plus comment,
+   - **Gate 2**: append `Gate 2 reviewed by: Tapash Dutta, <date>, <verdict>` (plus comment,
      if any) to that slug's line in `.ai-context/state/completed.md`.
    - A verdict changing after it was already recorded (a re-review) gets a new dated line
      rather than an edit to the old one — `completed.md` is append-only per
