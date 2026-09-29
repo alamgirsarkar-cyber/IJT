@@ -27,7 +27,7 @@ label and `pendingWith` (OQ-21 silence unchanged). Five nits in the same revisio
 | ---------------------------------- | ---------------- | ------------------------------ |
 | Author / owner                     | Alamgir Sarkar   | 2026-08-27                     |
 | Gate 1 reviewer (never the author) | Abhijit Adhikari | 2026-09-15 — **Approved** on v1.5 (was Changes Requested on v1.4, 2026-09-11; Changes Requested on v1.1, 2026-09-09) |
-| Gate 2 reviewer                    | Tapas Dutta      | —                              |
+| Gate 2 reviewer                    | Subhajit Mukherjee      | —                              |
 
 Gate 1 sign-off is a dated `## Gate 1 Review` block on this spec (`.agent/rules/governance.md`). Findings worksheet: `.ai-context/reviews/internal-transfer-request.gate1.md`.
 

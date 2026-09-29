@@ -1,6 +1,6 @@
 # Workflow: Gate Review Dashboard
 
-> Used when Abhijit Adhikari (Gate 1) or Tapas Dutta (Gate 2) is reviewing. Canonical
+> Used when Abhijit Adhikari (Gate 1) or Subhajit Mukherjee (Gate 2) is reviewing. Canonical
 > roles, Artifact vs Manual choice, and write-back live in `.agent/rules/governance.md`.
 > This file is the scan and render procedure only.
 

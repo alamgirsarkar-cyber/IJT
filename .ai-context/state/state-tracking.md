@@ -9,7 +9,7 @@ How `.ai-context/state/completed.md` is kept.
 - One line per verdict. Format:
 
   ```
-  - `<slug>` — Gate 2 reviewed by: Tapas Dutta, <YYYY-MM-DD>, <Approve|Reject|Changes requested> — <optional comment>
+  - `<slug>` — Gate 2 reviewed by: Subhajit Mukherjee, <YYYY-MM-DD>, <Approve|Reject|Changes requested> — <optional comment>
   ```
 
 - Gate 1 verdicts are **not** recorded here. They go on the spec as `## Gate 1 Review`.
