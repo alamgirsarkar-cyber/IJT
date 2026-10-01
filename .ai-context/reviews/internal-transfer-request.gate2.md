@@ -7,21 +7,47 @@
 
 ## Current State
 
-**Implementation has not started.** The artefact chain is complete through
-`tasks.md`; T01–T10 are all Not Started. Every row below is therefore *Not yet evidenced*.
+**Gate 2 outcome: Changes Requested** — Subhajit Mukherjee, 2026-10-01. Recorded on
+`.ai-context/state/completed.md`. Not merged.
 
-This file exists now, rather than being written at review time, for the same reason the tests
-are written before the code: a checklist assembled after seeing the diff tends to check what
-the diff happens to contain.
+Code for this slug and the three sibling `internal-transfer-*` slugs exists in the repository
+(`employee-services/**`, `employee-portal-web/**`, introduced in commit `6783ac5`,
+2026-09-29), but every task in `tasks.md` is still Not Started and nothing is mapped to a task
+ID (G2-F01). The per-AC, per-task and deferred-scope tables below therefore stay
+*Not yet evidenced*: they cannot be filled until the code is traced to tasks. The findings
+section below is the review result. Because the code was committed as one change, the
+findings are cross-cutting and also apply to `-approval-chain`, `-downstream-orchestration`
+and `-notifications`; this file is the single record for all four.
+
+This file was prepared before implementation, for the same reason the tests are written
+before the code: a checklist assembled after seeing the diff tends to check what the diff
+happens to contain.
 
 | Field | Value |
 |---|---|
-| Spec | `internal-transfer-request.spec.md` v1.2 (In Peer Review — not yet Approved) |
-| Plan | `internal-transfer-request.plan.md` (Plan Drafted — plan review pending) |
-| Security assessment | `.ai-context/security/internal-transfer-request.security.md` — Draft; conditions C1–C3 when build starts |
-| Reviewer | Subhajit Mukherjee |
+| Spec | `internal-transfer-request.spec.md` v1.5 (Gate 1 Approved 2026-09-15) |
+| Plan | `internal-transfer-request.plan.md` (aligned to Approved v1.5) |
+| Security assessment | `.ai-context/security/internal-transfer-request.security.md` — conditions C1–C3 |
+| Reviewer | Subhajit Mukherjee (Gate 2) |
+| Review date | 2026-10-01 |
 | Branch | `feature/internal-transfer-request` |
-| Tasks in scope | T01–T10 |
+| Tasks in scope | T01–T11 |
+| Code under review | `employee-services/**`, `employee-portal-web/**` (commit `6783ac5`) |
+| Author of record | Alamgir Sarkar |
+
+### Scope of this review
+
+| Check | Done? | Result |
+|---|---|---|
+| Backend tests (`npm ci && npm test` in `employee-services`) | Yes | 74 tests, 74 pass, 0 fail |
+| Frontend tests (`employee-portal-web`) | No | Not run |
+| Per-AC verification against the diff, by ID | **No** | Not possible until code is mapped to task IDs (G2-F01) |
+| API contract vs. exception tables, row by row | No | Not done |
+| Search for AI attribution, hardcoded secrets, log calls | Yes | See Clean items |
+| Read of auth, rate-limit and outbox-relay code | Yes | G2-F02, F03, F08 |
+| Review of tool-config directories (`.claude/`, `.cursor/`, `.windsurf/`, `.github/`) | Yes | See Repository tool-config directories; G2-F12 |
+| SAST/DAST, dependency scan, coverage run | No | No tooling configured in the repo |
+| Red-before-Green evidence | Yes (by git history) | Not demonstrable (G2-F05) |
 
 ## Acceptance Criteria Verification
 
@@ -94,11 +120,11 @@ and only a reviewer can.
 
 | Item | Verdict | Note |
 |---|---|---|
-| No PII in logs at any level | Not yet checked | Condition **C1** — evidence is UT47 against the real path |
-| No secrets, credentials or tokens hardcoded or logged | Not yet checked | |
-| Every new or changed endpoint has its stated rate limit implemented | Not yet checked | Seven endpoints, seven limits |
-| New dependencies vetted before entering the manifest | Not yet checked | Condition **C3** — dependency diff across T01–T10 with vetting notes |
-| Auth boundaries and least privilege checked, not assumed | Not yet checked | Includes the revoked audit-table privileges |
+| No PII in logs at any level | Partly checked | No `console.*` or logger calls in `employee-services/src`. Condition **C1** evidence (UT47 against the real path) not verified. See G2-F08 |
+| No secrets, credentials or tokens hardcoded or logged | Pass | None in production code; one test fixture string at `fulfilment.test.ts:17` |
+| Every new or changed endpoint has its stated rate limit implemented | **Fail** | Seven endpoints, seven limits. Counters are in-memory and request routes show none. See G2-F03 |
+| New dependencies vetted before entering the manifest | Not met | Condition **C3** — backend adds only `express`; frontend has no vetting note. See G2-F11 |
+| Auth boundaries and least privilege checked, not assumed | **Fail** | Bearer `id\|role` stub trusts the caller's role (G2-F02). Audit-table privilege mechanism unconfirmed (G2-F04) |
 | Data at rest and in transit per `constitution.md` | Not yet checked | Field-level encryption on both narrative fields |
 | Event payloads built by allow-list, not by serialising the aggregate | Not yet checked | Condition **C2** |
 | SAST/DAST and dependency scan run and clean | Not yet checked | Necessary, not sufficient — T1, T2, T6, T8 and T12 are business-logic flaws no scanner detects |
@@ -119,11 +145,73 @@ and only a reviewer can.
 
 ## Findings
 
-Recorded per task as review happens, categorised Blocker / Should-fix / Nit.
+Categorised Blocker / Should-fix / Nit. Record what must change; do not rewrite code in this
+file. Review result: **4 Blocker, 7 Should-fix, 1 Nit.**
 
 | ID | Task | Severity | Finding | Resolution |
 |---|---|---|---|---|
-| — | — | — | *No implementation reviewed yet* | — |
+| G2-F01 | All (all four slugs) | Blocker | About 2,500 lines of backend and a web app are committed (`employee-services/**`, `employee-portal-web/**`), but every task in every `tasks.md` is `[ ]`, `status.md` says "Tasks Generated", and `agent-role.md` names T01 as the next prompt. The code arrived in `6783ac5`, whose message describes only plan and task updates. The work cannot be traced to task IDs, so it cannot be reviewed against its ACs "in one sitting" and breaks the task-by-ID rule (SDD #16, #18). `prompt_history.md` was not checked for matching entries. | Open. Author states which task IDs this code implements. Split into per-task changes (or document why not), update task states and `status.md`, and log the sessions in `prompt_history.md`. |
+| G2-F02 | T03, T10 (request); approval-chain | Blocker | Authentication is a stub at `api/app.ts:42-49` (`caller`) and `approval/api/routes.ts:13-21` (`principal`). Any `Authorization: Bearer <id>\|<role>` is accepted and the role is taken from the token itself, so a caller can send `Bearer x\|HR_BUSINESS_PARTNER` and act as HR. Fails "Auth boundaries checked, not assumed" and AC20/AC21 intent (existing portal SSO is reused). | Open. Replace with validation of the portal's real session/identity token, with role resolved server side. Keep the stub only behind an explicit test seam, never in the production path. Re-run tests that depend on the `id\|role` format. |
+| G2-F03 | All endpoints; approval-chain, downstream | Blocker | Rate-limit counters are in-memory `Map`s (`approval/api/routes.ts:8`, `fulfilment/api/webhook.ts:5`), so they reset on restart and are not shared across instances. `constitution.md` places rate-limit counters in SQLite. The request routes in `api/app.ts` show no rate limiting. Each endpoint's limit must also match the decision recorded in its plan. | Open. Back counters with SQLite (or record an approved constitution amendment). Confirm every new or changed endpoint implements the limit its plan states. Add tests for the 429 path. |
+| G2-F04 | T01 | Blocker | T01 lists `employee-services/migrations/` and `REVOKE UPDATE, DELETE` on the audit table as its core deliverable. There is no `migrations/` directory. SQLite has no `REVOKE`, so AC18 (append-only audit) must be enforced another way, such as triggers. How `persistence/schema.ts` does it was not confirmed in this review. | Open. Show where the append-only guarantee lives (UT52 must fail at the database). If the mechanism differs from the plan, amend the plan and `architecture.md` through Gate 1. Add migrations or document why schema creation is in code. |
+| G2-F05 | All | Should-fix | Tests and implementation arrived in one commit, so Red-before-Green cannot be shown (constitution test-first rule; Gate 2 checklist). | Open. For each task, produce the failing run against the pre-implementation state or record an explicit exception agreed with the reviewer. |
+| G2-F06 | All | Should-fix | No OpenAPI document exists (`git ls-files` finds none). Gate 2 DoR requires OpenAPI updated in the same change for any API surface touched. | Open. Add OpenAPI covering API01–API07 (request), approval-chain, the downstream webhook and the notifications contracts, including every exception-table row. |
+| G2-F07 | All | Should-fix | No coverage script in either `package.json`. The 85% floor (employee records, approvals, orchestration) and 70% floor (elsewhere) cannot be verified. A passing suite alone is not evidence. | Open. Add coverage tooling and attach per-module numbers. Coverage is a floor, so failure-path tests still need review. |
+| G2-F08 | Outbox relay | Should-fix | `outbox/relay.ts:68-72` stores `error.message` (truncated to 200 chars) in `last_error`. If any downstream error text can carry names, IDs or reason text, it would be persisted. | Open. Confirm downstream errors cannot carry PII, or store an error class/code instead of free text. Add an assertion test in the style of UT46/UT47. |
+| G2-F09 | All | Should-fix | `architecture.md`, `test_cases/*`, `status.md` and `prompt_history.md` do not reflect the committed code (DoD: architecture/ADR current, `test_cases` and `status.md` updated same day). | Open. Update after G2-F01 is resolved. |
+| G2-F10 | T10, T11 (web) | Should-fix | The web `test` script runs one 21-line file (`approval.test.ts`). Screens such as `internal-transfer/screens.tsx` (227 lines) have no logic tests, and AC19 requires a manual keyboard and screen-reader pass beyond automation. | Open. Add logic-bearing component tests (no snapshot-only tests) and record the manual accessibility pass. |
+| G2-F11 | Frontend | Nit | Frontend dependencies (Tailwind 4, Vite 6) are present with no vetting note. Security condition C3 asks for a dependency diff with vetting notes. | Open. Add the vetting note for the dependency diff across the change. |
+| G2-F12 | Governance tooling | Should-fix | `.claude/hooks/session-start.js:21-30` greets Subhajit Mukherjee as Gate 2 reviewer only when `git config user.name` contains "Tapas/Tapash Dutta" (`isTapasDutta`). The Gate 2 reviewer role was reassigned in commits `e9fb376`, `7b94bd3` and `0fa4aae`, and the hook's check was not updated to match. A session under Subhajit Mukherjee's own git identity falls through to the "treat this name as author of record" branch, which contradicts `governance.md` § Reviewer self-identification. | Open. Match on "subhajit" and "mukherjee" like the other reviewers, and rename the variable. Re-test the hook under each of the three identities. |
+
+## Repository Tool-Config Directories
+
+`.claude/`, `.cursor/`, `.windsurf/` and `.github/` are present on purpose. They are not
+application code and have no runtime effect on `employee-services` or `employee-portal-web`.
+
+| Path | Why it is in the repository |
+|---|---|
+| `.cursor/rules/gate-review.mdc` | Cursor's project-rules entry file (`alwaysApply: true`). One-line tripwire pointing to `.agent/rules/agent-role.md` and `governance.md` |
+| `.windsurf/rules/gate-review.md` | Windsurf's equivalent of the same tripwire |
+| `.github/copilot-instructions.md` | GitHub Copilot's equivalent |
+| `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` (repo root) | The same tripwire for AGENTS.md-reading tools, Claude Code and Gemini CLI |
+| `.claude/settings.json`, `.claude/hooks/session-start.js` | Claude Code session-start hook that welcomes a reviewer by `git config user.name`. Convenience only, not access control (see G2-F12) |
+| `.claude/skills/gate-review-dashboard/SKILL.md` | Lets Claude Code invoke the Review Dashboard by name |
+
+The reason is `governance.md` § Tripwire pattern. Each tool looks for project instructions
+under a different filename, so each gets one minimal file saying "read `agent-role.md` and
+`governance.md` first". That way no tool can work ungoverned just because it looks in a
+different place, and there is exactly one `governance.md` to update when the rules change.
+This also matches SDD §2 (the model is a tool decision; Claude Code, Copilot, Gemini and
+Codex are interchangeable executors against the same spec/plan/tasks chain). The directories
+should hold only tripwires and convenience hooks, never copies of the governance rules.
+
+Two follow-ups, neither blocking:
+- SDD §14 defaults `.agent/` and `.ai-context/` to excluded from any client-facing repo
+  unless the SOW says otherwise. These tool-config directories point at them, so they
+  should be excluded from any client sync as well. Confirm against the SOW.
+- G2-F12: the hook's identity check is stale.
+
+## Clean Items (checked, no finding)
+
+| Item | Result |
+|---|---|
+| AI attribution in code or comments | None found (search for claude/copilot/gemini/generated by/co-authored in `employee-services/src` and `employee-portal-web/src`) |
+| Hardcoded secrets | None in production code. One test fixture string, `fulfilment.test.ts:17` |
+| Log calls | No `console.*` or logger calls in `employee-services/src` |
+| Backend runtime dependencies | Only `express`. Dev: types, `supertest` |
+| Datastore | `node:sqlite` matches the constitution's SQLite-only rule |
+| Backend test run | 74/74 pass |
+
+## Gate 2 Record
+
+**Recommended and recorded outcome: Changes Requested.** G2-F01 and G2-F02 first: the code
+needs mapping to task IDs and real authentication. Then G2-F03 and G2-F04. A re-review is a
+new dated line, not an edit, per `governance.md`. Also recorded on
+`.ai-context/state/completed.md` for each of the four slugs.
+
+| Verdict | Reviewer | Date | Comment |
+|---|---|---|---|
+| Changes requested | Subhajit Mukherjee | 2026-10-01 | Blockers G2-F01–G2-F04 must be resolved before re-review |
 
 ## What This Gate Will Be Watching For
 
