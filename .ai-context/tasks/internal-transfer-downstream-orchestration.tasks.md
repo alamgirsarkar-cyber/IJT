@@ -26,7 +26,7 @@ implementation. Do not prompt this file as a whole.
 
 ## Sequence
 
-- [ ] `internal-transfer-downstream-orchestration.T01` — Backend: webhook signature
+- [r] `internal-transfer-downstream-orchestration.T01` — Backend: webhook signature
       — Acceptance: `AC8`, `AC11`, `AC16`
       — Tests first: `UT11`, `UT15`, `UT23`, `UT24`
       — Touches: `employee-services/src/internal-transfer/fulfilment/api/`
@@ -37,7 +37,7 @@ implementation. Do not prompt this file as a whole.
         without a valid HMAC is 401. Body, signature and secret are not logged.
         No new crypto dependency
 
-- [ ] `internal-transfer-downstream-orchestration.T02` — Backend: signal org update
+- [r] `internal-transfer-downstream-orchestration.T02` — Backend: signal org update
       — Acceptance: `AC1`, `AC6`
       — Tests first: `UT01`, `UT01b`, `UT02`, `UT09`
       — Touches: `employee-services/src/internal-transfer/fulfilment/domain/`
@@ -49,7 +49,7 @@ implementation. Do not prompt this file as a whole.
         no row; retry emits exactly one. Later stages stay `NOT_STARTED`. No HTTP call
         to Payroll, ITSM, Facilities or an HRIS write
 
-- [ ] `internal-transfer-downstream-orchestration.T03` — Backend: sequential success
+- [r] `internal-transfer-downstream-orchestration.T03` — Backend: sequential success
       — Acceptance: `AC2`, `AC3`, `AC19`
       — Tests first: `UT03`, `UT04`, `UT05`, `UT14`, `UT27`, `UT28`
       — Touches: `employee-services/src/internal-transfer/fulfilment/domain/`,
@@ -60,7 +60,7 @@ implementation. Do not prompt this file as a whole.
         request, and writes `completed.v1`. Out-of-order report is 409. UT28 uses a
         contract double
 
-- [ ] `internal-transfer-downstream-orchestration.T04` — Backend: failure, cancel, compensate
+- [r] `internal-transfer-downstream-orchestration.T04` — Backend: failure, cancel, compensate
       — Acceptance: `AC4`, `AC12`, `AC21`
       — Tests first: `UT06`, `UT07`, `UT16`, `UT17`, `UT32`, `UT33`
       — Touches: `employee-services/src/internal-transfer/fulfilment/domain/`
@@ -71,7 +71,7 @@ implementation. Do not prompt this file as a whole.
         stages become `CANCELLED` and are never signalled. `SUCCESS` means the business
         operation completed, not ticket intake (UT33)
 
-- [ ] `internal-transfer-downstream-orchestration.T05` — Backend: compensation acknowledgement
+- [r] `internal-transfer-downstream-orchestration.T05` — Backend: compensation acknowledgement
       — Acceptance: `AC13`, `AC14`, `AC17`
       — Tests first: `UT18`, `UT19`, `UT20`, `UT25`, `UT29`
       — Touches: `employee-services/src/internal-transfer/fulfilment/domain/`
@@ -80,7 +80,7 @@ implementation. Do not prompt this file as a whole.
         A report against `FAILED` or `CANCELLED` is 409. No scheduled resume job.
         UT29 uses a contract double
 
-- [ ] `internal-transfer-downstream-orchestration.T06` — Backend: idempotency, allow-list, audit, rate limit
+- [r] `internal-transfer-downstream-orchestration.T06` — Backend: idempotency, allow-list, audit, rate limit
       — Acceptance: `AC5`, `AC7`, `AC9`, `AC10`, `AC15`, `AC18`
       — Tests first: `UT08`, `UT10`, `UT12`, `UT13`, `UT21`, `UT22`, `UT26`, `UT30`
       — Touches: `employee-services/src/internal-transfer/fulfilment/persistence/`,
@@ -92,7 +92,7 @@ implementation. Do not prompt this file as a whole.
         and is not logged. Audit actor is `SYSTEM` or the webhook source id. Rate limit
         600/hour per source key id. UT30 uses a contract double
 
-- [ ] `internal-transfer-downstream-orchestration.T07` — Backend: compare-and-swap
+- [r] `internal-transfer-downstream-orchestration.T07` — Backend: compare-and-swap
       — Acceptance: `AC20`
       — Tests first: `UT31`
       — Touches: `employee-services/src/internal-transfer/fulfilment/domain/`

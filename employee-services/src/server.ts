@@ -2,6 +2,7 @@ import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { createApp, openDatabase } from "./internal-transfer/api/app.ts";
 import type { Employment, HrisContract, ReferenceData } from "./internal-transfer/integration/hris/client.ts";
+import type { RoleSource } from "./internal-transfer/auth/identity.ts";
 
 const reference: ReferenceData = {
   departments: [
@@ -54,9 +55,19 @@ const hris: HrisContract = {
   },
 };
 
+// G2-F02: roles are a server-side fact, resolved from this map by employee id. The bearer
+// token carries identity only; the running server never trusts a role claimed in the token.
+// In a deployed system this map is the gateway/HRIS role assignment, not a literal.
+const roleAssignments: Record<string, readonly string[]> = {
+  "hr-1": ["HR_BUSINESS_PARTNER"],
+  "mgr-line": ["LINE_MANAGER"],
+  "mgr-recv": ["RECEIVING_MANAGER"],
+};
+const roles: RoleSource = (employeeId) => roleAssignments[employeeId] ?? [];
+
 const dataDir = join(process.cwd(), "data");
 mkdirSync(dataDir, { recursive: true });
-const app = createApp(openDatabase(join(dataDir, "portal.sqlite")), hris, { "local-key": "local-secret" });
+const app = createApp(openDatabase(join(dataDir, "portal.sqlite")), hris, { "local-key": "local-secret" }, { roles });
 
 const port = Number(process.env.PORT ?? 3001);
 app.listen(port, (error?: Error) => {

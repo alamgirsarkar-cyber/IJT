@@ -30,7 +30,9 @@ const hris: HrisContract = {
 
 function app() {
   const path = join(mkdtempSync(join(tmpdir(), "appr-")), "app.sqlite");
-  return createApp(openDatabase(path), hris);
+  // G2-F02: tests drive the caller role through the token suffix via the explicit test seam.
+  // Production never sets trustTokenRole; role is resolved from the server-side source.
+  return createApp(openDatabase(path), hris, {}, { trustTokenRole: true });
 }
 
 async function submitted(server: ReturnType<typeof app>, reason = "private text") {

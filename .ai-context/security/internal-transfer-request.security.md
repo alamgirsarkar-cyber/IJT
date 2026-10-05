@@ -81,6 +81,48 @@ These are not advisory. Gate 2 fails if any is unmet.
   note. Any crypto-adjacent or auth-adjacent package is rejected unless a platform primitive
   genuinely cannot do the job.
 
+### C3 dependency vetting record (G2-F11, 2026-10-05)
+
+The full dependency diff for this change, with the vetting note each one carries. No
+crypto-adjacent or auth-adjacent package was added; HMAC, hashing and UUIDs use `node:crypto`,
+and the datastore is `node:sqlite`, both platform primitives.
+
+**`employee-services` (backend)**
+
+| Package | Scope | Vetting note |
+|---|---|---|
+| `express` ^5.2.1 | runtime | Only runtime dependency. HTTP routing; no built-in HTTP framework in Node covers routing/middleware ergonomically. Widely used, actively maintained. |
+| `@types/express`, `@types/node`, `@types/supertest` | dev types | Type declarations only; no runtime code. |
+| `supertest` ^7.3.0 | dev | Test-only HTTP assertion. Not shipped. |
+
+No new backend dependency was introduced by the Gate 2 remediation: identity, rate limiting
+and the schema all use `node:crypto` and `node:sqlite`.
+
+**`employee-portal-web` (frontend)**
+
+| Package | Scope | Vetting note |
+|---|---|---|
+| `react`, `react-dom` ^19.1.0 | runtime | Standard view layer; the portal is a React app by plan. |
+| `tailwindcss`, `@tailwindcss/vite` ^4.3.3 | runtime/build | Styling only; no runtime logic, no network, no auth surface. Named in the plan's visual system. |
+| `vite` ^6.3.5, `@vitejs/plugin-react` ^4.5.2 | dev/build | Build tooling; not shipped to a server. |
+| `typescript` ^5.8.3, `@types/react`, `@types/react-dom` | dev | Compiler and type declarations only. |
+
+**Frontend test tooling added by the 2026-10-05 remediation (G2-F10).** All are
+`devDependencies` only — none is bundled into the shipped app (verified: `vite build` output is
+unchanged). The platform built-in `node:test` cannot render JSX, which is the justification for
+adding a component-test runner rather than relying on a primitive. No package is crypto- or
+auth-adjacent.
+
+| Package | Scope | Vetting note |
+|---|---|---|
+| `vitest` ^2 | dev | JSX-capable test runner (jsdom env). `node:test` cannot render React. Test-only; not shipped. |
+| `jsdom` | dev | DOM implementation for the test environment. Test-only. |
+| `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom` | dev | Render and interaction assertions on behaviour, not snapshots. Test-only. |
+| `jest-axe`, `@types/jest-axe` | dev | Automated accessibility (axe-core) assertions for AC19. Test-only; `axe-core` is read-only analysis of rendered DOM. |
+
+None is crypto-adjacent or auth-adjacent. Authentication remains the portal session bearer
+token resolved server side (G2-F02); the frontend adds no auth package.
+
 ## Residual Risks Accepted
 
 | Risk | Why accepted | Owner | Revisit |

@@ -18,16 +18,17 @@ function gitUserName() {
 
 const name = gitUserName();
 const lower = name.toLowerCase();
-const isTapasDutta =
-  lower.includes("dutta") &&
-  (lower.includes("tapas") || lower.includes("tapash"));
+// G2-F12: the Gate 2 reviewer is Subhajit Mukherjee (reassigned from Tapas/Tapash Dutta in
+// commits e9fb376, 7b94bd3, 0fa4aae). Match the current reviewer's name.
+const isSubhajitMukherjee =
+  lower.includes("subhajit") || lower.includes("mukherjee");
 
 if (lower.includes("abhijit") && lower.includes("adhikari")) {
   process.stdout.write(
     "Welcome Abhijit Adhikari. Gate 1 reviewer. Read .agent/rules/governance.md " +
       "§ Reviewer self-identification. Ask Artifact vs Manual — do not infer.\n"
   );
-} else if (isTapasDutta) {
+} else if (isSubhajitMukherjee) {
   process.stdout.write(
     "Welcome Subhajit Mukherjee. Gate 2 reviewer. Read .agent/rules/governance.md " +
       "§ Reviewer self-identification. Ask Artifact vs Manual — do not infer.\n"

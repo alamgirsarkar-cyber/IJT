@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "./components/ui/button.tsx";
 import { RequestDetailView, RequestList, Wizard, type TransferDetail } from "./features/internal-transfer/screens.tsx";
+import { roleFromList } from "./features/internal-transfer/logic.ts";
 import { copy } from "./features/internal-transfer-approval/inbox.ts";
 import { ApprovalInbox, Decision } from "./features/internal-transfer-approval/screens.tsx";
 import type { DecisionView, InboxItem } from "./features/internal-transfer-approval/inbox.ts";
@@ -10,12 +11,15 @@ const API = "http://localhost:3001";
 type Role = "EMPLOYEE" | "LINE_MANAGER" | "RECEIVING_MANAGER" | "HR_BUSINESS_PARTNER";
 type Session = { token: string; label: string; role: Role };
 
-const sessions: Session[] = [
-  { token: "emp-1", label: "Employee", role: "EMPLOYEE" },
-  { token: "mgr-line|LINE_MANAGER", label: "Line manager", role: "LINE_MANAGER" },
-  { token: "mgr-recv|RECEIVING_MANAGER", label: "Receiving manager", role: "RECEIVING_MANAGER" },
-  { token: "hr-1|HR_BUSINESS_PARTNER", label: "HR", role: "HR_BUSINESS_PARTNER" },
+// G2-F02: tokens are identity only. Roles are not encoded in the token; the shell asks the
+// service who the caller is via /me and lays out navigation from the server-resolved role.
+const sessions: Array<{ token: string; label: string }> = [
+  { token: "emp-1", label: "Employee" },
+  { token: "mgr-line", label: "Line manager" },
+  { token: "mgr-recv", label: "Receiving manager" },
+  { token: "hr-1", label: "HR" },
 ];
+
 
 async function api(path: string, token: string, init: RequestInit = {}) {
   const headers = new Headers(init.headers);
@@ -29,13 +33,21 @@ async function api(path: string, token: string, init: RequestInit = {}) {
 export function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [area, setArea] = useState<"requests" | "approvals">("requests");
+
+  async function signIn(item: { token: string; label: string }) {
+    const me = await api("/api/v1/internal-transfers/me", item.token);
+    const role = roleFromList(Array.isArray(me.body.roles) ? me.body.roles : []);
+    setSession({ token: item.token, label: item.label, role });
+    setArea(role === "EMPLOYEE" ? "requests" : "approvals");
+  }
+
   if (!session) {
     return (
       <main className="mx-auto min-h-screen max-w-md space-y-4 bg-[#121418] p-8 text-gray-200">
         <h1 className="text-2xl font-semibold text-white">{copy.signIn}</h1>
         <div className="flex flex-col gap-2">
           {sessions.map((item) => (
-            <Button key={item.token} type="button" onClick={() => { setSession(item); setArea(item.role === "EMPLOYEE" ? "requests" : "approvals"); }}>
+            <Button key={item.token} type="button" onClick={() => void signIn(item)}>
               {item.label}
             </Button>
           ))}
@@ -57,7 +69,7 @@ export function App() {
           <main className="p-6 sm:p-8">
             {session.role === "EMPLOYEE"
               ? <Employee token={session.token} />
-              : <Approver token={session.token} />}
+              : <Approver token={session.token} hr={session.role === "HR_BUSINESS_PARTNER"} />}
           </main>
         </div>
       </div>
@@ -195,11 +207,10 @@ function Employee({ token }: { token: string }) {
   );
 }
 
-function Approver({ token }: { token: string }) {
+function Approver({ token, hr }: { token: string; hr: boolean }) {
   const [items, setItems] = useState<InboxItem[]>([]);
   const [view, setView] = useState<DecisionView | null>(null);
   const [message, setMessage] = useState("");
-  const hr = token.endsWith("HR_BUSINESS_PARTNER");
 
   async function refresh() {
     const response = await api("/api/v1/internal-transfers/approvals", token);

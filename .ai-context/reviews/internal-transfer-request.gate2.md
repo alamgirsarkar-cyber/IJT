@@ -10,6 +10,12 @@
 **Gate 2 outcome: Changes Requested** — Subhajit Mukherjee, 2026-10-01. Recorded on
 `.ai-context/state/completed.md`. Not merged.
 
+> **Update 2026-10-05:** author remediation for G2-F01–G2-F12 has been applied — see
+> _Gate 2 Remediation — 2026-10-05_ below for the code-to-task mapping and per-finding
+> resolutions. The 2026-10-01 verdict and the findings table below are left as the reviewer
+> wrote them. The feature is **pending re-review**; only Subhajit Mukherjee can record the
+> next verdict, and `completed.md` is unchanged until he does.
+
 Code for this slug and the three sibling `internal-transfer-*` slugs exists in the repository
 (`employee-services/**`, `employee-portal-web/**`, introduced in commit `6783ac5`,
 2026-09-29), but every task in `tasks.md` is still Not Started and nothing is mapped to a task
@@ -212,6 +218,104 @@ new dated line, not an edit, per `governance.md`. Also recorded on
 | Verdict | Reviewer | Date | Comment |
 |---|---|---|---|
 | Changes requested | Subhajit Mukherjee | 2026-10-01 | Blockers G2-F01–G2-F04 must be resolved before re-review |
+
+## Gate 2 Remediation — 2026-10-05 (author: Alamgir Sarkar)
+
+Applied in response to the 2026-10-01 verdict. This is an author action, not a re-review. The
+re-review verdict is Subhajit Mukherjee's alone and is not recorded here or in
+`completed.md` until he runs it. Backend suite 79/79 pass; portal 9/9 pass; portal build
+clean; backend coverage 94.26% line / 78.21% branch (see per-file table under
+`test:coverage`).
+
+### Code-to-task traceability (G2-F01)
+
+The one commit (`6783ac5`) maps to task IDs as follows. All listed tasks are now `[r]` In
+Review in their `tasks.md`; none is `[x]` Merged.
+
+| Module | Task ID(s) |
+|---|---|
+| `persistence/schema.ts` (tables, partial unique index, audit triggers, `rate_limit_counter`) | request.T01 |
+| `integration/hris/client.ts`, reference-data cache + endpoint | request.T02 |
+| `api/app.ts` create/update routes, `auth/identity.ts` | request.T03 |
+| `rules/evaluate.ts` | request.T04 |
+| `api/app.ts` submit transaction | request.T05 |
+| `outbox/relay.ts` | request.T06 |
+| `api/app.ts` detail/list read model | request.T07 |
+| `api/app.ts` withdraw | request.T08 |
+| `security/rate-limit.ts`, rate limits on every route, hashed counter key, audit triggers | request.T09 |
+| `employee-portal-web/src/features/internal-transfer/**`, `logic.ts` | request.T10 |
+| failed-fulfilment labels in the detail/list components | request.T11 |
+| `approval/api/routes.ts` (inbox, detail, decision) | approval-chain.T01–T06 |
+| `employee-portal-web/src/features/internal-transfer-approval/**` | approval-chain.T07–T08 |
+| `fulfilment/domain/orchestrate.ts`, `fulfilment/api/webhook.ts` | downstream.T01–T07 |
+| `notifications/domain/dispatch.ts` | notifications.T01–T08 |
+
+Why one commit rather than per-task branches: the code was authored across freehand sessions
+before task-by-ID discipline was enforced (see `prompt_history.md`). History is not being
+rewritten; the mapping above and the per-task `[r]` states are the traceability record going
+forward. New work (this remediation) is logged per task in `prompt_history.md`.
+
+### Finding resolutions (pending re-review)
+
+| ID | Resolution (2026-10-05) |
+|---|---|
+| G2-F01 | Code mapped to task IDs (table above); tasks set `[r]` In Review; `status.md`, `architecture.md`, `prompt_history.md` updated the same day. |
+| G2-F02 | `auth/identity.ts` resolves identity from the bearer subject and roles from an injected server-side source; `app.ts`/`routes.ts` no longer read the token role. Token-suffix role honoured only behind the explicit `trustTokenRole` test seam, set in tests, never by `server.ts`. Portal switched to identity-only tokens and a new `GET …/me`. |
+| G2-F03 | `security/rate-limit.ts` with a SQLite `rate_limit_counter` table; applied to all seven request endpoints (20/120/5/300/300/10/300 per hour matching the spec API Contract), the three approval routes (300/300/30) and the webhook (600). Salted-hash counter key (AC17). 429 tests added (UT49/UT50). |
+| G2-F04 | Immutability is `BEFORE UPDATE`/`BEFORE DELETE` abort triggers (SQLite has no `REVOKE`), proven by UT52 at the database. `migrations/README.md` documents the code-based schema decision. Plan and T01 wording corrected from `REVOKE` to triggers; spec AC18 is unchanged and the plan is not a separate Gate 1 review, so this is a plan amendment, not a Gate 1 re-entry. |
+| G2-F05 | Recorded exception below — the pre-existing code shipped tests and implementation together; remediation work follows RED-first and is logged per task. |
+| G2-F06 | `employee-services/openapi.yaml` added: request API01–API07, approval routes, the stage-completion webhook, and a pointer to the notification-dispatch contract, with the documented status codes/`type`s per endpoint. |
+| G2-F07 | `test:coverage` scripts added to both packages (`--experimental-test-coverage`). **Follow-up closed 2026-10-05:** `webhook.ts` was 60% line; four route-level failure-path tests (429 over-limit with `Retry-After`, validly-signed non-JSON → 422, signed success → 200, applyReport error → 409 problem+json) were added to `fulfilment.test.ts`, taking `webhook.ts` to 100% line / 94.74% branch. Backend now 95.05% line / 78.90% branch overall (83 tests); `rate-limit.ts`, `schema.ts`, `relay.ts`, `webhook.ts` at 100% line. Portal `logic.ts` 100% plus 9 Vitest component tests. No module remains below the 85% line floor. |
+| G2-F08 | `outbox/relay.ts` stores `error.name` (the class), never `error.message`. Test `relay.test.ts` asserts a message carrying a name and reason-like text does not reach `last_error`. |
+| G2-F09 | `architecture.md` currency row, `status.md`, `test`-script and task states updated to match the committed code. |
+| G2-F10 | Logic extracted to `logic.ts` and unit-tested (`logic.test.ts`). **Extended 2026-10-05:** component render/interaction tests added for list, wizard and detail (`screens.test.tsx`) under Vitest + jsdom + Testing Library — assert open/new, em-dash fallback, payroll-advisory toggle, step navigation, date capture, submit, and withdraw visibility by status (not snapshots). Automated `axe` (jest-axe) runs per screen with zero violations. `npm test` now runs both runners (9 node:test logic + 9 Vitest component). Manual accessibility review recorded below. RTK Query/MSW and Playwright E2E remain open (see Known gaps). |
+| G2-F11 | C3 dependency-vetting record added to `.ai-context/security/internal-transfer-request.security.md`. No crypto/auth-adjacent package added; `node:crypto`/`node:sqlite` used. |
+| G2-F12 | `.claude/hooks/session-start.js` matches "subhajit"/"mukherjee"; `isTapasDutta` renamed `isSubhajitMukherjee`; verified under the Abhijit / Subhajit / Alamgir / Tapas identities. |
+
+### Red-before-Green (G2-F05)
+
+The original implementation arrived with its tests in one commit, so a pre-implementation
+failing run cannot be reconstructed honestly for T01–T11. The author records this as an
+explicit exception for that increment rather than fabricating a RED run.
+
+The remediation tests fall into two honest categories, not one:
+
+- **RED-first against genuinely new code** — the SQLite rate-limit table and helper, the
+  server-side identity module, the relay error-class redaction change, and the extracted
+  portal `logic.ts`. These behaviours did not exist before the finding, so their tests
+  (rate-limit boundary/window/hashed-key, the create-endpoint 429, the relay PII-absence
+  assertion, the `logic.test.ts` cases) are legitimate RED-first evidence; all green now.
+- **Characterisation / coverage-fill against already-shipped code** — the four `webhook.ts`
+  route tests (G2-F07) and the `screens.test.tsx` component/axe tests (G2-F10). These assert
+  the behaviour of code that already existed, so they are green by construction and are **not**
+  claimed as RED-first. They are disclosed as coverage tests, not new-behaviour TDD.
+
+Further *new* tasks follow RED-first per `agent-role.md`.
+
+### Manual accessibility review (G2-F10, AC19)
+
+Keyboard and structure review performed on the committed markup of
+`employee-portal-web/src/features/internal-transfer/screens.tsx` and the approval screens:
+semantic `<table>`/`<thead>`/`<tbody>` for lists and stages; `<label>`-wrapped date and reason
+inputs; `<button>` elements for all actions (focusable, Enter/Space activated); status
+messages in a live region; stage status conveyed as text, not colour alone; stage 8 is a
+non-interactive row. This is the manual pass AC19 requires in addition to automation.
+**Automated `axe` is now in place** (jest-axe, run per screen in `screens.test.tsx`, zero
+violations; `region` is disabled only because the tests render isolated component fragments
+rather than a full landmarked page). A full assistive-technology sweep (a human screen-reader
+walkthrough) is still a release-gate item and remains a human verification task — it cannot
+be asserted by automation.
+
+### Known gaps still open (not in G2-F01–F12, carried for a later increment)
+
+- Field-level encryption of the reason narrative (AC16): `reason_ciphertext` currently stores
+  the bytes unencrypted. To be addressed on request.T09 before release.
+- RTK Query data layer, MSW request mocking and Playwright end-to-end journeys (request.T10):
+  not added. Component tests use prop-driven rendering, not a mocked network; a full E2E pass
+  through a running API is still future work. (Automated `axe` is now done — see G2-F10.)
+- A human screen-reader walkthrough (AC19) remains a release-gate verification task.
+- Webhook signing secrets are local constants, not Secrets Manager.
+- Notification handlers are not wired into the running submit/approve path.
 
 ## What This Gate Will Be Watching For
 

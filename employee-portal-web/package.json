@@ -4,7 +4,10 @@
   "type": "module",
   "scripts": {
     "start": "vite --host localhost --port 5173",
-    "test": "node --experimental-strip-types --test src/features/internal-transfer-approval/approval.test.ts"
+    "test": "node --experimental-strip-types --test \"src/**/*.test.ts\" && vitest run",
+    "test:logic": "node --experimental-strip-types --test \"src/**/*.test.ts\"",
+    "test:components": "vitest run",
+    "test:coverage": "node --experimental-strip-types --test --experimental-test-coverage \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
@@ -13,10 +16,17 @@
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/jest-axe": "^3.5.9",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^4.5.2",
+    "jest-axe": "^11.0.0",
+    "jsdom": "^29.1.1",
     "typescript": "^5.8.3",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vitest": "^2.1.9"
   }
 }

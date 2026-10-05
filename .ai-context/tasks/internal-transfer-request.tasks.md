@@ -22,7 +22,7 @@ any implementation prompt runs. Prompts are in
 
 ## Sequence
 
-- [ ] `internal-transfer-request.T01` — Schema, migrations and the audit immutability guarantee
+- [r] `internal-transfer-request.T01` — Schema, migrations and the audit immutability guarantee
       — Acceptance: `AC1` (reference number format, snapshot columns), `AC8` (partial unique
         index enforces BR3), `AC18` (append-only audit)
       — Tests first: `UT01` (reference format), `UT23` (concurrent create), `UT52` (audit
@@ -31,11 +31,16 @@ any implementation prompt runs. Prompts are in
         `employee-services/migrations/`
       — Delivers: `transfer_request`, `transfer_request_stage`, `transfer_request_audit`,
         `transfer_request_outbox`, `transfer_reference_seq`, the partial unique index, and
-        `REVOKE UPDATE, DELETE` on the audit table
-      — Note: the index and the revoke are the point of this task, not incidental to it —
-        plan § concurrency / BR3 (partial unique index)
+        the audit append-only `BEFORE UPDATE`/`BEFORE DELETE` abort triggers (SQLite has no
+        `REVOKE`; the trigger pair is the immutability guarantee, proven by UT52)
+      — Note: the index and the audit triggers are the point of this task, not incidental to
+        it — plan § concurrency / BR3 (partial unique index). Schema creation is in code
+        (`persistence/schema.ts`); rationale in `employee-services/migrations/README.md`
+      — Amended 2026-10-05 (G2-F04): plan wording corrected from `REVOKE` to abort triggers;
+        spec AC18 is unchanged and the plan is not a separate Gate 1 review, so this is a plan
+        amendment, not a Gate 1 re-entry
 
-- [ ] `internal-transfer-request.T02` — HRIS client, reference-data cache and reference-data endpoint
+- [r] `internal-transfer-request.T02` — HRIS client, reference-data cache and reference-data endpoint
       — Acceptance: `internal-transfer-request.API07`, `AC15` (staleness and unavailability),
         `AC6` (only open, internally fillable positions are offered)
       — Tests first: `UT42`, `UT43`, `UT44`
@@ -45,7 +50,7 @@ any implementation prompt runs. Prompts are in
         servable stale, employment data uncached. Both live here; the asymmetry is the design,
         not an oversight (plan finding P5)
 
-- [ ] `internal-transfer-request.T03` — Draft creation and update
+- [r] `internal-transfer-request.T03` — Draft creation and update
       — Acceptance: `API01`, `API02`, `AC1`, `AC2` (optimistic concurrency), `AC8` (create
         side), `AC13` (ownership and 404-not-403), `AC20` (401 unauthenticated), `AC30`
         (`If-Match` on API02)
@@ -57,7 +62,7 @@ any implementation prompt runs. Prompts are in
       — Note: `requireAuthenticatedEmployee` middleware is introduced here and reused by
         later API tasks; identity is token subject only
 
-- [ ] `internal-transfer-request.T04` — Business rule set
+- [r] `internal-transfer-request.T04` — Business rule set
       — Acceptance: `AC3`, `AC4` (BR7 window and BR8 advisory), `AC5` (BR5), `AC6` (BR6),
         `AC7` (BR1, BR2, BR4, and the mandatory BR9 advisory), `AC22` (BR12 last-day clamp;
         draft-time month count is not an input)
@@ -68,7 +73,7 @@ any implementation prompt runs. Prompts are in
         every failed rule reports in the same response, never one at a time (AC7).
         Both date boundaries are inclusive and both are tested
 
-- [ ] `internal-transfer-request.T05` — Submit transaction
+- [r] `internal-transfer-request.T05` — Submit transaction
       — Acceptance: `API03`, `AC9` (single transaction commits `MANAGER_REVIEW` with
         `MANAGER_RELEASE` `IN_PROGRESS`; `SUBMITTED` is a history event type, not a status),
         `AC10` (idempotency), `AC15` (503 leaves the draft untouched), `AC24` (submit does
@@ -80,7 +85,7 @@ any implementation prompt runs. Prompts are in
       — Note: the all-or-nothing assertion in `UT26` is the reason this is one task rather
         than three — splitting it would let each part pass while the guarantee fails
 
-- [ ] `internal-transfer-request.T06` — Outbox relay and event publication
+- [r] `internal-transfer-request.T06` — Outbox relay and event publication
       — Acceptance: `AC9` (the event is delivered to the downstream webhook), `AC26`
         (OWN-09 envelope and allow-listed payload), `ADR-0001`
         (at-least-once, allow-list payload, unpublished-age alert)
@@ -91,7 +96,7 @@ any implementation prompt runs. Prompts are in
       — Note: payload built by an explicit allow-list mapper, never by serialising the
         aggregate (plan § event payload allow-list)
 
-- [ ] `internal-transfer-request.T07` — Status detail and list read model
+- [r] `internal-transfer-request.T07` — Status detail and list read model
       — Acceptance: `API04`, `API05`, `AC11` (stage rendering, `pendingWith`, the naming
         rule, failed-fulfilment `statusDisplay` "HR is completing this" /
         `pendingWith.role` `HR_OPERATIONS`), `AC12` (own requests only, pagination, no
@@ -102,7 +107,7 @@ any implementation prompt runs. Prompts are in
       — Note: non-applicable stages are returned, not filtered out; `assignedPartyName` is
         populated only for the caller's own line manager (AC11, BRD-001 OQ-11)
 
-- [ ] `internal-transfer-request.T08` — Withdrawal
+- [r] `internal-transfer-request.T08` — Withdrawal
       — Acceptance: `API06`, `AC14` (state guard, stage cancellation, repeat withdrawal,
         draft case), `AC16` (withdrawal reason handled as narrative), `AC23` and `AC30`
         (`If-Match`; `version-conflict` inside the window, `withdrawal-window-closed` once
@@ -111,7 +116,7 @@ any implementation prompt runs. Prompts are in
       — Touches: `internal-transfer/api/`, `internal-transfer/domain/`
       — Depends on: `T05`
 
-- [ ] `internal-transfer-request.T09` — Cross-cutting hardening
+- [r] `internal-transfer-request.T09` — Cross-cutting hardening
       — Acceptance: `AC16` (field-level encryption, log absence), `AC17` (rate limits, hashed
         counter keys), `AC18` (correlation ID on every audit record), `AC20` on API03–API07,
         `AC25` (partial unique index is the BR3 backstop), `AC27` (unlisted transition is
@@ -125,7 +130,7 @@ any implementation prompt runs. Prompts are in
         thing being proven is that no log line anywhere contains the text, not that a
         redaction function works
 
-- [ ] `internal-transfer-request.T10` — Front end: transfer wizard and request detail
+- [r] `internal-transfer-request.T10` — Front end: transfer wizard and request detail
       — Acceptance: `AC19` (WCAG 2.1 AA), `AC21` (existing portal OIDC session; no transfer
         login), and the employee-facing surfacing of `AC11`, `AC12`, `AC14`
       — Tests first: `UT53`, `UT54`, `UT55`, `UT58`, `UT59`, plus a Playwright journey covering
@@ -149,7 +154,7 @@ any implementation prompt runs. Prompts are in
         files. Data and actions still follow this spec.
         No PDF download, destination image, global search, or extra nav product surface
 
-- [ ] `internal-transfer-request.T11` — Front end: failed-fulfilment status labels
+- [r] `internal-transfer-request.T11` — Front end: failed-fulfilment status labels
       — Acceptance: `AC11` (employee view when `FULFILMENT` has a `FAILED` or
         `COMPENSATION_*` stage), `AC19` (those labels are text, not colour)
       — Tests first: component tests for "HR is completing this" versus "Being actioned",

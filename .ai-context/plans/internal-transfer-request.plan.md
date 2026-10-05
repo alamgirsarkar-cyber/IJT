@@ -11,6 +11,15 @@ Realigned 2026-09-22 to that approved spec. The 2026-08-31 draft described v1.2.
 **Tasks Generated** · **Author:** Alamgir Sarkar · Gate 1 approved the spec (v1.5). This plan is not a separate review.
 Review record: `.ai-context/reviews/internal-transfer-request.gate1-plan.md`
 
+> **Amendment 2026-10-05 (Gate 2 finding G2-F04).** The audit-immutability mechanism in this
+> plan originally read "`REVOKE UPDATE, DELETE`". SQLite has no `REVOKE`; the implemented
+> guarantee is a pair of `BEFORE UPDATE` / `BEFORE DELETE` triggers that `RAISE(ABORT)` on
+> `transfer_request_audit` (`persistence/schema.ts`), proven by UT52 at the database. The
+> audit and sequencing sections below are updated to match. The spec's audit-immutability
+> acceptance criterion (AC18) is unchanged — this corrects the plan's implementation wording
+> only. Gate 1 sign-off is on the spec and the plan is not a separate review, so this is a
+> plan amendment, not a Gate 1 re-entry.
+
 ## Architecture Approach
 
 - **No new service.** The feature is a bounded module `internal-transfer` inside the
@@ -132,8 +141,9 @@ migration), `started_at`, `completed_at`. Unique on `(transfer_request_id, stage
 
 **`transfer_request_audit`** — `id`, `transfer_request_id`, `actor_employee_id`,
 `actor_role`, `event_type`, `from_status`, `to_status`, `occurred_at`, `correlation_id`,
-`metadata` jsonb. Append-only: `REVOKE UPDATE, DELETE` on the table from the application
-role, so AC18's immutability is a database guarantee rather than a code convention.
+`metadata` jsonb. Append-only: enforced by `BEFORE UPDATE` and `BEFORE DELETE` triggers that
+`RAISE(ABORT)` (SQLite has no `REVOKE`), so AC18's immutability is a database guarantee rather
+than a code convention. UT52 proves the update is rejected at the database.
 
 **`transfer_request_outbox`** — `id`, `aggregate_id`, `event_type`, `payload` jsonb,
 `created_at`, `published_at` null, `attempts`, `last_error`. Payload is constructed by an
@@ -217,7 +227,8 @@ dropping them would lose submitted requests.
 - [x] **Accessibility** — WCAG 2.1 AA is a task-level acceptance condition on T10, not a
       follow-up ticket, with automated axe checks plus a manual keyboard and screen-reader
       pass.
-- [x] **Audit** — append-only enforced by revoked table privileges, not by convention.
+- [x] **Audit** — append-only enforced by `BEFORE UPDATE`/`BEFORE DELETE` abort triggers
+      (SQLite has no `REVOKE`), not by convention.
 
 ## ADR Candidates
 
@@ -297,7 +308,9 @@ v1.5 backend behaviour is folded into steps 3–9 so those tasks stay the owners
 endpoints they already name.
 
 1. **Schema, migrations and the audit guarantee** — tables, indexes, the partial unique
-   index (no `SUBMITTED`), revoked audit privileges. SQLite affinities only.
+   index (no `SUBMITTED`), audit append-only abort triggers (not `REVOKE`). SQLite
+   affinities only. Schema creation is in code (`persistence/schema.ts`); see
+   `employee-services/migrations/README.md`.
 2. **Reference-data provider** — HRIS client, SQLite cache, staleness handling, the API07
    endpoint. Cache is never an input to a submit rule.
 3. **Draft lifecycle** — create and update, `If-Match` on API02, OIDC middleware and

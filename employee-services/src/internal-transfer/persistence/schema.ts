@@ -111,6 +111,12 @@ export function migrate(db: DatabaseSync): void {
       fetched_at TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS rate_limit_counter (
+      counter_key TEXT PRIMARY KEY,
+      window_start INTEGER NOT NULL,
+      count INTEGER NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS webhook_event (
       event_id TEXT PRIMARY KEY,
       body_hash TEXT NOT NULL,

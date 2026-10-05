@@ -1,8 +1,7 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { Express, Request, Response } from "express";
 import { applyReport, signatureValid, type Report, type WebhookKeys } from "../domain/orchestrate.ts";
-
-const hits = new Map<string, { count: number; reset: number }>();
+import { enforceRateLimit } from "../../security/rate-limit.ts";
 
 function problem(res: Response, status: number, type: string) {
   res.status(status).type("application/problem+json").json({ type, title: type, status });
@@ -18,12 +17,10 @@ export function registerWebhook(app: Express, db: DatabaseSync, keys: WebhookKey
       return problem(res, 401, "unauthenticated");
     }
     if (!signatureValid(keys, keyId, timestamp, raw, signature)) return problem(res, 401, "unauthenticated");
-    const now = Date.now();
-    const bucket = hits.get(keyId);
-    if (!bucket || bucket.reset < now) hits.set(keyId, { count: 1, reset: now + 3_600_000 });
-    else {
-      bucket.count += 1;
-      if (bucket.count > 600) return problem(res, 429, "rate-limited");
+    // G2-F03: 600 per hour per configured source, counted in SQLite (downstream spec API01).
+    if (enforceRateLimit(db, "webhook:stage-completion", keyId, 600).limited) {
+      res.set("Retry-After", "3600");
+      return problem(res, 429, "rate-limited");
     }
     let report: Report;
     try {

@@ -66,10 +66,12 @@ export async function relayOnce(
       ).run(new Date(now).toISOString(), row.id);
       published.push(row.id);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "publish failed";
+      // G2-F08: persist the error class only, never error.message. Downstream error text can
+      // carry names, identifiers or reason text; the class is enough to triage a stuck row.
+      const code = error instanceof Error && error.name ? error.name : "PublishError";
       db.prepare(
         "UPDATE transfer_request_outbox SET attempts = attempts + 1, last_error = ? WHERE id = ?",
-      ).run(message.slice(0, 200), row.id);
+      ).run(code.slice(0, 80), row.id);
     }
   }
   return { published, alerted };

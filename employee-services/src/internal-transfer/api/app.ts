@@ -14,6 +14,13 @@ import { registerWebhook } from "../fulfilment/api/webhook.ts";
 import type { WebhookKeys } from "../fulfilment/domain/orchestrate.ts";
 import { migrate, nextReference } from "../persistence/schema.ts";
 import { br8, br9Advisory, evaluate, type EligibilityInput } from "../rules/evaluate.ts";
+import { isApprover, resolveIdentity, type IdentityOptions, type RoleSource } from "../auth/identity.ts";
+import { enforceRateLimit } from "../security/rate-limit.ts";
+
+export type AppOptions = {
+  roles?: RoleSource;
+  trustTokenRole?: boolean;
+};
 
 const TTL_MS = 900_000;
 const STAGES = [
@@ -38,35 +45,42 @@ function problem(res: Response, status: number, type: string, extra: Record<stri
   });
 }
 
-const APPROVER_ROLES = new Set(["LINE_MANAGER", "RECEIVING_MANAGER", "HR_BUSINESS_PARTNER"]);
-
-function caller(req: Request): { id: string; role?: string } | undefined {
-  const header = req.header("authorization");
-  if (!header?.startsWith("Bearer ")) return undefined;
-  const token = header.slice("Bearer ".length).trim();
-  if (!token || token === "invalid") return undefined;
-  const [id, role] = token.split("|");
-  if (!id) return undefined;
-  return { id, role: role || undefined };
-}
-
-function employeeCaller(req: Request, res: Response): string | undefined {
-  const who = caller(req);
-  if (!who) {
-    problem(res, 401, "unauthenticated");
-    return undefined;
-  }
-  if (who.role && APPROVER_ROLES.has(who.role)) {
-    problem(res, 403, "forbidden");
-    return undefined;
-  }
-  return who.id;
-}
-
-export function createApp(db: DatabaseSync, hris: HrisContract, webhookKeys: WebhookKeys = {}) {
+export function createApp(
+  db: DatabaseSync,
+  hris: HrisContract,
+  webhookKeys: WebhookKeys = {},
+  options: AppOptions = {},
+) {
   migrate(db);
   const client = new HrisClient(hris);
   const app = express();
+  const identityOptions: IdentityOptions = { roles: options.roles, trustTokenRole: options.trustTokenRole };
+
+  // G2-F02: 401 if unauthenticated, 403 if the caller is an approver role. Identity and role
+  // both come from resolveIdentity, which never trusts the token role in the production path.
+  function employeeCaller(req: Request, res: Response): string | undefined {
+    const who = resolveIdentity(req, identityOptions);
+    if (!who) {
+      problem(res, 401, "unauthenticated");
+      return undefined;
+    }
+    if (isApprover(who)) {
+      problem(res, 403, "forbidden");
+      return undefined;
+    }
+    return who.employeeId;
+  }
+
+  // G2-F03: returns true (and writes 429) when the subject is over the endpoint's limit.
+  function rateLimited(res: Response, bucket: string, subject: string, max: number): boolean {
+    if (enforceRateLimit(db, bucket, subject, max).limited) {
+      res.set("Retry-After", "3600");
+      problem(res, 429, "rate-limited");
+      return true;
+    }
+    return false;
+  }
+
   app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
     res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, If-Match, Idempotency-Key");
@@ -80,11 +94,19 @@ export function createApp(db: DatabaseSync, hris: HrisContract, webhookKeys: Web
   app.use("/api/v1/internal-transfers/webhooks/stage-completion", express.raw({ type: () => true, limit: "32kb" }));
   registerWebhook(app, db, webhookKeys);
   app.use(express.json({ limit: "32kb" }));
-  registerApproval(app, db);
+  registerApproval(app, db, identityOptions);
+
+  app.get("/api/v1/internal-transfers/me", (req, res) => {
+    const who = resolveIdentity(req, identityOptions);
+    if (!who) return problem(res, 401, "unauthenticated");
+    res.json({ employeeId: who.employeeId, roles: [...who.roles] });
+  });
 
   app.get("/api/v1/internal-transfers/reference-data", async (req, res, next) => {
     try {
-      if (!employeeCaller(req, res)) return;
+      const employeeId = employeeCaller(req, res);
+      if (!employeeId) return;
+      if (rateLimited(res, "reference-data", employeeId, 300)) return;
       const cached = readCache(db);
       try {
         const fresh = await client.referenceData();
@@ -107,6 +129,7 @@ export function createApp(db: DatabaseSync, hris: HrisContract, webhookKeys: Web
     try {
       const employeeId = employeeCaller(req, res);
       if (!employeeId) return;
+      if (rateLimited(res, "create", employeeId, 20)) return;
       if (req.body && typeof req.body === "object" && "reason" in req.body) {
         const reason = req.body.reason;
         if (typeof reason === "string" && reason.length > 2000) {
@@ -189,6 +212,7 @@ export function createApp(db: DatabaseSync, hris: HrisContract, webhookKeys: Web
   app.put("/api/v1/internal-transfers/:requestId", (req, res) => {
     const employeeId = employeeCaller(req, res);
     if (!employeeId) return;
+    if (rateLimited(res, "update", employeeId, 120)) return;
     const row = requestById(db, req.params.requestId);
     if (!row || row.employee_id !== employeeId) return problem(res, 404, "request-not-found");
     const match = req.header("if-match");
@@ -227,6 +251,7 @@ export function createApp(db: DatabaseSync, hris: HrisContract, webhookKeys: Web
     try {
       const employeeId = employeeCaller(req, res);
       if (!employeeId) return;
+      if (rateLimited(res, "submit", employeeId, 5)) return;
       const key = req.header("idempotency-key");
       if (!key) return problem(res, 400, "idempotency-key-required");
       const stored = db
@@ -390,6 +415,7 @@ export function createApp(db: DatabaseSync, hris: HrisContract, webhookKeys: Web
   app.get("/api/v1/internal-transfers/:requestId", (req, res) => {
     const employeeId = employeeCaller(req, res);
     if (!employeeId) return;
+    if (rateLimited(res, "detail", employeeId, 300)) return;
     const row = requestById(db, req.params.requestId);
     if (!row || row.employee_id !== employeeId) return problem(res, 404, "request-not-found");
     res.json(detailBody(db, row));
@@ -398,6 +424,7 @@ export function createApp(db: DatabaseSync, hris: HrisContract, webhookKeys: Web
   app.get("/api/v1/internal-transfers", (req, res) => {
     const employeeId = employeeCaller(req, res);
     if (!employeeId) return;
+    if (rateLimited(res, "list", employeeId, 300)) return;
     const rows = db
       .prepare("SELECT * FROM transfer_request WHERE employee_id = ? ORDER BY created_at DESC")
       .all(employeeId) as Row[];
@@ -426,6 +453,7 @@ export function createApp(db: DatabaseSync, hris: HrisContract, webhookKeys: Web
   app.post("/api/v1/internal-transfers/:requestId/withdraw", (req, res) => {
     const employeeId = employeeCaller(req, res);
     if (!employeeId) return;
+    if (rateLimited(res, "withdraw", employeeId, 10)) return;
     const row = requestById(db, req.params.requestId);
     if (!row || row.employee_id !== employeeId) return problem(res, 404, "request-not-found");
     if (row.status === "WITHDRAWN") {

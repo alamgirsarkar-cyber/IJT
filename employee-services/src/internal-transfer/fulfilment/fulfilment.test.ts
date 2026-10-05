@@ -8,6 +8,7 @@ import request from "supertest";
 import { createApp, openDatabase } from "../api/app.ts";
 import type { HrisContract } from "../integration/hris/client.ts";
 import { applyReport, sign, signalOrgUpdate } from "./domain/orchestrate.ts";
+import { counterKey } from "../security/rate-limit.ts";
 
 const hris: HrisContract = {
   async referenceData() { throw new Error("unused"); },
@@ -180,4 +181,57 @@ test("UT31 lost version race is 409", () => {
   const result = applyReport(db, { eventId: "race", requestId: id, stageCode: "ORG_DATA_UPDATE", reportType: "FULFILMENT", outcome: "SUCCESS", expectedVersion: 3 }, "hris-current");
   assert.equal(result.status, 409);
   assert.equal(result.body.type, "version-conflict");
+});
+
+// G2-F07: route-level failure-path coverage for webhook.ts. The tests above exercise either
+// the 401 guards (before the handler body) or applyReport directly; these drive the route's
+// rate-limit, malformed-body, success and error branches over HTTP.
+
+test("UT49w stage-completion over the hourly limit is 429 with Retry-After", async () => {
+  const db = database();
+  const app = createApp(db, hris, keys);
+  // Pre-fill the SQLite counter at the ceiling so the next signed call crosses it.
+  db.prepare("INSERT INTO rate_limit_counter (counter_key, window_start, count) VALUES (?, ?, 600)")
+    .run(counterKey("webhook:stage-completion", "hris-current"), Date.now());
+  const response = await post(app, {
+    eventId: "rl1", requestId: "missing", stageCode: "ORG_DATA_UPDATE", reportType: "FULFILMENT", outcome: "SUCCESS",
+  });
+  assert.equal(response.status, 429);
+  assert.equal(response.headers["retry-after"], "3600");
+});
+
+test("UT12 validly signed non-JSON body is 422", async () => {
+  const app = createApp(database(), hris, keys);
+  const raw = "{not-json";
+  const timestamp = new Date().toISOString();
+  const signature = sign(secret, "hris-current", timestamp, Buffer.from(raw));
+  const response = await request(app)
+    .post("/api/v1/internal-transfers/webhooks/stage-completion")
+    .set("Content-Type", "application/json")
+    .set("X-Portal-Webhook-Key-Id", "hris-current")
+    .set("X-Portal-Webhook-Timestamp", timestamp)
+    .set("X-Portal-Webhook-Signature", signature)
+    .send(raw);
+  assert.equal(response.status, 422);
+  assert.equal(response.body.type, "validation-failed");
+});
+
+test("UT03r route accepts a signed success report (200)", async () => {
+  const db = database();
+  const id = seed(db);
+  const app = createApp(db, hris, keys);
+  const response = await post(app, {
+    eventId: "ok1", requestId: id, stageCode: "ORG_DATA_UPDATE", reportType: "FULFILMENT", outcome: "SUCCESS",
+  });
+  assert.equal(response.status, 200);
+  assert.equal(response.body.accepted, true);
+});
+
+test("UT27r route surfaces an applyReport error as problem+json (409)", async () => {
+  const app = createApp(database(), hris, keys);
+  const response = await post(app, {
+    eventId: "err1", requestId: randomUUID(), stageCode: "ORG_DATA_UPDATE", reportType: "FULFILMENT", outcome: "SUCCESS",
+  });
+  assert.equal(response.status, 409);
+  assert.equal(response.body.type, "invalid-state-transition");
 });

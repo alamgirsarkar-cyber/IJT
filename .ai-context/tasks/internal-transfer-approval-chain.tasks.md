@@ -24,7 +24,7 @@ implementation. Do not prompt this file as a whole.
 
 ## Sequence
 
-- [ ] `internal-transfer-approval-chain.T01` — Backend: approvals inbox
+- [r] `internal-transfer-approval-chain.T01` — Backend: approvals inbox
       — Acceptance: `API01`, `AC6` (only stages the caller may decide), `AC7` (no reason
         on the list), `AC13` (401)
       — Tests first: `UT17` (inbox has no `reason`). API01 401 and "only stages this caller may decide" are part of AC6 and AC13 on this route
@@ -34,7 +34,7 @@ implementation. Do not prompt this file as a whole.
       — Note: composite index for `assigned_party_ref` + `IN_PROGRESS`, and for
         `HR_VALIDATION` + `IN_PROGRESS`. Page size only 10, 25 or 50. No N+1 name lookup
 
-- [ ] `internal-transfer-approval-chain.T02` — Backend: approval detail
+- [r] `internal-transfer-approval-chain.T02` — Backend: approval detail
       — Acceptance: `API02`, `AC6` (404, not 403), `AC7` (reason key only for
         `HR_BUSINESS_PARTNER`), `AC13`
       — Tests first: `UT13`, `UT15`, `UT16`
@@ -44,7 +44,7 @@ implementation. Do not prompt this file as a whole.
       — Note: response includes `version` for the decision screen's `If-Match`. Reason
         is decrypted only for the HR role and is not logged
 
-- [ ] `internal-transfer-approval-chain.T03` — Backend: approve transaction
+- [r] `internal-transfer-approval-chain.T03` — Backend: approve transaction
       — Acceptance: `AC1`, `AC2`, `AC3`, `AC16`
       — Tests first: `UT01`, `UT02`, `UT03`, `UT04`, `UT05`, `UT06`, `UT33`
       — Touches: `employee-services/src/internal-transfer/approval/domain/`,
@@ -59,7 +59,7 @@ implementation. Do not prompt this file as a whole.
         a named assignee (BR6). Emits `approved.v1` with the allow-list payload.
         Does not write `fulfilment-stage.v1`
 
-- [ ] `internal-transfer-approval-chain.T04` — Backend: reject transaction
+- [r] `internal-transfer-approval-chain.T04` — Backend: reject transaction
       — Acceptance: `AC4`, `AC5`
       — Tests first: `UT07`, `UT08`, `UT09`, `UT10`, `UT11`
       — Touches: `employee-services/src/internal-transfer/approval/domain/`
@@ -67,7 +67,7 @@ implementation. Do not prompt this file as a whole.
       — Note: failure path is its own task. `REJECTED`, incomplete stages `CANCELLED`,
         `confirmedEffectiveDate` stays null, `rejected.v1` has no reason text
 
-- [ ] `internal-transfer-approval-chain.T05` — Backend: idempotency, compare-and-swap, races
+- [r] `internal-transfer-approval-chain.T05` — Backend: idempotency, compare-and-swap, races
       — Acceptance: `AC8`, `AC9`, `AC10`, `AC15`, `AC13` on API03
       — Tests first: `UT12`, `UT14`, `UT18`, `UT19`, `UT20`, `UT21`, `UT22`, `UT23`,
         `UT28`, `UT30`, `UT31`, `UT32`
@@ -77,7 +77,7 @@ implementation. Do not prompt this file as a whole.
       — Note: idempotent replay is checked before `If-Match`. Null `assigned_party_ref`
         is 409 `assignee-unresolved` with no live lookup and no delegation
 
-- [ ] `internal-transfer-approval-chain.T06` — Backend: audit, narrative exclusion, rate limits
+- [r] `internal-transfer-approval-chain.T06` — Backend: audit, narrative exclusion, rate limits
       — Acceptance: `AC11`
       — Tests first: `UT24`, `UT25`
       — Touches: `employee-services/src/internal-transfer/approval/`, gateway rate-limit
@@ -86,7 +86,7 @@ implementation. Do not prompt this file as a whole.
       — Note: log capture is across the HR approve path, not a redaction unit test.
         Counter key is a salted hash of the token subject
 
-- [ ] `internal-transfer-approval-chain.T07` — Frontend: manager inbox and decision
+- [r] `internal-transfer-approval-chain.T07` — Frontend: manager inbox and decision
       — Acceptance: `AC12`, `AC14`, and the manager half of `AC7` (no reason control,
         because the key is absent)
       — Tests first: `UT26`, `UT29`, plus a Playwright journey: open inbox, open a
@@ -102,7 +102,7 @@ implementation. Do not prompt this file as a whole.
         storage, URL or analytics. Unauthenticated visit uses the portal sign-in. `axe`
         and a keyboard pass are part of this task. No PDF download and no destination image
 
-- [ ] `internal-transfer-approval-chain.T08` — Frontend: HR inbox and validation
+- [r] `internal-transfer-approval-chain.T08` — Frontend: HR inbox and validation
       — Acceptance: `AC12`, `AC14`, HR half of `AC7` (reason rendered, then not stored)
       — Tests first: `UT27`, plus a Playwright journey: HR opens validation, sees reason
         text from the fixture only in the document, approves with a confirmed date,

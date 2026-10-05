@@ -1,44 +1,34 @@
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import type { DatabaseSync } from "node:sqlite";
 import type { Express, Request, Response } from "express";
 import { allowListPayload } from "../../outbox/relay.ts";
+import { isHr, resolveIdentity, type IdentityOptions } from "../../auth/identity.ts";
+import { enforceRateLimit } from "../../security/rate-limit.ts";
 
 type Row = Record<string, unknown>;
-const SALT = "approval-rate";
-const limits = new Map<string, { count: number; reset: number }>();
 
 function problem(res: Response, status: number, type: string, extra: Record<string, unknown> = {}) {
   res.status(status).type("application/problem+json").json({ type, title: type, status, ...extra });
 }
 
-function principal(req: Request): { id: string; hr: boolean } | undefined {
-  const header = req.header("authorization");
-  if (!header?.startsWith("Bearer ")) return undefined;
-  const token = header.slice("Bearer ".length).trim();
-  if (!token || token === "invalid") return undefined;
-  const [id, role] = token.split("|");
-  if (!id) return undefined;
-  return { id, hr: role === "HR_BUSINESS_PARTNER" };
-}
+export function registerApproval(app: Express, db: DatabaseSync, options: IdentityOptions = {}): void {
+  // G2-F02: principal identity and the HR flag are resolved server side, never from the token.
+  function principal(req: Request): { id: string; hr: boolean } | undefined {
+    const who = resolveIdentity(req, options);
+    if (!who) return undefined;
+    return { id: who.employeeId, hr: isHr(who) };
+  }
 
-function limited(res: Response, id: string, bucket: string, max: number): boolean {
-  const key = createHash("sha256").update(`${SALT}:${bucket}:${id}`).digest("hex");
-  const now = Date.now();
-  const current = limits.get(key);
-  if (!current || current.reset < now) {
-    limits.set(key, { count: 1, reset: now + 3_600_000 });
+  // G2-F03: SQLite-backed per-principal rate limiting (constitution datastore).
+  function limited(res: Response, id: string, bucket: string, max: number): boolean {
+    if (enforceRateLimit(db, `approval:${bucket}`, id, max).limited) {
+      res.set("Retry-After", "3600");
+      problem(res, 429, "rate-limited");
+      return true;
+    }
     return false;
   }
-  current.count += 1;
-  if (current.count > max) {
-    res.set("Retry-After", "3600");
-    problem(res, 429, "rate-limited");
-    return true;
-  }
-  return false;
-}
 
-export function registerApproval(app: Express, db: DatabaseSync): void {
   app.get("/api/v1/internal-transfers/approvals", (req, res) => {
     const caller = principal(req);
     if (!caller) return problem(res, 401, "unauthenticated");

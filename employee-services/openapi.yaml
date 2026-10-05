@@ -1,0 +1,600 @@
+openapi: 3.1.0
+info:
+  title: Internal Transfer API (employee-services)
+  version: "1.0.0"
+  description: >
+    HTTP surface for the internal-transfer module. Covers the employee request API
+    (API01-API07), the approval-chain API, and the downstream stage-completion webhook.
+    The notifications service exposes no HTTP route; its portal -> notification-service
+    payload is the contract in docs/contracts/notification-dispatch.v1.md and is referenced
+    from the approval and request events, not served from here.
+    Added for Gate 2 finding G2-F06.
+servers:
+  - url: http://localhost:3001
+    description: Local demo
+tags:
+  - name: request
+    description: Employee-facing internal transfer request (internal-transfer-request)
+  - name: approval
+    description: Manager release, manager accept, HR validation (internal-transfer-approval-chain)
+  - name: webhook
+    description: Downstream stage-completion reports (internal-transfer-downstream-orchestration)
+  - name: identity
+    description: Caller identity echo for the portal shell
+
+paths:
+  /api/v1/internal-transfers/me:
+    get:
+      tags: [identity]
+      summary: Resolve the caller's identity and server-side roles
+      description: >
+        Identity is the bearer subject. Roles are resolved server side (G2-F02); the token
+        role suffix is never trusted in the running server. Used by the portal to lay out
+        navigation.
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Identity and roles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  employeeId: { type: string }
+                  roles:
+                    type: array
+                    items: { type: string }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+
+  /api/v1/internal-transfers/reference-data:
+    get:
+      tags: [request]
+      summary: API07 - reference data for the wizard
+      description: Rate limit 300/hour per employee. Serves cached data when HRIS is briefly down; 503 when there is no cache.
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Departments, locations, open internally-fillable positions, date window, and a staleness flag
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReferenceData" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/ReferenceDataUnavailable" }
+
+  /api/v1/internal-transfers:
+    post:
+      tags: [request]
+      summary: API01 - create a draft
+      description: Rate limit 20/hour per employee. Snapshot is informational. The body employeeId is ignored; identity is the bearer subject.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DraftInput" }
+      responses:
+        "201":
+          description: Draft created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Draft" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409": { $ref: "#/components/responses/ActiveRequestExists" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503": { $ref: "#/components/responses/ReferenceDataUnavailable" }
+    get:
+      tags: [request]
+      summary: API05 - list my requests
+      description: Rate limit 300/hour per employee. Own requests only; no reason text on the list.
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: The caller's requests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/RequestListItem" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+  /api/v1/internal-transfers/{requestId}:
+    parameters:
+      - $ref: "#/components/parameters/RequestId"
+    put:
+      tags: [request]
+      summary: API02 - full-replace update of a draft
+      description: Rate limit 120/hour per employee (autosave). Requires If-Match with the current version (OWN-11).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DraftInput" }
+      responses:
+        "200":
+          description: Updated draft
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Draft" }
+        "400": { $ref: "#/components/responses/PreconditionRequired" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/RequestNotFound" }
+        "409": { $ref: "#/components/responses/VersionConflict" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+    get:
+      tags: [request]
+      summary: API04 - request detail
+      description: Rate limit 300/hour per employee. Owner only; a stranger gets 404, never 403. Reason is on the owner's detail only.
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Request detail with stages, advisories and pendingWith
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RequestDetail" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/RequestNotFound" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+  /api/v1/internal-transfers/{requestId}/submit:
+    parameters:
+      - $ref: "#/components/parameters/RequestId"
+    post:
+      tags: [request]
+      summary: API03 - submit a draft
+      description: >
+        Rate limit 5/hour per employee. Idempotency-Key required. Atomic: commits
+        MANAGER_REVIEW with MANAGER_RELEASE IN_PROGRESS, eight stage rows, one audit row and
+        one outbox event, or nothing. 503 leaves the draft untouched.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: Submitted; now MANAGER_REVIEW
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestId: { type: string }
+                  status: { type: string, example: MANAGER_REVIEW }
+                  advisories:
+                    type: array
+                    items: { $ref: "#/components/schemas/Advisory" }
+        "400": { $ref: "#/components/responses/IdempotencyKeyRequired" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/RequestNotFound" }
+        "409":
+          description: Not a draft (invalid-state-transition), active-request-exists, or idempotency-key-conflict
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+        "422":
+          description: Eligibility validation-failed, or assignee-unresolved (stays DRAFT)
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "500":
+          description: Submit failed; the transaction rolled back and the draft is unchanged
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+        "503": { $ref: "#/components/responses/ReferenceDataUnavailable" }
+
+  /api/v1/internal-transfers/{requestId}/withdraw:
+    parameters:
+      - $ref: "#/components/parameters/RequestId"
+    post:
+      tags: [request]
+      summary: API06 - withdraw a request
+      description: >
+        Rate limit 10/hour per employee. Allowed only in MANAGER_REVIEW or HR_VALIDATION,
+        with If-Match. A repeat withdrawal is idempotent (200, no new audit). Once FULFILMENT
+        the window is closed.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/IfMatch"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                withdrawalReason: { type: string, description: "Narrative; never logged or emitted" }
+      responses:
+        "200":
+          description: Withdrawn
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestId: { type: string }
+                  status: { type: string, example: WITHDRAWN }
+        "400": { $ref: "#/components/responses/PreconditionRequired" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/RequestNotFound" }
+        "409":
+          description: version-conflict, withdrawal-window-closed (FULFILMENT), or invalid-state-transition (DRAFT)
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+  /api/v1/internal-transfers/approvals:
+    get:
+      tags: [approval]
+      summary: Approver inbox
+      description: Rate limit 300/hour per principal. Shows only the caller's IN_PROGRESS stages (manager = assigned party; HR = any HR_VALIDATION). No reason text.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: page, in: query, required: false, schema: { type: integer, minimum: 1 } }
+        - { name: size, in: query, required: false, schema: { type: integer, enum: [10, 25, 50] } }
+      responses:
+        "200":
+          description: Paginated inbox
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/InboxItem" }
+                  page: { type: integer }
+                  size: { type: integer }
+                  totalItems: { type: integer }
+                  totalPages: { type: integer }
+        "400": { $ref: "#/components/responses/ValidationFailed" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+  /api/v1/internal-transfers/{requestId}/approval:
+    parameters:
+      - $ref: "#/components/parameters/RequestId"
+    get:
+      tags: [approval]
+      summary: Approval detail
+      description: Rate limit 300/hour per principal. Reason is included only for HR. A caller who cannot see the request gets 404.
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Approval detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApprovalDetail" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/RequestNotFound" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+  /api/v1/internal-transfers/{requestId}/stages/{stageCode}/decision:
+    parameters:
+      - $ref: "#/components/parameters/RequestId"
+      - { name: stageCode, in: path, required: true, schema: { type: string, enum: [MANAGER_RELEASE, MANAGER_ACCEPT, HR_VALIDATION] } }
+    post:
+      tags: [approval]
+      summary: Record a stage decision
+      description: >
+        Rate limit 30/hour per principal. Idempotency-Key and If-Match required. HR approve
+        needs confirmedEffectiveDate; the other stages must not carry one. Only the current
+        IN_PROGRESS stage can be decided.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - $ref: "#/components/parameters/IfMatch"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision: { type: string, enum: [APPROVE, REJECT] }
+                confirmedEffectiveDate: { type: string, format: date, nullable: true }
+      responses:
+        "200":
+          description: Decision recorded; returns the updated approval detail
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApprovalDetail" }
+        "400":
+          description: precondition-required (no If-Match) or idempotency-key-required
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/RequestNotFound" }
+        "409":
+          description: version-conflict, invalid-state-transition, idempotency-key-conflict, or assignee-unresolved
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+  /api/v1/internal-transfers/webhooks/stage-completion:
+    post:
+      tags: [webhook]
+      summary: Downstream stage-completion report (API01 downstream)
+      description: >
+        Rate limit 600/hour per configured source. Authenticated by HMAC signature over the
+        canonical string, not by an employee token; a bearer token with no signature is 401.
+        eventId is the idempotency key: a byte-identical replay returns 200; the same eventId
+        with a different body is 409. Only the current IN_PROGRESS stage can be reported.
+      security: [{ webhookSignature: [] }]
+      parameters:
+        - { name: X-Portal-Webhook-Key-Id, in: header, required: true, schema: { type: string } }
+        - { name: X-Portal-Webhook-Timestamp, in: header, required: true, schema: { type: string, format: date-time }, description: "ISO, within +/-300s of portal time" }
+        - { name: X-Portal-Webhook-Signature, in: header, required: true, schema: { type: string }, description: "sha256=<hex> HMAC of the canonical string" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StageReport" }
+      responses:
+        "200":
+          description: Accepted (including a byte-identical replay)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accepted: { type: boolean }
+        "401":
+          description: Missing, invalid, replayed (timestamp outside +/-300s) or unknown-key signature; nothing logged from the body
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+        "409":
+          description: version-conflict (lost CAS) or idempotency-key-conflict (same eventId, different body)
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Portal session bearer token. Subject is the identity; roles are resolved server side (G2-F02).
+    webhookSignature:
+      type: apiKey
+      in: header
+      name: X-Portal-Webhook-Signature
+      description: HMAC-SHA256 over the five-line canonical string using the source's signing secret.
+
+  parameters:
+    RequestId:
+      name: requestId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      schema: { type: string }
+      description: Quoted aggregate version for compare-and-swap (OWN-11)
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string }
+
+  responses:
+    Unauthenticated:
+      description: Missing or invalid credentials; no state change
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    Forbidden:
+      description: Authenticated but the caller is an approver role calling an employee route (G2-F02)
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    RequestNotFound:
+      description: Not found, or not visible to the caller (ownership returns 404, not 403)
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    PreconditionRequired:
+      description: If-Match missing
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    VersionConflict:
+      description: If-Match did not match the current version
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    ValidationFailed:
+      description: Request body failed validation
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    ActiveRequestExists:
+      description: The employee already has an active request (BR3)
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    IdempotencyKeyRequired:
+      description: Idempotency-Key header missing
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    RateLimited:
+      description: Rate limit exceeded; Retry-After header present, no state change (AC17)
+      headers:
+        Retry-After:
+          schema: { type: string }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    ReferenceDataUnavailable:
+      description: HRIS/reference data unavailable and no usable cache; Retry-After present
+      headers:
+        Retry-After:
+          schema: { type: string }
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+
+  schemas:
+    Problem:
+      type: object
+      description: RFC 7807-style problem. 'type' carries the machine-readable code.
+      properties:
+        type: { type: string, example: rate-limited }
+        title: { type: string }
+        status: { type: integer }
+        violations:
+          type: array
+          items:
+            type: object
+            properties:
+              ruleId: { type: string }
+              field: { type: string }
+    Advisory:
+      type: object
+      properties:
+        code: { type: string, enum: [PAYROLL_CYCLE_MISALIGNED, HR_CHECKS_FURTHER] }
+        ruleId: { type: string }
+    DraftInput:
+      type: object
+      properties:
+        targetDepartmentId: { type: string }
+        targetLocationId: { type: string }
+        targetPositionId: { type: string }
+        requestedEffectiveDate: { type: string, format: date }
+        reason: { type: string, description: "Narrative; never logged, listed or emitted" }
+    Draft:
+      type: object
+      properties:
+        requestId: { type: string }
+        referenceNo: { type: string, example: ITR-2026-000001 }
+        status: { type: string }
+        version: { type: integer }
+        currentAssignment: { $ref: "#/components/schemas/Assignment" }
+        target: { $ref: "#/components/schemas/Target" }
+        requestedEffectiveDate: { type: string, format: date, nullable: true }
+        createdAt: { type: string }
+    Assignment:
+      type: object
+      properties:
+        departmentId: { type: string }
+        departmentName: { type: string }
+        locationId: { type: string }
+        locationName: { type: string }
+        positionId: { type: string }
+        positionTitle: { type: string }
+        serviceInPositionMonths: { type: integer }
+    Target:
+      type: object
+      properties:
+        departmentId: { type: string }
+        locationId: { type: string }
+        positionId: { type: string }
+    RequestListItem:
+      type: object
+      properties:
+        requestId: { type: string }
+        referenceNo: { type: string }
+        status: { type: string }
+        statusDisplay: { type: string }
+        requestedEffectiveDate: { type: string, format: date, nullable: true }
+        effectiveDateStatus: { type: string, enum: [CONFIRMED, REQUESTED], nullable: true }
+        pendingWith: { type: string, nullable: true }
+    RequestDetail:
+      type: object
+      properties:
+        requestId: { type: string }
+        referenceNo: { type: string }
+        status: { type: string }
+        statusDisplay: { type: string }
+        version: { type: integer }
+        effectiveDateStatus: { type: string, enum: [CONFIRMED, REQUESTED] }
+        requestedEffectiveDate: { type: string, format: date, nullable: true }
+        currentAssignment: { $ref: "#/components/schemas/Assignment" }
+        target: { $ref: "#/components/schemas/Target" }
+        reason: { type: string, nullable: true, description: "Owner's detail only" }
+        advisories:
+          type: array
+          items: { $ref: "#/components/schemas/Advisory" }
+        pendingWith:
+          type: object
+          nullable: true
+          properties:
+            role: { type: string }
+            partyName: { type: string, nullable: true }
+        stages:
+          type: array
+          items: { $ref: "#/components/schemas/StageView" }
+    StageView:
+      type: object
+      properties:
+        stageCode: { type: string }
+        sequence: { type: integer }
+        status: { type: string }
+        applicable: { type: boolean }
+        assignedRole: { type: string }
+        assignedPartyName: { type: string, nullable: true, description: "Populated only for the caller's own line manager (OWN-12)" }
+    InboxItem:
+      type: object
+      properties:
+        requestId: { type: string }
+        referenceNo: { type: string }
+        stageCode: { type: string }
+        assignedRole: { type: string }
+        requestStatus: { type: string }
+        targetPositionTitle: { type: string }
+        requestedEffectiveDate: { type: string, format: date, nullable: true }
+        waitingSince: { type: string, nullable: true }
+    ApprovalDetail:
+      type: object
+      properties:
+        requestId: { type: string }
+        referenceNo: { type: string }
+        status: { type: string }
+        version: { type: integer }
+        confirmedEffectiveDate: { type: string, format: date, nullable: true }
+        reason: { type: string, description: "Present only for HR" }
+        stages:
+          type: array
+          items:
+            type: object
+            properties:
+              stageCode: { type: string }
+              status: { type: string }
+              assignedRole: { type: string }
+    StageReport:
+      type: object
+      required: [eventId, requestId, stageCode, reportType, outcome]
+      properties:
+        eventId: { type: string, format: uuid, description: "Idempotency key (BR11)" }
+        requestId: { type: string, format: uuid }
+        stageCode: { type: string, enum: [ORG_DATA_UPDATE, PAYROLL_UPDATE, IT_ACCESS, FACILITIES] }
+        reportType: { type: string, enum: [FULFILMENT, COMPENSATION] }
+        outcome: { type: string, enum: [SUCCESS, FAILED] }
+        failureCode: { type: string, nullable: true }
+        expectedVersion: { type: integer, nullable: true }

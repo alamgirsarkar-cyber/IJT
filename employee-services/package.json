@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "start": "node --experimental-strip-types src/server.ts",
-    "test": "node --experimental-strip-types --test \"src/**/*.test.ts\""
+    "test": "node --experimental-strip-types --test \"src/**/*.test.ts\"",
+    "test:coverage": "node --experimental-strip-types --test --experimental-test-coverage \"src/**/*.test.ts\""
   },
   "dependencies": {
     "express": "^5.2.1"

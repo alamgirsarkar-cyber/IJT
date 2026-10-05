@@ -1,6 +1,6 @@
 # Project Status Board — One-Point Employee Portal
 
-_Last updated: 2026-09-24_
+_Last updated: 2026-10-05_
 
 > Updated by whoever last touched a spec, same day. Answers "what is in flight" without a
 > stand-up. Where a delivery tool exists, this file mirrors **spec-level** state and does not
@@ -22,10 +22,10 @@ Task states are the checkbox state in the feature's `tasks.md`:
 
 | Spec ID                                      | Title                                          | Status                      | Owner          | Last Updated | Notes                                                                                                                                                             |
 | -------------------------------------------- | ---------------------------------------------- | --------------------------- | -------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `internal-transfer-request`                  | Employee Internal Transfer Request             | **Tasks Generated** | Alamgir Sarkar | 2026-09-29   | Spec Gate 1 **Approved** 2026-09-15 (v1.5). T10–T11 match the Stitch screens in `docs/designs/internal-transfer-ui/`. PDF, destination image, and extra nav surfaces stay out. |
-| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **Tasks Generated** | Alamgir Sarkar | 2026-09-29   | Spec Gate 1 **Approved** 2026-09-24 (v1.5). T07–T08 match the Stitch inbox, manager release, and HR validate screens in the same design folder. |
-| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **Tasks Generated** | Alamgir Sarkar | 2026-09-24   | Spec Gate 1 **Approved** 2026-09-24 (v1.6). Plan and tasks realigned: `approved.v1` emits `fulfilment-stage.v1` only; AC20 and AC21 are in scope. |
-| `internal-transfer-notifications`            | Employee and approver notifications            | **Tasks Generated** | Alamgir Sarkar | 2026-09-24   | Spec Gate 1 **Approved** 2026-09-11 (v1.3). Plan and tasks T01–T08 match that spec. No frontend task — spec has no screen. |
+| `internal-transfer-request`                  | Employee Internal Transfer Request             | **In Development** | Alamgir Sarkar | 2026-10-05   | Spec Gate 1 **Approved** 2026-09-15 (v1.5). Tasks T01–T11 now `In Review` (code committed, traced to IDs per G2-F01). Gate 2 (Subhajit Mukherjee, 2026-10-01) **Changes Requested**; G2-F01–F12 remediated 2026-10-05, pending re-review. |
+| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **In Development** | Alamgir Sarkar | 2026-10-05   | Spec Gate 1 **Approved** 2026-09-24 (v1.5). Tasks T01–T08 `In Review`. Gate 2 Changes Requested 2026-10-01 (shared record); remediated 2026-10-05, pending re-review. |
+| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **In Development** | Alamgir Sarkar | 2026-10-05   | Spec Gate 1 **Approved** 2026-09-24 (v1.6). Tasks T01–T07 `In Review`. Gate 2 Changes Requested 2026-10-01 (shared record); remediated 2026-10-05, pending re-review. |
+| `internal-transfer-notifications`            | Employee and approver notifications            | **In Development** | Alamgir Sarkar | 2026-10-05   | Spec Gate 1 **Approved** 2026-09-11 (v1.3). Tasks T01–T08 `In Review`. No frontend task. Gate 2 Changes Requested 2026-10-01 (shared record); remediated 2026-10-05, pending re-review. |
 
 ## Released Specs
 
@@ -59,6 +59,39 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
 | Localisation beyond English     | BRD-001 OQ-18 | Product              | Post-v1                                      |
 
 ## Daily Execution Log
+
+### 2026-10-05
+
+- **Gate 2 remediation (G2-F01–G2-F12) applied across all four `internal-transfer` slugs.**
+  Engineer Alamgir Sarkar; not a reviewer action. Code: server-side identity with role
+  resolved off the token and an explicit test seam (G2-F02); SQLite-backed rate-limit
+  counters on all seven request endpoints plus the approval routes and the webhook, with
+  429 tests and a salted-hash key (G2-F03); outbox relay now stores the error class, never
+  `error.message` (G2-F08); portal uses identity-only tokens and reads its role from a new
+  `GET …/me` (G2-F02); frontend logic extracted and unit-tested, web test script widened,
+  coverage scripts added — backend 94.26% line / 78% branch, portal logic 100% (G2-F07,
+  G2-F10); `session-start.js` now greets Subhajit Mukherjee as Gate 2 (G2-F12). Docs:
+  `employee-services/openapi.yaml` added (G2-F06); C3 dependency vetting record added to the
+  security assessment (G2-F11); `migrations/README.md` documents code-based schema and the
+  audit abort triggers (G2-F04). Backend 79 tests pass; portal 9 pass; portal build clean.
+- **G2-F04 plan wording corrected (not a Gate 1 re-entry).** The request plan and T01 now
+  describe the audit append-only `BEFORE UPDATE`/`BEFORE DELETE` abort triggers (SQLite has no
+  `REVOKE`). The spec's audit-immutability AC (AC18) is unchanged and the plan is not a
+  separate Gate 1 review, so this is a plan amendment, not a Gate 1 re-touch.
+- **Tasks moved `[ ]` → `[r]` In Review** in all four `tasks.md` (G2-F01). Code traced to
+  task IDs in the Gate 2 evidence file. Nothing is `[x]` Merged — only Subhajit Mukherjee can
+  move Gate 2 to merged, and re-review has not run yet.
+- **Follow-up fixes to G2-F07 and G2-F10 (same day).** G2-F07: four route-level failure-path
+  tests added for the webhook (429/422/200/409), taking `webhook.ts` from 60% → 100% line;
+  backend now 95.05% line / 79% branch across 83 tests, no module below the 85% floor. G2-F10:
+  component render/interaction tests for list/wizard/detail plus automated `axe` added under
+  Vitest + jsdom + Testing Library (`screens.test.tsx`); `npm test` runs both runners (9
+  node:test logic + 9 Vitest component); portal build still clean. New frontend test
+  dev-dependencies (vitest, jsdom, Testing Library, jest-axe) vetted in the C3 record — all
+  dev-only, none shipped. G2-F05 evidence clarified: the webhook/component tests are disclosed
+  as characterisation/coverage tests against already-shipped code, not RED-first. Still open
+  and documented: RTK Query/MSW/Playwright E2E, a human screen-reader walkthrough, reason
+  encryption, Secrets Manager, notification wiring.
 
 ### 2026-09-24
 

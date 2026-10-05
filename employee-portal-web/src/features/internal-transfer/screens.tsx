@@ -1,9 +1,9 @@
-import { useState } from "react";
 import { Alert } from "../../components/ui/alert.tsx";
 import { Badge } from "../../components/ui/badge.tsx";
 import { Button } from "../../components/ui/button.tsx";
 import { Card } from "../../components/ui/card.tsx";
 import { Input, Textarea } from "../../components/ui/input.tsx";
+import { advisoryTone, canWithdraw, stageText } from "./logic.ts";
 
 export type TransferDetail = {
   requestId: string;
@@ -48,13 +48,6 @@ const advisoryCopy: Record<string, { title: string; body: string }> = {
     body: "Submitting does not approve the transfer. HR still validates eligibility.",
   },
 };
-
-function stageText(stage: NonNullable<TransferDetail["stages"]>[number]) {
-  if (!stage.applicable) return "Not required";
-  if (stage.status === "IN_PROGRESS") return "In progress";
-  if (stage.status === "NOT_STARTED") return "Not started";
-  return stage.status;
-}
 
 export function RequestList({
   items,
@@ -171,7 +164,7 @@ export function RequestDetailView({ detail, onWithdraw }: { detail: TransferDeta
   const stages = detail.stages ?? [];
   const active = stages.find((stage) => stage.status === "IN_PROGRESS");
   const pending = detail.pendingWith;
-  const canWithdraw = detail.status === "MANAGER_REVIEW" || detail.status === "HR_VALIDATION";
+  const withdrawable = canWithdraw(detail.status);
   return (
     <article aria-label="Internal transfer request" className="space-y-5">
       <div className="flex items-start justify-between gap-4">
@@ -179,13 +172,13 @@ export function RequestDetailView({ detail, onWithdraw }: { detail: TransferDeta
           <h1 className="text-xl font-bold text-white">{detail.referenceNo}</h1>
           <Badge>{`v${detail.version}`}</Badge>
         </div>
-        {canWithdraw ? <Button type="button" variant="outline" onClick={onWithdraw}>Withdraw</Button> : null}
+        {withdrawable ? <Button type="button" variant="outline" onClick={onWithdraw}>Withdraw</Button> : null}
       </div>
       <p className="text-sm text-[#9da1aa]">{detail.statusDisplay} · Pending with {pending?.partyName ?? pending?.role ?? "Nobody"}</p>
       <p className="text-xs text-[#9aa0aa]">Active stage: {active ? stageLabel[active.stageCode] ?? active.stageCode : "None"}</p>
       {(detail.advisories ?? []).map((item) => {
         const text = advisoryCopy[item.code];
-        return text ? <Alert key={item.code} tone={item.code === "PAYROLL_CYCLE_MISALIGNED" ? "warning" : "info"} title={text.title}>{text.body}</Alert> : null;
+        return text ? <Alert key={item.code} tone={advisoryTone(item.code)} title={text.title}>{text.body}</Alert> : null;
       })}
       <div className="grid gap-3 md:grid-cols-2">
         <Card>

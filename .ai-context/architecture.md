@@ -4,7 +4,7 @@
 > or significant decision. A stale `architecture.md` is worse than no doc, because the next
 > agent session will believe it.
 
-**Last updated:** 2026-09-08 · **Updated by:** Alamgir Sarkar · **Driven by:** Authentication and authorisation made explicit for BRD-001 (KD-07, KD-08, BR10–BR14)
+**Last updated:** 2026-10-05 · **Updated by:** Alamgir Sarkar · **Driven by:** Gate 2 remediation currency note (G2-F09)
 
 ## Currency Check
 
@@ -12,6 +12,7 @@
 |---|---|
 | Last plan reviewed that touched this file | `internal-transfer-request`, 2026-08-31 (AuthN/AuthZ section added 2026-09-08 from BRD-001; plan not yet re-reviewed) |
 | Known-stale sections | Downstream fulfilment — webhook consumers are not yet built; v1 stores and relays outbox rows only |
+| Implementation currency (2026-10-05, G2-F09) | Code for all four `internal-transfer` slugs is committed in `employee-services/**` and `employee-portal-web/**` and is `In Review`. Since Gate 2 remediation: identity resolves role server side, not from the bearer token (G2-F02); rate-limit counters are a SQLite `rate_limit_counter` table (G2-F03), not in-memory; audit immutability is `BEFORE UPDATE`/`BEFORE DELETE` abort triggers, not `REVOKE` (G2-F04); the HTTP surface is documented in `employee-services/openapi.yaml` (G2-F06). The gateway box below still shows OIDC/global rate limiting as the platform ideal; the service additionally enforces its own per-endpoint SQLite limits. |
 
 ---
 

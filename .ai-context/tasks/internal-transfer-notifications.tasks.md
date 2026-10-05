@@ -22,7 +22,7 @@ implementation. Do not prompt this file as a whole.
 
 ## Sequence
 
-- [ ] `internal-transfer-notifications.T01` — Backend: ingress and dispatch store
+- [r] `internal-transfer-notifications.T01` — Backend: ingress and dispatch store
       — Acceptance: `AC6` (the unique index is what leaves one row), `AC9` (ingress and
         dispatch commit together)
       — Tests first: `UT12`, `UT14`
@@ -33,7 +33,7 @@ implementation. Do not prompt this file as a whole.
         `(request_id, event_type, stage_code, template_id, recipient_ref, window_start)`.
         `notification_ingress.event_id` is the primary key. No reason column
 
-- [ ] `internal-transfer-notifications.T02` — Backend: requested handler
+- [r] `internal-transfer-notifications.T02` — Backend: requested handler
       — Acceptance: `AC1`, `AC8`
       — Tests first: `UT01`, `UT02`, `UT10`
       — Touches: `employee-services/src/internal-transfer/notifications/domain/`
@@ -42,7 +42,7 @@ implementation. Do not prompt this file as a whole.
         only. Platform 5xx leaves the request `MANAGER_REVIEW`. A null manager ref
         skips that recipient and still notifies the employee. No throw into submit
 
-- [ ] `internal-transfer-notifications.T03` — Backend: stage-pending handler
+- [r] `internal-transfer-notifications.T03` — Backend: stage-pending handler
       — Acceptance: `AC2`, `AC3`, `AC6`
       — Tests first: `UT03`, `UT04`, `UT08`, `UT11`
       — Touches: `employee-services/src/internal-transfer/notifications/domain/`
@@ -51,7 +51,7 @@ implementation. Do not prompt this file as a whole.
         person on release and accept gets two mails because `stage_code` differs.
         A second delivery of one `eventId` enqueues nothing
 
-- [ ] `internal-transfer-notifications.T04` — Backend: informational handler
+- [r] `internal-transfer-notifications.T04` — Backend: informational handler
       — Acceptance: `AC4`, `AC14`
       — Tests first: `UT05`, `UT06`, `UT21`
       — Touches: `employee-services/src/internal-transfer/notifications/domain/`
@@ -59,7 +59,7 @@ implementation. Do not prompt this file as a whole.
       — Note: employee templates only. A late `completed.v1` is still sent. The handler
         does not invent a mail for an event it did not receive
 
-- [ ] `internal-transfer-notifications.T05` — Backend: silence and event names
+- [r] `internal-transfer-notifications.T05` — Backend: silence and event names
       — Acceptance: `AC15`, `AC16`
       — Tests first: `UT22`, `UT23`
       — Touches: `employee-services/src/internal-transfer/notifications/domain/`
@@ -67,7 +67,7 @@ implementation. Do not prompt this file as a whole.
       — Note: `fulfilment-failed.v1`, `fulfilment-stage.v1` and `compensate.v1` enqueue
         zero rows, asserted by test. An unsuffixed name is not on the subscription list
 
-- [ ] `internal-transfer-notifications.T06` — Backend: staleness guard
+- [r] `internal-transfer-notifications.T06` — Backend: staleness guard
       — Acceptance: `AC13`
       — Tests first: `UT20`
       — Touches: `employee-services/src/internal-transfer/notifications/domain/`
@@ -76,7 +76,7 @@ implementation. Do not prompt this file as a whole.
         `SKIPPED`. Informational templates are not guarded; that difference is why this
         is not folded into T03
 
-- [ ] `internal-transfer-notifications.T07` — Backend: relay, allow-list, retry
+- [r] `internal-transfer-notifications.T07` — Backend: relay, allow-list, retry
       — Acceptance: `AC5`, `AC7`, `AC9`, `AC10`, `AC11`, `AC12`
       — Tests first: `UT07`, `UT09`, `UT13`, `UT15`, `UT16`, `UT17`, `UT18`, `UT19`
       — Touches: `employee-services/src/internal-transfer/notifications/integration/`,
@@ -88,7 +88,7 @@ implementation. Do not prompt this file as a whole.
         `UNDELIVERABLE` and an alert. `data` is an allow-list per matrix row.
         `recipient.ref` is never an email address. `locale` is `en`. No new dependency
 
-- [ ] `internal-transfer-notifications.T08` — Backend: contract-double journeys
+- [r] `internal-transfer-notifications.T08` — Backend: contract-double journeys
       — Acceptance: `AC1`, `AC6`, `AC12`, `AC13`, `AC14`
       — Tests first: `UT24`, `UT25`
       — Touches: `employee-services/src/internal-transfer/notifications/`
