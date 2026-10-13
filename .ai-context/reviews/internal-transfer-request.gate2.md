@@ -337,3 +337,29 @@ agent-generated code characteristically fails:
    which is a small, helpful-looking addition that belongs to another spec.
 5. **N+1 queries in the status view** — stages and party references resolved per row. It will
    pass every functional test and fail under load.
+
+## Gate 2 Re-review — 2026-10-13
+
+Re-review of the author's remediation (commit `06d4018`, 2026-10-05). Backend 83/83 and
+portal component tests 9/9 pass. Earlier entries above are unchanged.
+
+| ID | Re-review result |
+|---|---|
+| G2-F01 | Closed — tasks moved to In Review, code traced to task IDs, `status.md` and `prompt_history.md` updated |
+| G2-F02 | **Open — Blocker.** The token role is no longer trusted, but any bearer subject is accepted with no credential: `Bearer hr-1` returns HR roles. `architecture.md` assigns token validation to the API Gateway, but nothing enforces that the service is reachable only through it, and `server.ts` resolves roles from a hardcoded map. Required: enforce the gateway boundary (e.g. gateway-signed header or internal-only binding, documented as the deployment contract) and resolve roles from the real source (HRIS/gateway claims), or mark the map as a local-dev stub |
+| G2-F03 | Closed. Residual Nits: `GET /me` has no limit; `rate_limit_counter` is never pruned |
+| G2-F04 | Closed — audit abort triggers; `migrations/README.md` documents code-based schema |
+| G2-F05 | Recorded exception (no honest Red run for T01–T11); accepted only at the reviewer's discretion |
+| G2-F06 | Closed — `openapi.yaml` covers all routes; exception-table rows not checked row by row |
+| G2-F07 | Closed — backend 95.05% line / 78.9% branch; no module below the 85% floor |
+| G2-F08 | Closed — relay stores the error class only |
+| G2-F09 | Closed |
+| G2-F10 | Closed — logic, component and axe tests added; AC19 manual keyboard and screen-reader pass still required |
+| G2-F11 | Closed — vetting record added to the security assessment |
+| G2-F12 | Closed — hook matches Subhajit Mukherjee |
+
+Not run in this re-review: SAST/DAST and dependency scan; per-AC walk through the diff.
+
+| Verdict | Reviewer | Date | Comment |
+|---|---|---|---|
+| Changes requested (re-review) | Subhajit Mukherjee | 2026-10-13 | G2-F02 must be resolved before approval |
