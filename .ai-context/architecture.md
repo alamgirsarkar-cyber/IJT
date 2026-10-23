@@ -4,7 +4,7 @@
 > or significant decision. A stale `architecture.md` is worse than no doc, because the next
 > agent session will believe it.
 
-**Last updated:** 2026-10-05 · **Updated by:** Alamgir Sarkar · **Driven by:** Gate 2 remediation currency note (G2-F09)
+**Last updated:** 2026-10-23 · **Updated by:** Alamgir Sarkar · **Driven by:** Gate 2 G2-F02 re-review remediation
 
 ## Currency Check
 
@@ -12,7 +12,7 @@
 |---|---|
 | Last plan reviewed that touched this file | `internal-transfer-request`, 2026-08-31 (AuthN/AuthZ section added 2026-09-08 from BRD-001; plan not yet re-reviewed) |
 | Known-stale sections | Downstream fulfilment — webhook consumers are not yet built; v1 stores and relays outbox rows only |
-| Implementation currency (2026-10-05, G2-F09) | Code for all four `internal-transfer` slugs is committed in `employee-services/**` and `employee-portal-web/**` and is `In Review`. Since Gate 2 remediation: identity resolves role server side, not from the bearer token (G2-F02); rate-limit counters are a SQLite `rate_limit_counter` table (G2-F03), not in-memory; audit immutability is `BEFORE UPDATE`/`BEFORE DELETE` abort triggers, not `REVOKE` (G2-F04); the HTTP surface is documented in `employee-services/openapi.yaml` (G2-F06). The gateway box below still shows OIDC/global rate limiting as the platform ideal; the service additionally enforces its own per-endpoint SQLite limits. |
+| Implementation currency (2026-10-23, G2-F02) | Code for all four `internal-transfer` slugs is `In Review`. Production identity is a gateway HMAC assertion (`X-Gateway-Subject`, `X-Gateway-Roles`, `X-Gateway-Timestamp`, `X-Gateway-Signature`); a bare Bearer is 401. Roles come from the signed claims, not from a hardcoded map. `server.ts` refuses to listen without `GATEWAY_HMAC_SECRET`; `LOCAL_DEV_IDENTITY=1` is the documented demo stub that mints assertions in-process. Rate-limit counters remain SQLite (G2-F03); audit immutability remains abort triggers (G2-F04). |
 
 ---
 
@@ -102,20 +102,26 @@ this section; they do not invent a second scheme.
 Browser ── existing portal OIDC session ──▶ employee-portal-web
                                               │ Bearer access token
                                               ▼
-API Gateway ── validates OIDC token ──▶ employee-services
-                                         │ principal = token subject (employee id)
-                                         │ roles from token (HR_BUSINESS_PARTNER)
-                                         ▼
-                              in-service AuthZ (owner / assignee / role / HMAC)
+API Gateway ── validates OIDC ──▶ employee-services
+                 │ strips client-supplied X-Gateway-* headers
+                 │ asserts HMAC: subject + roles
+                 ▼
+      in-service AuthZ (owner / assignee / role / webhook HMAC)
 ```
 
 | Layer | Authenticates | Authorises | Failure |
 | --- | --- | --- | --- |
 | Corporate IdP | Employee / manager / HR signs in to the **existing** portal | Issues token: subject = portal employee id; optional role `HR_BUSINESS_PARTNER` | Sign-in is a platform concern; this journey adds no login UI |
-| API Gateway | Access token present, valid, not expired, intended for this API | Coarse: authenticated caller only. Does **not** decide request ownership | 401 `unauthenticated` — service not reached |
-| `employee-services` | Trusts gateway-validated token; reads subject and roles; **never** a body/query/path employee id | Fine-grained: BR11–BR14 matrix. Owner, stage assignee, or HR role | 401 if token missing inside the service; **404** `request-not-found` if the principal is not allowed to see that resource (not 403) |
+| API Gateway | Access token present, valid, not expired, intended for this API. Forwards an HMAC assertion (`X-Gateway-Subject`, `X-Gateway-Roles`, `X-Gateway-Timestamp`, `X-Gateway-Signature`) signed with `GATEWAY_HMAC_SECRET`. Client-supplied copies of those headers are stripped | Coarse: authenticated caller only. Does **not** decide request ownership | 401 `unauthenticated` — service not reached |
+| `employee-services` | Verifies the gateway HMAC assertion. A raw Bearer without a valid assertion is 401. If Bearer is present it must match the asserted subject. **Never** a body/query/path employee id. Roles come from the signed claims | Fine-grained: BR11–BR14 matrix. Owner, stage assignee, or HR role | 401 `unauthenticated` if the assertion is missing, stale, or invalid; **404** `request-not-found` if the principal is not allowed to see that resource (not 403) |
 | `employee-portal-web` | Reuses portal OIDC session; attaches `Authorization: Bearer` on `/api/v1/internal-transfers` | Route access: transfer wizard/status for any authenticated employee; manager/HR inboxes only when the session can call those APIs. UI is not the enforcement boundary | Unauthenticated navigation uses the portal's existing sign-in. 401 from API → same portal session recovery. Never prompt for a transfer-specific password |
 | Downstream webhook | HMAC of the body with the source's signing secret from Secrets Manager | That source may complete only fulfilment stage codes; body `requestId` is data, not identity | 401 `unauthenticated` on missing/invalid signature. An employee OIDC token on this URL is not accepted |
+
+**Deployment contract (G2-F02):** the service is not the OIDC validator. Production requires
+`GATEWAY_HMAC_SECRET` and the four `X-Gateway-*` headers; `server.ts` refuses to listen
+without the secret. Bind the service so it is reachable only through the gateway. Local
+demo (`LOCAL_DEV_IDENTITY=1`) mints assertions in-process from a stub map and is not the
+production path.
 
 **Not in this architecture:** a local user store, API keys for employees, a second session
 timeout for transfer, or trusting `employeeId` in JSON for AuthZ.
@@ -127,10 +133,12 @@ must not put reason text in client logs.
 ## Cross-Cutting Concerns
 
 - **Authentication / authorisation:** see **Authentication and Authorisation** above.
-  Gateway validates OIDC; `employee-services` derives identity from the token subject
-  only. A caller-supplied employee ID in a body, query or path is never trusted.
-  Resource ownership and stage assignment are enforced in the service on every read and
-  write. Webhooks use HMAC, not employee tokens.
+  Gateway validates OIDC and asserts subject and roles with HMAC. `employee-services`
+  does not treat a raw Bearer as identity. A caller-supplied employee ID in a body,
+  query or path is never trusted. Resource ownership and stage assignment are enforced
+  in the service on every read and write. Webhooks use HMAC of the body, not employee
+  tokens. Local demo only: `LOCAL_DEV_IDENTITY=1` mints the assertion in-process from a
+  documented stub map — not the production path.
 - **Logging and tracing:** structured JSON, correlation ID propagated from the gateway.
   Employee ID is permitted; PII as defined in the constitution is not, at any level. A
   redaction layer strips known sensitive field names before emission — a safety net, not a

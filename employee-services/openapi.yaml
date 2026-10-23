@@ -28,10 +28,16 @@ paths:
       tags: [identity]
       summary: Resolve the caller's identity and server-side roles
       description: >
-        Identity is the bearer subject. Roles are resolved server side (G2-F02); the token
-        role suffix is never trusted in the running server. Used by the portal to lay out
-        navigation.
+        Production identity is the gateway HMAC assertion (X-Gateway-Subject, X-Gateway-Roles,
+        X-Gateway-Timestamp, X-Gateway-Signature). A bare Bearer without a valid assertion is
+        401. Roles come from the signed claims, not from a token suffix. Used by the portal
+        to lay out navigation. Deployment contract: see components.parameters.GatewaySubject.
       security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/GatewaySubject"
+        - $ref: "#/components/parameters/GatewayRoles"
+        - $ref: "#/components/parameters/GatewayTimestamp"
+        - $ref: "#/components/parameters/GatewaySignature"
       responses:
         "200":
           description: Identity and roles
@@ -377,7 +383,10 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      description: Portal session bearer token. Subject is the identity; roles are resolved server side (G2-F02).
+      description: >
+        Portal session bearer token. In production the service does not treat a raw Bearer
+        as identity; the gateway must also send the HMAC assertion headers. If Bearer is
+        present it must match X-Gateway-Subject.
     webhookSignature:
       type: apiKey
       in: header
@@ -401,6 +410,34 @@ components:
       in: header
       required: true
       schema: { type: string }
+    GatewaySubject:
+      name: X-Gateway-Subject
+      in: header
+      required: true
+      schema: { type: string }
+      description: >
+        Deployment contract (G2-F02). Employee id asserted by the API Gateway after OIDC
+        validation. Canonical HMAC material is subject, sorted comma-joined roles, timestamp,
+        each on its own line. Signed with GATEWAY_HMAC_SECRET. ±300 s replay window.
+        The gateway strips any client-supplied copy of this header.
+    GatewayRoles:
+      name: X-Gateway-Roles
+      in: header
+      required: true
+      schema: { type: string }
+      description: Comma-joined roles from gateway/HRIS claims, sorted, included in the HMAC material.
+    GatewayTimestamp:
+      name: X-Gateway-Timestamp
+      in: header
+      required: true
+      schema: { type: string, format: date-time }
+      description: ISO-8601 timestamp included in the HMAC material.
+    GatewaySignature:
+      name: X-Gateway-Signature
+      in: header
+      required: true
+      schema: { type: string }
+      description: sha256=<hex> HMAC-SHA256 of the canonical string using GATEWAY_HMAC_SECRET.
 
   responses:
     Unauthenticated:

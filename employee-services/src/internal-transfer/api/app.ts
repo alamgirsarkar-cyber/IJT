@@ -14,12 +14,22 @@ import { registerWebhook } from "../fulfilment/api/webhook.ts";
 import type { WebhookKeys } from "../fulfilment/domain/orchestrate.ts";
 import { migrate, nextReference } from "../persistence/schema.ts";
 import { br8, br9Advisory, evaluate, type EligibilityInput } from "../rules/evaluate.ts";
-import { isApprover, resolveIdentity, type IdentityOptions, type RoleSource } from "../auth/identity.ts";
+import {
+  isApprover,
+  localDevGatewayMiddleware,
+  resolveIdentity,
+  type IdentityOptions,
+  type LocalDevIdentity,
+  type RoleSource,
+} from "../auth/identity.ts";
 import { enforceRateLimit } from "../security/rate-limit.ts";
 
 export type AppOptions = {
   roles?: RoleSource;
   trustTokenRole?: boolean;
+  allowUnsignedIdentity?: boolean;
+  gatewayHmacSecret?: string;
+  localDevIdentity?: LocalDevIdentity;
 };
 
 const TTL_MS = 900_000;
@@ -54,10 +64,15 @@ export function createApp(
   migrate(db);
   const client = new HrisClient(hris);
   const app = express();
-  const identityOptions: IdentityOptions = { roles: options.roles, trustTokenRole: options.trustTokenRole };
+  const identityOptions: IdentityOptions = {
+    roles: options.roles,
+    trustTokenRole: options.trustTokenRole,
+    allowUnsignedIdentity: options.allowUnsignedIdentity,
+    gatewayHmacSecret: options.gatewayHmacSecret,
+  };
 
-  // G2-F02: 401 if unauthenticated, 403 if the caller is an approver role. Identity and role
-  // both come from resolveIdentity, which never trusts the token role in the production path.
+  // G2-F02: 401 if unauthenticated, 403 if the caller is an approver role. Production identity
+  // is the gateway HMAC assertion; unsigned Bearer is a test seam only.
   function employeeCaller(req: Request, res: Response): string | undefined {
     const who = resolveIdentity(req, identityOptions);
     if (!who) {
@@ -83,7 +98,10 @@ export function createApp(
 
   app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
-    res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, If-Match, Idempotency-Key");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Authorization, Content-Type, If-Match, Idempotency-Key, X-Gateway-Subject, X-Gateway-Roles, X-Gateway-Timestamp, X-Gateway-Signature",
+    );
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS");
     if (req.method === "OPTIONS") {
       res.status(204).end();
@@ -91,6 +109,9 @@ export function createApp(
     }
     next();
   });
+  if (options.localDevIdentity) {
+    app.use(localDevGatewayMiddleware(options.localDevIdentity));
+  }
   app.use("/api/v1/internal-transfers/webhooks/stage-completion", express.raw({ type: () => true, limit: "32kb" }));
   registerWebhook(app, db, webhookKeys);
   app.use(express.json({ limit: "32kb" }));

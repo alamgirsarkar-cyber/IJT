@@ -120,8 +120,8 @@ auth-adjacent.
 | `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom` | dev | Render and interaction assertions on behaviour, not snapshots. Test-only. |
 | `jest-axe`, `@types/jest-axe` | dev | Automated accessibility (axe-core) assertions for AC19. Test-only; `axe-core` is read-only analysis of rendered DOM. |
 
-None is crypto-adjacent or auth-adjacent. Authentication remains the portal session bearer
-token resolved server side (G2-F02); the frontend adds no auth package.
+None is crypto-adjacent or auth-adjacent. Authentication remains a gateway HMAC assertion
+verified with `node:crypto` (G2-F02); the frontend adds no auth package.
 
 ## Residual Risks Accepted
 

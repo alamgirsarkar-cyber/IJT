@@ -5,7 +5,16 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import test from "node:test";
 import request from "supertest";
-import { createApp, openDatabase } from "./api/app.ts";
+import { createApp as createProductionApp, openDatabase } from "./api/app.ts";
+
+function createApp(
+  db: Parameters<typeof createProductionApp>[0],
+  hris: Parameters<typeof createProductionApp>[1],
+  keys?: Parameters<typeof createProductionApp>[2],
+  options?: Parameters<typeof createProductionApp>[3],
+) {
+  return createProductionApp(db, hris, keys ?? {}, { allowUnsignedIdentity: true, ...options });
+}
 import type { Employment, HrisContract, ReferenceData } from "./integration/hris/client.ts";
 import { relayOnce } from "./outbox/relay.ts";
 import { migrate } from "./persistence/schema.ts";

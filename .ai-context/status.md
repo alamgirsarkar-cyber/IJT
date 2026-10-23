@@ -1,6 +1,6 @@
 # Project Status Board — One-Point Employee Portal
 
-_Last updated: 2026-10-05_
+_Last updated: 2026-10-23_
 
 > Updated by whoever last touched a spec, same day. Answers "what is in flight" without a
 > stand-up. Where a delivery tool exists, this file mirrors **spec-level** state and does not
@@ -22,10 +22,10 @@ Task states are the checkbox state in the feature's `tasks.md`:
 
 | Spec ID                                      | Title                                          | Status                      | Owner          | Last Updated | Notes                                                                                                                                                             |
 | -------------------------------------------- | ---------------------------------------------- | --------------------------- | -------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `internal-transfer-request`                  | Employee Internal Transfer Request             | **In Development** | Alamgir Sarkar | 2026-10-05   | Spec Gate 1 **Approved** 2026-09-15 (v1.5). Tasks T01–T11 now `In Review` (code committed, traced to IDs per G2-F01). Gate 2 (Subhajit Mukherjee, 2026-10-01) **Changes Requested**; G2-F01–F12 remediated 2026-10-05, pending re-review. |
-| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **In Development** | Alamgir Sarkar | 2026-10-05   | Spec Gate 1 **Approved** 2026-09-24 (v1.5). Tasks T01–T08 `In Review`. Gate 2 Changes Requested 2026-10-01 (shared record); remediated 2026-10-05, pending re-review. |
-| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **In Development** | Alamgir Sarkar | 2026-10-05   | Spec Gate 1 **Approved** 2026-09-24 (v1.6). Tasks T01–T07 `In Review`. Gate 2 Changes Requested 2026-10-01 (shared record); remediated 2026-10-05, pending re-review. |
-| `internal-transfer-notifications`            | Employee and approver notifications            | **In Development** | Alamgir Sarkar | 2026-10-05   | Spec Gate 1 **Approved** 2026-09-11 (v1.3). Tasks T01–T08 `In Review`. No frontend task. Gate 2 Changes Requested 2026-10-01 (shared record); remediated 2026-10-05, pending re-review. |
+| `internal-transfer-request`                  | Employee Internal Transfer Request             | **In Development** | Alamgir Sarkar | 2026-10-23   | Spec Gate 1 **Approved** 2026-09-15 (v1.5). Tasks T01–T11 `In Review`. Gate 2 Changes Requested 2026-10-01 and again 2026-10-13 (G2-F02 still open). Author remediations 2026-10-05 and 2026-10-23; pending re-review. |
+| `internal-transfer-approval-chain`           | Manager release, manager accept, HR validation | **In Development** | Alamgir Sarkar | 2026-10-23   | Spec Gate 1 **Approved** 2026-09-24 (v1.5). Tasks T01–T08 `In Review`. Shared Gate 2 record; G2-F02 remediations 2026-10-05 and 2026-10-23; pending re-review. |
+| `internal-transfer-downstream-orchestration` | HRIS, Payroll, IT, Facilities fan-out          | **In Development** | Alamgir Sarkar | 2026-10-23   | Spec Gate 1 **Approved** 2026-09-24 (v1.6). Tasks T01–T07 `In Review`. Shared Gate 2 record; pending re-review after G2-F02. |
+| `internal-transfer-notifications`            | Employee and approver notifications            | **In Development** | Alamgir Sarkar | 2026-10-23   | Spec Gate 1 **Approved** 2026-09-11 (v1.3). Tasks T01–T08 `In Review`. No frontend task. Shared Gate 2 record; pending re-review after G2-F02. |
 
 ## Released Specs
 
@@ -59,6 +59,17 @@ Items deliberately not built, recorded here so they are not quietly forgotten:
 | Localisation beyond English     | BRD-001 OQ-18 | Product              | Post-v1                                      |
 
 ## Daily Execution Log
+
+### 2026-10-23
+
+- **Gate 2 G2-F02 remediation (re-review of 2026-10-13).** Engineer Alamgir Sarkar; not a
+  reviewer action. Production identity is a gateway HMAC assertion; a bare Bearer is 401
+  and inserts no row. Roles come from signed claims. `server.ts` refuses to listen without
+  `GATEWAY_HMAC_SECRET`; `LOCAL_DEV_IDENTITY=1` is the documented demo stub. Tests in
+  `auth/identity.test.ts` (unsigned Bearer, valid assertion, tamper, expiry, mismatch,
+  local-dev stub). Existing suites keep the unsigned test seam. Backend 90 tests pass.
+  Architecture and OpenAPI updated. G2-F02 is not marked Closed — pending Subhajit
+  Mukherjee re-review.
 
 ### 2026-10-05
 

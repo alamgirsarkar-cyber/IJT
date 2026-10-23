@@ -58,7 +58,7 @@ test("UT50 the counter key is a salted hash, not the raw identifier", () => {
 });
 
 test("UT49 the create endpoint returns 429 with Retry-After once over the limit", async () => {
-  const app = createApp(openDatabase(dbPath()), hris);
+  const app = createApp(openDatabase(dbPath()), hris, {}, { allowUnsignedIdentity: true });
   let last = await request(app).post("/api/v1/internal-transfers").set("Authorization", "Bearer emp-1");
   for (let call = 0; call < 20; call += 1) {
     last = await request(app).post("/api/v1/internal-transfers").set("Authorization", "Bearer emp-1");

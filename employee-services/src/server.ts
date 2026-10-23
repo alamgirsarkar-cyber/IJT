@@ -2,7 +2,7 @@ import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { createApp, openDatabase } from "./internal-transfer/api/app.ts";
 import type { Employment, HrisContract, ReferenceData } from "./internal-transfer/integration/hris/client.ts";
-import type { RoleSource } from "./internal-transfer/auth/identity.ts";
+import type { LocalDevIdentity } from "./internal-transfer/auth/identity.ts";
 
 const reference: ReferenceData = {
   departments: [
@@ -55,19 +55,35 @@ const hris: HrisContract = {
   },
 };
 
-// G2-F02: roles are a server-side fact, resolved from this map by employee id. The bearer
-// token carries identity only; the running server never trusts a role claimed in the token.
-// In a deployed system this map is the gateway/HRIS role assignment, not a literal.
-const roleAssignments: Record<string, readonly string[]> = {
+// G2-F02 (re-review 2026-10-13): production requires GATEWAY_HMAC_SECRET and never
+// accepts a bare Bearer as identity. The id→role map below is a local-dev stub only.
+const localDev = process.env.LOCAL_DEV_IDENTITY === "1";
+const gatewayHmacSecret = process.env.GATEWAY_HMAC_SECRET;
+if (!gatewayHmacSecret && !localDev) {
+  process.stderr.write(
+    "employee-services: set GATEWAY_HMAC_SECRET (production) or LOCAL_DEV_IDENTITY=1 (demo stub). Refusing to listen.\n",
+  );
+  process.exit(1);
+}
+
+const secret = gatewayHmacSecret ?? "local-dev-gateway-secret";
+const stubRoles: LocalDevIdentity["roles"] = {
   "hr-1": ["HR_BUSINESS_PARTNER"],
   "mgr-line": ["LINE_MANAGER"],
   "mgr-recv": ["RECEIVING_MANAGER"],
 };
-const roles: RoleSource = (employeeId) => roleAssignments[employeeId] ?? [];
+if (localDev) {
+  process.stderr.write(
+    "employee-services: LOCAL_DEV_IDENTITY=1 — demo identity stub; not the production path. Bare Bearer is signed in-process.\n",
+  );
+}
 
 const dataDir = join(process.cwd(), "data");
 mkdirSync(dataDir, { recursive: true });
-const app = createApp(openDatabase(join(dataDir, "portal.sqlite")), hris, { "local-key": "local-secret" }, { roles });
+const app = createApp(openDatabase(join(dataDir, "portal.sqlite")), hris, { "local-key": "local-secret" }, {
+  gatewayHmacSecret: secret,
+  localDevIdentity: localDev ? { secret, roles: stubRoles } : undefined,
+});
 
 const port = Number(process.env.PORT ?? 3001);
 app.listen(port, (error?: Error) => {

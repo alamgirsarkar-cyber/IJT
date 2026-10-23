@@ -363,3 +363,24 @@ Not run in this re-review: SAST/DAST and dependency scan; per-AC walk through th
 | Verdict | Reviewer | Date | Comment |
 |---|---|---|---|
 | Changes requested (re-review) | Subhajit Mukherjee | 2026-10-13 | G2-F02 must be resolved before approval |
+
+## Gate 2 Remediation — G2-F02 — 2026-10-23 (author: Alamgir Sarkar)
+
+Applied in response to the 2026-10-13 re-review. This is an author action, not a re-review.
+The 2026-10-13 verdict and the G2-F02 **Open — Blocker** line above are left as the reviewer
+wrote them. Only Subhajit Mukherjee can record the next verdict.
+
+- Production identity requires a gateway HMAC assertion (`X-Gateway-Subject`,
+  `X-Gateway-Roles`, `X-Gateway-Timestamp`, `X-Gateway-Signature`; canonical string
+  `subject\nroles\ntimestamp`; HMAC-SHA256; ±300 s window). Roles come from the signed
+  claims. A bare `Bearer hr-1` is 401 `unauthenticated` and inserts no row. Bearer subject
+  must match the asserted subject when both are present.
+- `server.ts` refuses to listen without `GATEWAY_HMAC_SECRET` or `LOCAL_DEV_IDENTITY=1`.
+  The id→role map is the local-dev stub only. `allowUnsignedIdentity` and `trustTokenRole`
+  are never set by `server.ts`.
+- Tests in `employee-services/src/internal-transfer/auth/identity.test.ts` run against
+  production `createApp` options (no unsigned seam, no role map). Existing request/approval
+  suites keep the unsigned test seam. Backend 90 tests pass.
+- Docs: `architecture.md` deployment contract; OpenAPI gateway header parameters.
+
+Pending re-review. G2-F02 is not marked Closed here.

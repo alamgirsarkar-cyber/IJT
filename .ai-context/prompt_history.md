@@ -167,6 +167,18 @@ Gate 1 records rather than here.
 **Engineer review notes:** Added four route-level webhook failure-path tests (429 with Retry-After, validly-signed non-JSON → 422, signed success → 200, applyReport error → 409) — `webhook.ts` 60% → 100% line; backend 95.16% line across 83 tests. Stood up Vitest + jsdom + Testing Library + jest-axe for the portal; added `screens.test.tsx` with render/interaction and automated axe (zero violations); `npm test` now runs node:test logic + Vitest components (9 + 9). New test deps are dev-only and vetted in the C3 record. G2-F05 evidence split into genuinely RED-first new-code tests vs disclosed characterisation/coverage tests. No reason text, secret, or Stitch key recorded here. Portal build clean.
 **Follow-up raised:** RTK Query/MSW and Playwright E2E, a human screen-reader walkthrough (AC19), reason encryption (AC16), Secrets Manager, and notification wiring remain open and are listed in the Gate 2 evidence Known gaps. Still pending Gate 2 re-review by Subhajit Mukherjee.
 
+### 2026-10-23 16:40 — internal-transfer-request.T03 / T10
+**Engineer:** Alamgir Sarkar            **Model:** Composer
+**Task:** Gate 2 remediation — G2-F02 only (re-review 2026-10-13)
+**Satisfies:** internal-transfer-request.AC20, AC21; approval-chain identity (OWN-01)
+**Phase:** RED then GREEN
+**Context supplied:** `.ai-context/reviews/internal-transfer-request.gate2.md` (re-review block), `employee-services/src/internal-transfer/auth/identity.ts`, `employee-services/src/server.ts`, `employee-services/src/internal-transfer/api/app.ts`, `.ai-context/architecture.md`
+**Workflow / prompt used:** approved plan `fix_g2-f02_blocker_*.plan.md`
+**Prompt:** Fix Gate 2 blocker G2-F02 — implement the plan as specified
+**Outcome:** Accepted
+**Engineer review notes:** RED: six identity tests failed on missing gateway checks (unsigned Bearer returned 200, not import errors). GREEN: HMAC gateway assertion with `node:crypto`; unsigned path only via `allowUnsignedIdentity` test seam; `server.ts` fail-closed without the gateway secret env var; local-dev stub behind `LOCAL_DEV_IDENTITY=1`. Backend 90 tests pass. Reviewer table G2-F02 left Open. No reason text or secret values recorded here.
+**Follow-up raised:** Residual nits from the 13 October re-review (`GET /me` rate limit, `rate_limit_counter` prune) and Known gaps (reason encryption, Secrets Manager, Playwright, screen-reader walkthrough, notification wiring) remain out of this increment. Pending Subhajit Mukherjee re-review.
+
 
 
 
