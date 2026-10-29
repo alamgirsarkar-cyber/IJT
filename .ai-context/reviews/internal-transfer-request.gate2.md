@@ -384,3 +384,28 @@ wrote them. Only Subhajit Mukherjee can record the next verdict.
 - Docs: `architecture.md` deployment contract; OpenAPI gateway header parameters.
 
 Pending re-review. G2-F02 is not marked Closed here.
+
+## Gate 2 Re-review — 2026-10-29
+
+Re-review of the author's G2-F02 remediation (commit `cd948c2`, 2026-10-23). Backend 90/90
+pass; line coverage 95.16% overall, `identity.ts` 93.55%. Earlier entries above, including the
+2026-10-13 verdict, are unchanged.
+
+| ID | Re-review result |
+|---|---|
+| G2-F02 | **Closed.** Production identity and roles come from a signed gateway assertion (HMAC-SHA256 over subject, roles and timestamp; ±300 s; constant-time compare). Verified against production-mode `createApp`: bare `Bearer hr-1`, forged `x-gateway-*` headers without a signature, a wrong-secret signature, a role change on a valid signature, a subject swap, and a bare Bearer on the approvals inbox are all 401; correctly signed employee and HR requests are 200. `server.ts` refuses to start without `GATEWAY_HMAC_SECRET` or `LOCAL_DEV_IDENTITY=1`. Main and approval routes share the one resolver |
+| G2-F13 | **Open — Blocker (new).** `server.ts:83` passes the literal webhook signing keys `{ "local-key": "local-secret" }` to `createApp` unconditionally, independent of the local-dev flag. Anyone who has read the repo can sign a valid stage-completion webhook. Breaches the constitution rule that secrets come only from Secrets Manager and the Gate 2 checklist item "no secrets hardcoded". Present since the first commit and missed in the 2026-10-01 review. Required: load webhook keys from the environment and refuse to start without them unless the local-dev flag is set |
+| G2-F14 | **Open — Should-fix (new).** `LOCAL_DEV_IDENTITY=1` together with a real `GATEWAY_HMAC_SECRET` re-enables in-process signing of a bare Bearer, so `Bearer hr-1` returns HR roles (reproduced). Required: refuse to start when the local-dev flag is set alongside a real secret or `NODE_ENV=production` |
+| Nit | A signed gateway request can be replayed for up to 300 s. Harmless for reads; decisions are protected by idempotency keys |
+
+**Correction to the 2026-10-01 record.** The Clean Items row "Hardcoded secrets — none in
+production code" is wrong: the search pattern missed the webhook key literal in `server.ts`
+(G2-F13). Read that row as superseded by this entry.
+
+Carried over unchanged from 2026-10-13: G2-F01, F03–F04 and F06–F12 closed; G2-F05 remains a
+recorded exception at the reviewer's discretion. Not run: SAST/DAST and dependency scan,
+per-AC walk through the diff, AC19 manual keyboard and screen-reader pass.
+
+| Verdict | Reviewer | Date | Comment |
+|---|---|---|---|
+| Changes requested (re-review) | Subhajit Mukherjee | 2026-10-29 | G2-F13 must be resolved and G2-F14 addressed before approval |
