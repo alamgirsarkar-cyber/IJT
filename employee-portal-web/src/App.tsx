@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "./components/ui/button.tsx";
-import { RequestDetailView, RequestList, Wizard, type TransferDetail } from "./features/internal-transfer/screens.tsx";
+import { RequestDetailView, RequestList, Wizard, type OpenPositionOption, type TransferDetail } from "./features/internal-transfer/screens.tsx";
 import { roleFromList } from "./features/internal-transfer/logic.ts";
 import { copy } from "./features/internal-transfer-approval/inbox.ts";
 import { ApprovalInbox, Decision } from "./features/internal-transfer-approval/screens.tsx";
@@ -114,10 +114,13 @@ function Shell({
   );
 }
 
+type TargetPosition = OpenPositionOption & { departmentId: string; locationId: string };
+
 function Employee({ token }: { token: string }) {
   const [list, setList] = useState<Array<{ requestId: string; referenceNo: string; statusDisplay: string; pendingWith?: string | null; requestedEffectiveDate?: string | null; effectiveDateStatus?: string | null }>>([]);
   const [detail, setDetail] = useState<TransferDetail | null>(null);
-  const [wizard, setWizard] = useState<{ requestId: string; version: number; step: 1 | 2 | 3 | 4; date: string; reason: string } | null>(null);
+  const [positions, setPositions] = useState<TargetPosition[]>([]);
+  const [wizard, setWizard] = useState<{ requestId: string; version: number; step: 1 | 2 | 3 | 4; date: string; reason: string; positionId: string } | null>(null);
   const [message, setMessage] = useState("");
 
   async function refresh() {
@@ -128,6 +131,22 @@ function Employee({ token }: { token: string }) {
   useEffect(() => { void refresh(); }, [token]);
 
   async function start() {
+    const reference = await api("/api/v1/internal-transfers/reference-data", token);
+    const departmentName = new Map<string, string>(
+      (reference.body.departments ?? []).map((item: { id: string; name: string }) => [item.id, item.name]),
+    );
+    const locationName = new Map<string, string>(
+      (reference.body.locations ?? []).map((item: { id: string; name: string }) => [item.id, item.name]),
+    );
+    const openPositions: TargetPosition[] = (reference.body.positions ?? []).map(
+      (item: { id: string; title: string; departmentId: string; locationId: string }) => ({
+        id: item.id,
+        departmentId: item.departmentId,
+        locationId: item.locationId,
+        label: `${departmentName.get(item.departmentId) ?? item.departmentId} · ${item.title} · ${locationName.get(item.locationId) ?? item.locationId}`,
+      }),
+    );
+    setPositions(openPositions);
     const created = await api("/api/v1/internal-transfers", token, { method: "POST", body: "{}" });
     if (created.status !== 201) {
       setMessage(created.body.type ?? "Could not create a draft");
@@ -135,20 +154,28 @@ function Employee({ token }: { token: string }) {
     }
     const date = new Date();
     date.setUTCDate(date.getUTCDate() + 30);
-    setWizard({ requestId: created.body.requestId, version: created.body.version, step: 1, date: date.toISOString().slice(0, 10), reason: "" });
+    setWizard({
+      requestId: created.body.requestId,
+      version: created.body.version,
+      step: 1,
+      date: date.toISOString().slice(0, 10),
+      reason: "",
+      positionId: openPositions[0]?.id ?? "p-open",
+    });
     setDetail(null);
     setMessage("");
   }
 
   async function saveAndSubmit() {
     if (!wizard) return;
+    const target = positions.find((item) => item.id === wizard.positionId) ?? positions[0];
     const updated = await api(`/api/v1/internal-transfers/${wizard.requestId}`, token, {
       method: "PUT",
       headers: { "If-Match": `"${wizard.version}"` },
       body: JSON.stringify({
-        targetDepartmentId: "d2",
-        targetLocationId: "l2",
-        targetPositionId: "p-open",
+        targetDepartmentId: target?.departmentId ?? "d2",
+        targetLocationId: target?.locationId ?? "l2",
+        targetPositionId: target?.id ?? "p-open",
         requestedEffectiveDate: wizard.date,
         reason: wizard.reason || undefined,
       }),
@@ -185,6 +212,9 @@ function Employee({ token }: { token: string }) {
         date={wizard.date}
         reason={wizard.reason}
         message={message}
+        positions={positions}
+        selectedPositionId={wizard.positionId}
+        onSelectPosition={(positionId) => setWizard({ ...wizard, positionId })}
         onDate={(date) => setWizard({ ...wizard, date })}
         onReason={(reason) => setWizard({ ...wizard, reason })}
         onBack={() => wizard.step === 1 ? setWizard(null) : setWizard({ ...wizard, step: (wizard.step - 1) as 1 | 2 | 3 | 4 })}

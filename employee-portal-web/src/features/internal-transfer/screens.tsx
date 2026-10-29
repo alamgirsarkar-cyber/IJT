@@ -97,11 +97,16 @@ export function RequestList({
   );
 }
 
+export type OpenPositionOption = { id: string; label: string };
+
 export function Wizard({
   step,
   date,
   reason,
   message,
+  positions = [],
+  selectedPositionId = "",
+  onSelectPosition,
   onDate,
   onReason,
   onBack,
@@ -112,6 +117,9 @@ export function Wizard({
   date: string;
   reason: string;
   message: string;
+  positions?: OpenPositionOption[];
+  selectedPositionId?: string;
+  onSelectPosition?: (id: string) => void;
   onDate: (value: string) => void;
   onReason: (value: string) => void;
   onBack: () => void;
@@ -120,6 +128,8 @@ export function Wizard({
 }) {
   const titles = ["Target", "Effective date", "Reason", "Review"];
   const payroll = date.slice(8, 10) !== "" && date.slice(8, 10) !== "01";
+  const selected = positions.find((item) => item.id === selectedPositionId);
+  const targetLabel = selected?.label ?? "Operations · Analyst · Site B";
   return (
     <div className="max-w-3xl space-y-5">
       <h1 className="text-xl font-semibold text-white">New transfer · {titles[step - 1]}</h1>
@@ -127,7 +137,25 @@ export function Wizard({
       {step === 1 ? (
         <Card>
           <h2 className="font-medium">Open position</h2>
-          <p>Operations · Analyst · Site B</p>
+          {positions.length > 0 ? (
+            <fieldset className="mt-3 space-y-2">
+              <legend className="sr-only">Open position</legend>
+              {positions.map((item) => (
+                <label key={item.id} className="flex items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="open-position"
+                    value={item.id}
+                    checked={item.id === selectedPositionId}
+                    onChange={() => onSelectPosition?.(item.id)}
+                  />
+                  {item.label}
+                </label>
+              ))}
+            </fieldset>
+          ) : (
+            <p>{targetLabel}</p>
+          )}
         </Card>
       ) : null}
       {step === 2 ? (
@@ -145,7 +173,7 @@ export function Wizard({
       ) : null}
       {step === 4 ? (
         <Card>
-          <p>Operations · Analyst · Site B</p>
+          <p>{targetLabel}</p>
           <p>Effective date {date}</p>
           <p>{reason ? "Reason recorded" : "No reason"}</p>
         </Card>
